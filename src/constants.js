@@ -10,15 +10,16 @@ export const ORANGE = '#E07B00'
 export const ORANGE_LT = '#FFF3E0'
 
 export const TABS = [
-  { id: 'structure',       label: 'Note de calcul structure',    endpoint: '/generate',                filename: 'note_structure.pdf',   mep: false },
-  { id: 'boq-structure',   label: 'BOQ Structure',               endpoint: '/generate-boq',            filename: 'boq_structure.pdf',    mep: false },
-  { id: 'note-mep',        label: 'Note de calcul MEP',          endpoint: '/generate-note-mep',       filename: 'note_mep.pdf',         mep: true  },
-  { id: 'boq-mep',         label: 'BOQ MEP',                     endpoint: '/generate-boq-mep',        filename: 'boq_mep.pdf',          mep: true  },
-  { id: 'edge',            label: 'Conformité EDGE',             endpoint: '/generate-edge',           filename: 'edge.pdf',             mep: true  },
-  { id: 'fiches-structure',label: 'Fiches techniques structure', endpoint: '/generate-fiches-structure',filename: 'fiches_structure.pdf', mep: false },
-  { id: 'fiches-mep',      label: 'Fiches techniques MEP',       endpoint: '/generate-fiches-mep',     filename: 'fiches_mep.pdf',       mep: true  },
-  { id: 'plan-ba',         label: 'Plans BA',                    endpoint: null,                       filename: '',                     mep: false },
-  { id: 'plan-mep',        label: 'Plans MEP',                   endpoint: null,                       filename: '',                     mep: false },
+  { id: 'structure',        label: 'Note de calcul structure',    endpoint: '/generate',                  filename: 'note_structure.pdf',   mep: false },
+  { id: 'boq-structure',    label: 'BOQ Structure',               endpoint: '/generate-boq',              filename: 'boq_structure.pdf',    mep: false },
+  { id: 'note-mep',         label: 'Note de calcul MEP',          endpoint: '/generate-note-mep',         filename: 'note_mep.pdf',         mep: true  },
+  { id: 'boq-mep',          label: 'BOQ MEP',                     endpoint: '/generate-boq-mep',          filename: 'boq_mep.pdf',          mep: true  },
+  { id: 'edge',             label: 'Conformité EDGE',             endpoint: '/generate-edge',             filename: 'edge.pdf',             mep: true  },
+  { id: 'rapport-executif', label: 'Rapport exécutif',            endpoint: '/generate-rapport-executif', filename: 'rapport_executif.pdf', mep: false },
+  { id: 'fiches-structure', label: 'Fiches techniques structure', endpoint: '/generate-fiches-structure', filename: 'fiches_structure.pdf', mep: false },
+  { id: 'fiches-mep',       label: 'Fiches techniques MEP',       endpoint: '/generate-fiches-mep',       filename: 'fiches_mep.pdf',       mep: true  },
+  { id: 'plan-ba',          label: 'Plans BA',                    endpoint: null,                         filename: '',                     mep: false },
+  { id: 'plan-mep',         label: 'Plans MEP',                   endpoint: null,                         filename: '',                     mep: false },
 ]
 
 // Helpers formatage
