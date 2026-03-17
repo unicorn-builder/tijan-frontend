@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
-// ── Composants UI ─────────────────────────────────────────────
 const Card = ({ children, style = {} }) => (
   <div style={{ background: '#fff', border: `1px solid ${GRIS2}`, borderRadius: 8, padding: '16px 20px', marginBottom: 12, ...style }}>
     {children}
@@ -17,34 +16,24 @@ const SectionTitle = ({ children }) => (
 
 const Badge = ({ ok, label }) => (
   <span style={{
-    background: ok ? VERT_LIGHT : ORANGE_LT,
-    color: ok ? VERT : ORANGE,
-    border: `1px solid ${ok ? VERT : ORANGE}`,
-    borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700,
-  }}>
-    {label || (ok ? 'Conforme' : 'À vérifier')}
-  </span>
+    background: ok ? VERT_LIGHT : ORANGE_LT, color: ok ? VERT : ORANGE,
+    border: `1px solid ${ok ? VERT : ORANGE}`, borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700,
+  }}>{label || (ok ? 'Conforme' : 'À vérifier')}</span>
 )
 
 const DataTable = ({ headers, rows, colWidths }) => (
   <div style={{ overflowX: 'auto', marginBottom: 8 }}>
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
       <thead>
-        <tr>
-          {headers.map((h, i) => (
-            <th key={i} style={{ background: VERT, color: '#fff', padding: '7px 10px', textAlign: 'left', fontWeight: 600, fontSize: 11, width: colWidths?.[i] || 'auto' }}>
-              {h}
-            </th>
-          ))}
-        </tr>
+        <tr>{headers.map((h, i) => (
+          <th key={i} style={{ background: VERT, color: '#fff', padding: '7px 10px', textAlign: 'left', fontWeight: 600, fontSize: 11, width: colWidths?.[i] }}>{h}</th>
+        ))}</tr>
       </thead>
       <tbody>
         {rows.map((row, i) => (
           <tr key={i} style={{ background: i % 2 === 0 ? GRIS1 : '#fff' }}>
             {row.map((cell, j) => (
-              <td key={j} style={{ padding: '6px 10px', borderBottom: `1px solid #EFEFEF`, verticalAlign: 'top', wordBreak: 'break-word' }}>
-                {cell}
-              </td>
+              <td key={j} style={{ padding: '6px 10px', borderBottom: '1px solid #EFEFEF', verticalAlign: 'top' }}>{cell}</td>
             ))}
           </tr>
         ))}
@@ -60,19 +49,15 @@ const Spinner = ({ text = 'Chargement...' }) => (
   </div>
 )
 
-// ── Download PDF ───────────────────────────────────────────────
 function usePdfDownload(params) {
   const [loading, setLoading] = useState(null)
-
   const download = async (endpoint, filename, extra = {}) => {
     if (!params || !endpoint) return
     setLoading(endpoint)
     try {
-      const payload = { ...params, ...extra }
       const res = await fetch(`${BACKEND}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...params, ...extra }),
       })
       if (!res.ok) throw new Error(`${res.status}`)
       const blob = await res.blob()
@@ -80,24 +65,18 @@ function usePdfDownload(params) {
       const a = document.createElement('a')
       a.href = url; a.download = filename; a.click()
       URL.revokeObjectURL(url)
-    } catch {
-      alert('Erreur lors de la génération du document.')
-    } finally {
-      setLoading(null)
-    }
+    } catch { alert('Erreur lors de la génération du document.') }
+    finally { setLoading(null) }
   }
-
   return { download, loading }
 }
 
-// ── Page Results ───────────────────────────────────────────────
 export default function Results() {
   const location = useLocation()
   const navigate = useNavigate()
   const state = location.state
-
   const resultats = state?.resultats || {}
-  const params = state?.params || resultats.params_input || {}
+  const params = state?.params || {}
 
   const [activeTab, setActiveTab] = useState('structure')
   const [mepData, setMepData] = useState(null)
@@ -105,14 +84,13 @@ export default function Results() {
   const [mepError, setMepError] = useState(false)
   const { download, loading: dlLoading } = usePdfDownload(params)
 
-  // Charger MEP au premier accès onglet MEP
   const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'fiches-mep']
+
   useEffect(() => {
     if (MEP_TABS.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom) {
       setMepLoading(true)
       fetch(`${BACKEND}/calculate-mep`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       })
         .then(r => r.json())
@@ -135,82 +113,65 @@ export default function Results() {
     )
   }
 
-  // Données de base
-  const boq = resultats.boq_resume || {}
-  const analyse = resultats.analyse_claude || {}
-  const poteaux = resultats.poteaux || resultats.poteaux_par_niveau || []
-  const poutre = resultats.poutre || {}
+  // Données structure depuis nouveau /calculate
+  const analyse = resultats.analyse || {}
+  const poteaux = resultats.poteaux || []
+  const poutre = resultats.poutre_principale || {}
   const fondation = resultats.fondation || {}
+  const boq = resultats.boq || {}
   const surf = params.surface_emprise_m2 || 0
   const niv = params.nb_niveaux || 1
-  const surf_batie = surf * niv
-
-  // Calculs BOQ structure depuis données réelles moteur
-  const PRIX_ACIER = 810
-  const PRIX_BETON = 185000
-  const PRIX_COFFRAGE = 18000
-  const PRIX_TERR = 8500
-  const PRIX_ETANCH = 18500
-  const beton_m3 = boq.beton_m3 || 0
+  const surf_batie = boq.surface_batie_m2 || surf * niv
+  const beton_m3 = boq.beton_total_m3 || 0
   const acier_kg = boq.acier_kg || 0
-  const coffrage_m2 = beton_m3 * 4
-  const cout_beton = beton_m3 * PRIX_BETON
-  const cout_acier = acier_kg * PRIX_ACIER
-  const cout_coffrage = coffrage_m2 * PRIX_COFFRAGE
-  const lot_terr = surf * 1.5 * PRIX_TERR
-  const lot_fond = (cout_beton + cout_acier + cout_coffrage) * 0.22
-  const lot_maco = surf * niv * 0.08 * 28000
-  const lot_etanch = surf * PRIX_ETANCH
-  const lot_divers = (cout_beton + cout_acier + cout_coffrage) * 0.05
-  const total_bas = Math.round(cout_beton + cout_acier + cout_coffrage + lot_terr + lot_fond + lot_maco + lot_etanch + lot_divers)
-  const total_haut = Math.round(total_bas * 1.15)
-  const ratio_bas = surf_batie ? Math.round(total_bas / surf_batie) : 0
-  const ratio_haut = surf_batie ? Math.round(total_haut / surf_batie) : 0
 
-  // ── Rendu par onglet ─────────────────────────────────────────
   const renderContent = () => {
-    const tab = TABS.find(t => t.id === activeTab)
-
-    // Plans (bientôt)
     if (activeTab === 'plan-ba' || activeTab === 'plan-mep') {
       return (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: GRIS3 }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>🏗</div>
           <div style={{ fontWeight: 600, marginBottom: 6 }}>Disponible prochainement</div>
-          <div style={{ fontSize: 13 }}>Les plans {activeTab === 'plan-ba' ? 'de béton armé' : 'MEP'} seront disponibles dans une prochaine version.</div>
         </div>
       )
     }
 
-    // ── NOTE STRUCTURE ────────────────────────────────────────
+    // ── NOTE STRUCTURE ──
     if (activeTab === 'structure') {
       return (
         <>
           <Card>
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, minWidth: 180 }}>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>PROJET</div>
                 <div style={{ fontWeight: 700, fontSize: 15 }}>{params.nom}</div>
                 <div style={{ fontSize: 12, color: '#555' }}>{params.ville} — R+{niv - 1}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>CONFORMITÉ EC2</div>
-                <Badge ok={analyse.conformite_ec2 === 'Conforme'} label={analyse.conformite_ec2 || 'Vérifiée'} />
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>BÉTON / ACIER</div>
+                <div style={{ fontWeight: 600 }}>{resultats.classe_beton || params.classe_beton || '—'} / {resultats.classe_acier || params.classe_acier || '—'}</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>Auto-sélectionné</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>SURFACE BÂTIE</div>
                 <div style={{ fontWeight: 600 }}>{fmt(surf_batie, 'm²')}</div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>Emprise {fmt(surf, 'm²')} × {niv} niveaux</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>Emprise {fmt(surf, 'm²')} × {niv} niv.</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>BÉTON / ACIER</div>
                 <div style={{ fontWeight: 600 }}>{fmt(beton_m3, 'm³')} / {fmt(acier_kg, 'kg')}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>CONFORMITÉ EC2</div>
+                <Badge ok={analyse.conformite_ec2 === 'Conforme'} label={analyse.conformite_ec2 || 'Vérifiée'} />
               </div>
             </div>
             {analyse.commentaire_global && (
               <div style={{ marginTop: 12, padding: '10px 12px', background: '#F9FFF9', borderRadius: 6, fontSize: 12, color: '#333', lineHeight: 1.6 }}>
                 {analyse.commentaire_global}
               </div>
+            )}
+            {analyse.justification_materiaux && (
+              <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>ℹ {analyse.justification_materiaux}</div>
             )}
           </Card>
 
@@ -220,29 +181,14 @@ export default function Results() {
               <DataTable
                 headers={['Niveau', 'NEd (kN)', 'Section', 'Armatures', 'Taux arm.', 'NRd (kN)', 'Vérif.']}
                 rows={poteaux.map(p => [
-                  p.label,
+                  p.niveau || p.label,
                   fmt(p.NEd_kN, '', 1),
                   `${p.section_mm}×${p.section_mm} mm`,
-                  `${p.nb_barres}HA${p.diametre_mm} — cad. HA${p.cadre_diam_mm} e=${p.espacement_cadres_mm}`,
+                  `${p.nb_barres}HA${p.diametre_mm}`,
                   `${p.taux_armature_pct?.toFixed(2)}%`,
                   fmt(p.NRd_kN, '', 1),
                   <Badge ok={p.verif_ok} label={p.verif_ok ? '✓ OK' : '⚠ NOK'} />,
                 ])}
-              />
-            </>
-          )}
-
-          {poutre.b_mm && (
-            <>
-              <SectionTitle>Poutre principale (EC2)</SectionTitle>
-              <DataTable
-                headers={['b (mm)', 'h (mm)', 'As inf (cm²)', 'As sup (cm²)', 'Étrierss', 'Portée (m)']}
-                rows={[[
-                  poutre.b_mm, poutre.h_mm,
-                  fmt(poutre.As_inf_cm2, '', 1), fmt(poutre.As_sup_cm2, '', 1),
-                  `HA${poutre.etrier_diam_mm} e=${poutre.etrier_esp_mm}mm`,
-                  fmt(poutre.portee_m, '', 2),
-                ]]}
               />
             </>
           )}
@@ -254,10 +200,10 @@ export default function Results() {
                 headers={['Type', 'Diamètre', 'Longueur', 'Armatures', 'Nb pieux']}
                 rows={[[
                   fondation.type,
-                  `Ø${fondation.diam_pieu_mm} mm`,
-                  `${fondation.longueur_pieu_m} m`,
-                  `As = ${fondation.As_cm2} cm²`,
-                  `${fondation.nb_pieux} pieux`,
+                  fondation.diam_pieu_mm ? `Ø${fondation.diam_pieu_mm} mm` : '—',
+                  fondation.longueur_pieu_m ? `${fondation.longueur_pieu_m} m` : '—',
+                  fondation.As_cm2 ? `As = ${fondation.As_cm2} cm²` : '—',
+                  fondation.nb_pieux || '—',
                 ]]}
               />
             </>
@@ -280,20 +226,11 @@ export default function Results() {
               </Card>
             </>
           )}
-
-          {analyse.note_ingenieur && (
-            <>
-              <SectionTitle>Note ingénieur</SectionTitle>
-              <Card style={{ borderLeft: `3px solid #1565C0`, background: '#E3F2FD' }}>
-                <div style={{ fontSize: 12, color: '#1565C0', fontStyle: 'italic' }}>{analyse.note_ingenieur}</div>
-              </Card>
-            </>
-          )}
         </>
       )
     }
 
-    // ── BOQ STRUCTURE ─────────────────────────────────────────
+    // ── BOQ STRUCTURE ──
     if (activeTab === 'boq-structure') {
       return (
         <>
@@ -301,114 +238,106 @@ export default function Results() {
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>COÛT STRUCTURE (BAS)</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#111' }}>{fmtFcfa(total_bas)}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: '#111' }}>{fmtFcfa(boq.total_bas_fcfa)}</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>COÛT STRUCTURE (HAUT)</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(total_haut)}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa)}</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>COÛT / m² BÂTI</div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>{fmt(ratio_bas)} — {fmt(ratio_haut)} FCFA/m²</div>
-                <div style={{ fontSize: 10, color: GRIS3, marginTop: 2 }}>Structure seule (hors MEP, finitions, VRD)</div>
+                <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} — {fmt(boq.ratio_fcfa_m2_habitable)} FCFA/m²</div>
+                <div style={{ fontSize: 10, color: GRIS3 }}>Structure seule</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>BÉTON / ACIER</div>
+                <div style={{ fontWeight: 600 }}>{fmt(beton_m3, 'm³')} / {fmt(acier_kg, 'kg')}</div>
               </div>
             </div>
-            <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>* Estimation ±15% — Confirmer avec métrés architecte.</div>
+            <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>Estimation ±15% — BOQ détaillé disponible en téléchargement.</div>
           </Card>
-
-          <SectionTitle>Détail par lot</SectionTitle>
-          <DataTable
-            headers={['Lot', 'Désignation', 'Qté', 'Unité', 'P.U. (FCFA)', 'Montant bas', 'Montant haut']}
-            rows={[
-              ['1', 'Terrassement — décapage + fouilles méca.', fmt(surf * 1.5, '', 0), 'm³', fmt(PRIX_TERR), fmtFcfa(lot_terr), fmtFcfa(lot_terr * 1.10)],
-              ['2', 'Fondations spéciales — pieux forés ø800mm', 'Forfait', '—', '285 k/ml', fmtFcfa(lot_fond), fmtFcfa(lot_fond * 1.20)],
-              ['3a', `Béton ${params.classe_beton || 'C30/37'} BPE (${fmt(beton_m3, '', 0)} m³)`, fmt(beton_m3, '', 0), 'm³', fmt(PRIX_BETON), fmtFcfa(cout_beton), fmtFcfa(cout_beton * 1.10)],
-              ['3b', `Acier HA500B fourni-posé (${fmt(acier_kg, '', 0)} kg)`, fmt(acier_kg, '', 0), 'kg', fmt(PRIX_ACIER), fmtFcfa(cout_acier), fmtFcfa(cout_acier * 1.10)],
-              ['3c', `Coffrage toutes faces (${fmt(coffrage_m2, '', 0)} m²)`, fmt(coffrage_m2, '', 0), 'm²', fmt(PRIX_COFFRAGE), fmtFcfa(cout_coffrage), fmtFcfa(cout_coffrage * 1.10)],
-              ['4', 'Maçonnerie — agglos 15cm enduits 2 faces', 'Forfait', '—', '28 k/m²', fmtFcfa(lot_maco), fmtFcfa(lot_maco * 1.15)],
-              ['5', `Étanchéité toiture-terrasse (${fmt(surf, '', 0)} m²)`, fmt(surf, '', 0), 'm²', fmt(PRIX_ETANCH), fmtFcfa(lot_etanch), fmtFcfa(lot_etanch * 1.10)],
-              ['6', 'Divers — joints, acrotères, réservations', 'Forfait', '—', '—', fmtFcfa(lot_divers), fmtFcfa(lot_divers * 1.10)],
-              ['', <strong>TOTAL STRUCTURE</strong>, '', '', '', <strong style={{ color: VERT }}>{fmtFcfa(total_bas)}</strong>, <strong style={{ color: VERT }}>{fmtFcfa(total_haut)}</strong>],
-            ]}
-          />
         </>
       )
     }
 
-    // ── Onglets MEP — chargement ─────────────────────────────
+    // ── MEP chargement ──
     if (MEP_TABS.includes(activeTab)) {
       if (mepLoading) return <Spinner text="Calcul MEP en cours..." />
       if (mepError || !mepData?.ok) return (
         <div style={{ textAlign: 'center', padding: 60, color: GRIS3 }}>
-          <div style={{ fontSize: 13 }}>Données MEP non disponibles.</div>
-          <button onClick={() => { setMepError(false); setMepData(null) }} style={{ marginTop: 12, background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '8px 20px', fontSize: 12 }}>
+          <div style={{ fontSize: 13, marginBottom: 12 }}>Données MEP non disponibles.</div>
+          <button onClick={() => { setMepError(false); setMepData(null) }} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '8px 20px', fontSize: 12 }}>
             Réessayer
           </button>
         </div>
       )
     }
 
-    // ── NOTE MEP ─────────────────────────────────────────────
+    // ── NOTE MEP ──
     if (activeTab === 'note-mep' && mepData) {
       const el = mepData.electrique || {}
       const pl = mepData.plomberie || {}
       const cv = mepData.cvc || {}
+      const asc = mepData.ascenseurs || {}
       return (
         <>
           <Card>
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
               <div><div style={{ fontSize: 11, color: GRIS3 }}>PUISSANCE INSTALLÉE</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(el.puissance_totale_kva, 'kVA')}</div></div>
               <div><div style={{ fontSize: 11, color: GRIS3 }}>TRANSFORMATEUR</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(el.transfo_kva, 'kVA')}</div></div>
-              <div><div style={{ fontSize: 11, color: GRIS3 }}>CONSO ANNUELLE</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(el.conso_annuelle_kwh, 'kWh/an')}</div></div>
-              <div><div style={{ fontSize: 11, color: GRIS3 }}>FACTURE ANNUELLE</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmtFcfa(el.facture_annuelle_fcfa)}</div></div>
+              <div><div style={{ fontSize: 11, color: GRIS3 }}>BESOIN EAU/JOUR</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(pl.besoin_total_m3_j, 'm³/j', 2)}</div></div>
+              <div><div style={{ fontSize: 11, color: GRIS3 }}>PUISSANCE FRIGO</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(cv.puissance_frigorifique_kw, 'kW')}</div></div>
+              {asc.nb_ascenseurs > 0 && <div><div style={{ fontSize: 11, color: GRIS3 }}>ASCENSEURS</div><div style={{ fontWeight: 700, fontSize: 18 }}>{asc.nb_ascenseurs} × {asc.capacite_kg} kg</div></div>}
             </div>
           </Card>
 
           <SectionTitle>Électricité (NF C 15-100)</SectionTitle>
-          <DataTable
-            headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']}
-            rows={[
-              ['Puissance totale', fmt(el.puissance_totale_kva, 'kVA'), 'Transformateur', fmt(el.transfo_kva, 'kVA')],
-              ['Groupe électrogène', fmt(el.groupe_electrogene_kva, 'kVA'), 'Nb compteurs', fmt(el.nb_compteurs)],
-              ['Conso annuelle', fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture annuelle', fmtFcfa(el.facture_annuelle_fcfa)],
-            ]}
-          />
+          <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
+            ['Puissance totale', fmt(el.puissance_totale_kva, 'kVA'), 'Transformateur', fmt(el.transfo_kva, 'kVA')],
+            ['Groupe électrogène', fmt(el.groupe_electrogene_kva, 'kVA'), 'Nb compteurs', fmt(el.nb_compteurs)],
+            ['Conso annuelle', fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture annuelle', fmtFcfa(el.facture_annuelle_fcfa)],
+          ]} />
 
           <SectionTitle>Plomberie (DTU 60.11)</SectionTitle>
-          <DataTable
-            headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']}
-            rows={[
-              ['Nb logements', fmt(pl.nb_logements), 'Besoin eau/jour', fmt(pl.besoin_total_m3_j, 'm³/j', 1)],
-              ['Volume citerne', fmt(pl.volume_citerne_m3, 'm³'), 'Surpresseur', fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
-              ['Nb CESI', fmt(pl.nb_chauffe_eau_solaire, 'unités'), 'Facture eau/an', fmtFcfa(pl.facture_eau_fcfa)],
-            ]}
-          />
+          <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
+            ['Nb logements', fmt(pl.nb_logements), 'Besoin eau/jour', fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
+            ['Volume citerne', fmt(pl.volume_citerne_m3, 'm³'), 'Surpresseur', fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
+            ['CESI', fmt(pl.nb_chauffe_eau_solaire, 'unités'), 'Facture eau/an', fmtFcfa(pl.facture_eau_fcfa)],
+          ]} />
 
-          <SectionTitle>CVC (EN 12831 — Dakar 35°C)</SectionTitle>
-          <DataTable
-            headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']}
-            rows={[
-              ['Puissance frigorifique', fmt(cv.puissance_frigorifique_kw, 'kW'), 'Splits séjour', fmt(cv.nb_splits_sejour)],
-              ['Splits chambre', fmt(cv.nb_splits_chambre), 'VMC', fmt(cv.nb_vmc, 'unités')],
-              ['Conso CVC/an', fmt(cv.conso_cvc_kwh_an, 'kWh/an'), '', ''],
-            ]}
-          />
+          <SectionTitle>CVC (EN 12831)</SectionTitle>
+          <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
+            ['Puissance frigo', fmt(cv.puissance_frigorifique_kw, 'kW'), 'Type VMC', cv.type_vmc || '—'],
+            ['Splits séjour', fmt(cv.nb_splits_sejour), 'Splits chambre', fmt(cv.nb_splits_chambre)],
+            ['Cassettes', fmt(cv.nb_cassettes), 'Conso CVC/an', fmt(cv.conso_cvc_kwh_an, 'kWh/an')],
+          ]} />
+
+          {mepData.securite_incendie && (
+            <>
+              <SectionTitle>Sécurité incendie (IT 246)</SectionTitle>
+              <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
+                ['Catégorie ERP', mepData.securite_incendie.categorie_erp, 'Détecteurs fumée', fmt(mepData.securite_incendie.nb_detecteurs_fumee)],
+                ['Extincteurs CO2', fmt(mepData.securite_incendie.nb_extincteurs_co2), 'Sprinklers', mepData.securite_incendie.sprinklers_requis ? 'Obligatoires' : 'Non requis'],
+              ]} />
+            </>
+          )}
+
+          {el.note_dimensionnement && <div style={{ fontSize: 11, color: ORANGE, marginTop: 8 }}>ℹ {el.note_dimensionnement}</div>}
         </>
       )
     }
 
-    // ── BOQ MEP ──────────────────────────────────────────────
+    // ── BOQ MEP ──
     if (activeTab === 'boq-mep' && mepData) {
       const boqm = mepData.boq_mep || {}
-      const acb = mepData.analyse_cout_benefice || {}
-      const ratio_basic = surf_batie ? Math.round((boqm.basic_fcfa || 0) / surf_batie) : 0
-      const ratio_hend = surf_batie ? Math.round((boqm.hend_fcfa || 0) / surf_batie) : 0
+      const ratio_b = surf_batie ? Math.round((boqm.basic_fcfa || 0) / surf_batie) : 0
+      const ratio_h = surf_batie ? Math.round((boqm.hend_fcfa || 0) / surf_batie) : 0
       return (
         <>
           <Card>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-              {[['BASIC', boqm.basic_fcfa, false], ['HIGH-END', boqm.hend_fcfa, true], ['LUXURY', boqm.luxury_fcfa, false]].map(([label, val, accent], i) => (
-                <div key={i} style={{ flex: 1, minWidth: 140 }}>
+              {[['BASIC', boqm.basic_fcfa, false], ['HIGH-END', boqm.hend_fcfa, true], ['LUXURY', boqm.luxury_fcfa, false]].map(([label, val, accent]) => (
+                <div key={label} style={{ flex: 1, minWidth: 140 }}>
                   <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{label}</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: accent ? VERT : '#111' }}>{fmtFcfa(val)}</div>
                 </div>
@@ -416,15 +345,12 @@ export default function Results() {
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${GRIS2}` }}>
               <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>COÛT MEP / m² BÂTI</div>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>
-                {fmt(ratio_basic)} — {fmt(ratio_hend)} FCFA/m²
-                <span style={{ fontSize: 11, color: GRIS3, marginLeft: 8 }}>(basic → high-end)</span>
-              </div>
+              <div style={{ fontWeight: 600 }}>{fmt(ratio_b)} — {fmt(ratio_h)} FCFA/m² <span style={{ fontSize: 11, color: GRIS3 }}>(basic → high-end)</span></div>
               <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }}>Détail complet disponible dans le PDF</div>
             </div>
-            {acb.recommandation && (
+            {boqm.recommandation && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: VERT_LIGHT, borderRadius: 6, fontSize: 12, color: '#2d7a3a' }}>
-                <strong>Recommandation :</strong> {acb.recommandation}
+                <strong>Recommandation :</strong> {boqm.recommandation}
               </div>
             )}
           </Card>
@@ -432,14 +358,13 @@ export default function Results() {
       )
     }
 
-    // ── EDGE ─────────────────────────────────────────────────
+    // ── EDGE ──
     if (activeTab === 'edge' && mepData) {
       const edge = mepData.edge || {}
-      const certifiable = edge.certifiable
       const piliers = [
-        { key: 'economie_energie_pct', label: 'ÉCONOMIE ÉNERGIE', methode: edge.methode_energie },
-        { key: 'economie_eau_pct', label: 'ÉCONOMIE EAU', methode: null },
-        { key: 'economie_materiaux_pct', label: 'ÉCONOMIE MATÉRIAUX', methode: null },
+        { key: 'economie_energie_pct', label: 'ÉCONOMIE ÉNERGIE' },
+        { key: 'economie_eau_pct', label: 'ÉCONOMIE EAU' },
+        { key: 'economie_materiaux_pct', label: 'ÉCONOMIE MATÉRIAUX' },
       ]
       return (
         <>
@@ -447,49 +372,62 @@ export default function Results() {
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 6 }}>VERDICT EDGE BASIQUE</div>
-                <Badge ok={certifiable} label={certifiable ? '✓ Certifiable EDGE Basique' : '✗ Non certifiable'} />
+                <Badge ok={edge.certifiable} label={edge.certifiable ? '✓ Certifiable EDGE Basique' : '✗ Non certifiable'} />
                 {edge.niveau_certification && <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>{edge.niveau_certification}</div>}
               </div>
-              {piliers.map(({ key, label, methode }) => (
+              {piliers.map(({ key, label }) => (
                 <div key={key}>
                   <div style={{ fontSize: 11, color: GRIS3 }}>{label}</div>
                   <div style={{ fontWeight: 700, fontSize: 26, color: (edge[key] || 0) >= 20 ? VERT : ORANGE }}>
                     {edge[key] !== undefined ? `${edge[key]}%` : '—'}
                   </div>
-                  <div style={{ fontSize: 10, color: GRIS3 }}>Seuil EDGE : 20% minimum</div>
-                  {methode && <div style={{ fontSize: 10, color: VERT, marginTop: 2 }}>{methode}</div>}
+                  <div style={{ fontSize: 10, color: GRIS3 }}>Seuil EDGE : 20%</div>
                 </div>
               ))}
             </div>
             <div style={{ marginTop: 12, fontSize: 11, color: ORANGE }}>
-              Certification IFC/World Bank — Seuil : 20% économie sur énergie, eau et matériaux incorporés
+              Certification IFC/World Bank — 20% d'économie requis sur les 3 piliers
             </div>
           </Card>
 
-          {/* Mesures par pilier */}
-          {[
-            { title: 'Mesures énergie', key: 'mesures_energie' },
-            { title: 'Mesures eau', key: 'mesures_eau' },
-            { title: 'Mesures matériaux', key: 'mesures_materiaux' },
-          ].map(({ title, key }) => edge[key]?.length > 0 && (
-            <div key={key}>
-              <SectionTitle>{title}</SectionTitle>
-              <Card>
-                {edge[key].map((m, i) => (
-                  <div key={i} style={{ fontSize: 12, color: '#333', marginBottom: 4 }}>• {typeof m === 'string' ? m : m.critere || m.mesure || JSON.stringify(m)}</div>
+          {edge.plan_action?.length > 0 && (
+            <>
+              <SectionTitle>Plan d'action — Optimisation vers certification</SectionTitle>
+              <Card style={{ borderLeft: `3px solid ${ORANGE}` }}>
+                <div style={{ fontSize: 12, color: ORANGE, marginBottom: 8, fontWeight: 600 }}>
+                  Coût de mise en conformité estimé : {fmtFcfa(edge.cout_mise_conformite_fcfa)} | ROI : {edge.roi_ans} ans
+                </div>
+                {edge.plan_action.map((a, i) => (
+                  <div key={i} style={{ fontSize: 12, marginBottom: 6, padding: '6px 10px', background: '#FFFBF0', borderRadius: 4 }}>
+                    <strong>[{a.pilier}]</strong> {a.action} — <span style={{ color: VERT }}>+{a.gain_pct}%</span>
+                    {a.cout_fcfa > 0 && <span style={{ color: GRIS3 }}> — {fmtFcfa(a.cout_fcfa)}</span>}
+                  </div>
                 ))}
               </Card>
-            </div>
-          ))}
+            </>
+          )}
 
-          <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>
-            Pré-évaluation indicative Tijan AI. La certification officielle requiert un auditeur EDGE agréé IFC.
-          </div>
+          {['mesures_energie', 'mesures_eau', 'mesures_materiaux'].map((key, i) => (
+            edge[key]?.length > 0 && (
+              <div key={key}>
+                <SectionTitle>{['Mesures énergie', 'Mesures eau', 'Mesures matériaux'][i]}</SectionTitle>
+                <Card>
+                  {edge[key].map((m, j) => (
+                    <div key={j} style={{ fontSize: 12, marginBottom: 4, color: m.statut?.includes('Intégré') ? '#2d7a3a' : '#333' }}>
+                      • {m.mesure} — <strong>+{m.gain_pct}%</strong>
+                      {m.statut && <span style={{ fontSize: 11, color: GRIS3 }}> [{m.statut}]</span>}
+                      {m.impact_prix && <div style={{ fontSize: 10, color: ORANGE, marginLeft: 10 }}>ℹ {m.impact_prix}</div>}
+                    </div>
+                  ))}
+                </Card>
+              </div>
+            )
+          ))}
         </>
       )
     }
 
-    // ── FICHES STRUCTURE ─────────────────────────────────────
+    // ── FICHES STRUCTURE ──
     if (activeTab === 'fiches-structure') {
       return (
         <>
@@ -499,99 +437,55 @@ export default function Results() {
               <DataTable
                 headers={['Niveau', 'Section', 'Armatures longitudinales', 'Cadres', 'Béton']}
                 rows={poteaux.map(p => [
-                  p.label,
+                  p.niveau || p.label,
                   `${p.section_mm}×${p.section_mm} mm`,
-                  `${p.nb_barres}HA${p.diametre_mm} — As=${(p.nb_barres * Math.PI * p.diametre_mm ** 2 / 400).toFixed(1)} cm²`,
+                  `${p.nb_barres}HA${p.diametre_mm}`,
                   `HA${p.cadre_diam_mm} e=${p.espacement_cadres_mm}mm`,
-                  params.classe_beton || 'C30/37',
+                  resultats.classe_beton || params.classe_beton || 'C30/37',
                 ])}
               />
-            ) : <div style={{ fontSize: 12, color: GRIS3 }}>Données poteaux non disponibles.</div>}
+            ) : <div style={{ fontSize: 12, color: GRIS3 }}>Données non disponibles.</div>}
           </Card>
-
-          {poutre.b_mm && (
-            <Card>
-              <SectionTitle>Fiche poutre principale</SectionTitle>
-              <DataTable
-                headers={['Paramètre', 'Valeur']}
-                rows={[
-                  ['Section', `${poutre.b_mm} × ${poutre.h_mm} mm`],
-                  ['Armatures inférieures (travée)', `As = ${poutre.As_inf_cm2} cm²`],
-                  ['Armatures supérieures (appui)', `As = ${poutre.As_sup_cm2} cm²`],
-                  ['Étriers', `HA${poutre.etrier_diam_mm} e=${poutre.etrier_esp_mm}mm`],
-                  ['Portée maximale', `${poutre.portee_m} m`],
-                  ['Béton', params.classe_beton || 'C30/37'],
-                ]}
-              />
-            </Card>
-          )}
-
           {fondation.type && (
             <Card>
               <SectionTitle>Fiche fondations</SectionTitle>
-              <DataTable
-                headers={['Paramètre', 'Valeur']}
-                rows={[
-                  ['Type', fondation.type],
-                  ['Diamètre', `Ø${fondation.diam_pieu_mm} mm`],
-                  ['Longueur', `${fondation.longueur_pieu_m} m`],
-                  ['Armatures', `As = ${fondation.As_cm2} cm² — cage HA500B`],
-                  ['Nombre', `${fondation.nb_pieux} pieux`],
-                  ['Pression sol admissible', `${params.pression_sol_MPa} MPa`],
-                ]}
-              />
+              <DataTable headers={['Type', 'Diamètre', 'Longueur', 'Armatures', 'Nb pieux']} rows={[[
+                fondation.type,
+                fondation.diam_pieu_mm ? `Ø${fondation.diam_pieu_mm} mm` : '—',
+                fondation.longueur_pieu_m ? `${fondation.longueur_pieu_m} m` : '—',
+                fondation.As_cm2 ? `As = ${fondation.As_cm2} cm²` : '—',
+                fondation.nb_pieux || '—',
+              ]]} />
             </Card>
           )}
-          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>
-            Téléchargez le dossier complet des fiches techniques ci-dessous.
-          </div>
+          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>Téléchargez le dossier complet ci-dessous.</div>
         </>
       )
     }
 
-    // ── FICHES MEP ───────────────────────────────────────────
+    // ── FICHES MEP ──
     if (activeTab === 'fiches-mep' && mepData) {
       const el = mepData.electrique || {}
       const pl = mepData.plomberie || {}
-      const cv = mepData.cvc || {}
       return (
         <>
           <Card>
             <SectionTitle>Fiche électricité (NF C 15-100)</SectionTitle>
-            <DataTable
-              headers={['Paramètre', 'Valeur', 'Paramètre', 'Valeur']}
-              rows={[
-                ['Puissance installée', `${fmt(el.puissance_totale_kva)} kVA`, 'Transformateur HTA/BT', `${fmt(el.transfo_kva)} kVA`],
-                ['Groupe électrogène', `${fmt(el.groupe_electrogene_kva)} kVA`, 'Nb compteurs', fmt(el.nb_compteurs)],
-                ['Conso annuelle', `${fmt(el.conso_annuelle_kwh)} kWh/an`, 'Facture annuelle', fmtFcfa(el.facture_annuelle_fcfa)],
-              ]}
-            />
+            <DataTable headers={['Paramètre', 'Valeur', 'Paramètre', 'Valeur']} rows={[
+              ['Puissance installée', fmt(el.puissance_totale_kva, 'kVA'), 'Transformateur', fmt(el.transfo_kva, 'kVA')],
+              ['Groupe électrogène', fmt(el.groupe_electrogene_kva, 'kVA'), 'Nb compteurs', fmt(el.nb_compteurs)],
+              ['Conso annuelle', fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture', fmtFcfa(el.facture_annuelle_fcfa)],
+            ]} />
           </Card>
           <Card>
             <SectionTitle>Fiche plomberie (DTU 60.11)</SectionTitle>
-            <DataTable
-              headers={['Paramètre', 'Valeur', 'Paramètre', 'Valeur']}
-              rows={[
-                ['Nb logements', fmt(pl.nb_logements), 'Besoin eau/jour', `${fmt(pl.besoin_total_m3_j, '', 1)} m³/j`],
-                ['Volume citerne', `${fmt(pl.volume_citerne_m3)} m³`, 'Débit surpresseur', `${fmt(pl.debit_surpresseur_m3h, '', 1)} m³/h`],
-                ['Chauffe-eau solaires', `${fmt(pl.nb_chauffe_eau_solaire)} unités`, 'Facture eau/an', fmtFcfa(pl.facture_eau_fcfa)],
-              ]}
-            />
+            <DataTable headers={['Paramètre', 'Valeur', 'Paramètre', 'Valeur']} rows={[
+              ['Nb logements', fmt(pl.nb_logements), 'Besoin eau/jour', fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
+              ['Volume citerne', fmt(pl.volume_citerne_m3, 'm³'), 'Surpresseur', fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
+              ['CESI', fmt(pl.nb_chauffe_eau_solaire, 'unités'), 'Facture eau/an', fmtFcfa(pl.facture_eau_fcfa)],
+            ]} />
           </Card>
-          <Card>
-            <SectionTitle>Fiche CVC (EN 12831)</SectionTitle>
-            <DataTable
-              headers={['Paramètre', 'Valeur', 'Paramètre', 'Valeur']}
-              rows={[
-                ['Puissance frigorifique', `${fmt(cv.puissance_frigorifique_kw)} kW`, 'Splits séjour', fmt(cv.nb_splits_sejour)],
-                ['Splits chambre', fmt(cv.nb_splits_chambre), 'VMC', `${fmt(cv.nb_vmc)} unités`],
-                ['Conso CVC/an', `${fmt(cv.conso_cvc_kwh_an)} kWh/an`, '', ''],
-              ]}
-            />
-          </Card>
-          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>
-            Téléchargez le dossier complet des fiches MEP ci-dessous.
-          </div>
+          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>Téléchargez le dossier complet ci-dessous.</div>
         </>
       )
     }
@@ -600,78 +494,84 @@ export default function Results() {
   }
 
   const currentTab = TABS.find(t => t.id === activeTab)
-  const mepPayloadExtra = MEP_TABS.includes(activeTab) && mepData ? { mep_data: mepData } : {}
+
+  // Mapping endpoints v6
+  const ENDPOINT_MAP = {
+    'structure':        '/generate',
+    'boq-structure':    '/generate-boq',
+    'note-mep':         '/generate-note-mep',
+    'boq-mep':          '/generate-boq-mep',
+    'edge':             '/generate-edge',
+    'fiches-structure': '/generate-fiches-structure',
+    'fiches-mep':       '/generate-fiches-mep',
+  }
+  const FILENAME_MAP = {
+    'structure':        'note_structure.pdf',
+    'boq-structure':    'boq_structure.pdf',
+    'note-mep':         'note_mep.pdf',
+    'boq-mep':          'boq_mep.pdf',
+    'edge':             'edge.pdf',
+    'fiches-structure': 'fiches_structure.pdf',
+    'fiches-mep':       'fiches_mep.pdf',
+  }
+
+  const endpoint = ENDPOINT_MAP[activeTab]
+  const filename = FILENAME_MAP[activeTab]
 
   return (
-    <>
-      <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: '100vh', background: '#FAFAFA' }}>
-        {/* Header */}
-        <div style={{ background: '#fff', borderBottom: `1px solid ${GRIS2}`, padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <button onClick={() => navigate('/')} style={{ background: 'none', border: `1px solid ${GRIS2}`, borderRadius: 6, padding: '5px 12px', fontSize: 12, color: '#555' }}>
-              ← Accueil
-            </button>
-            <span style={{ fontWeight: 700, color: VERT, fontSize: 15 }}><span>Ÿ</span>IJAN AI</span>
-            <span style={{ color: GRIS3, fontSize: 11 }}>Engineering Intelligence for Africa</span>
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>
-          <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#B8860B' }}>Version bêta</div>
+    <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: '100vh', background: '#FAFAFA' }}>
+      <div style={{ background: '#fff', borderBottom: `1px solid ${GRIS2}`, padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: `1px solid ${GRIS2}`, borderRadius: 6, padding: '5px 12px', fontSize: 12, color: '#555' }}>← Accueil</button>
+          <img src="/tijan_logo.png" alt="Tijan AI" style={{ height: 22, objectFit: 'contain' }} />
+          <span style={{ color: GRIS3, fontSize: 11 }}>Engineering Intelligence for Africa</span>
+        </div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>
+        <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#B8860B' }}>Version bêta</div>
+      </div>
+
+      <div style={{ display: 'flex', height: 'calc(100vh - 56px)' }}>
+        <div style={{ width: 220, background: '#fff', borderRight: `1px solid ${GRIS2}`, padding: '16px 0', overflowY: 'auto', flexShrink: 0 }}>
+          {TABS.map(tab => {
+            const disabled = !tab.endpoint
+            const active = activeTab === tab.id
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+                display: 'block', width: '100%', textAlign: 'left', padding: '10px 20px',
+                border: 'none', fontSize: 12, fontWeight: active ? 600 : 400,
+                color: disabled ? '#BBB' : active ? VERT : '#444',
+                background: active ? VERT_LIGHT : 'transparent',
+                borderLeft: active ? `3px solid ${VERT}` : '3px solid transparent',
+                transition: 'all 0.15s', cursor: 'pointer',
+              }}>
+                {tab.label}
+                {disabled && <span style={{ marginLeft: 6, fontSize: 9, background: '#F0F0F0', color: '#888', borderRadius: 8, padding: '1px 6px' }}>Bientôt</span>}
+              </button>
+            )
+          })}
         </div>
 
-        <div style={{ display: 'flex', height: 'calc(100vh - 56px)' }}>
-          {/* Sidebar */}
-          <div style={{ width: 220, background: '#fff', borderRight: `1px solid ${GRIS2}`, padding: '16px 0', overflowY: 'auto', flexShrink: 0 }}>
-            {TABS.map(tab => {
-              const disabled = !tab.endpoint
-              const active = activeTab === tab.id
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    display: 'block', width: '100%', textAlign: 'left',
-                    padding: '10px 20px', border: 'none', fontSize: 12,
-                    fontWeight: active ? 600 : 400,
-                    color: disabled ? '#BBB' : active ? VERT : '#444',
-                    background: active ? VERT_LIGHT : 'transparent',
-                    borderLeft: active ? `3px solid ${VERT}` : '3px solid transparent',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  {tab.label}
-                  {disabled && <span style={{ marginLeft: 6, fontSize: 9, background: '#F0F0F0', color: '#888', borderRadius: 8, padding: '1px 6px' }}>Bientôt</span>}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Contenu */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
-            <div className="fade-in">
-              {renderContent()}
+        <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+          {renderContent()}
+          {endpoint && (
+            <div style={{ marginTop: 20 }}>
+              <button
+                onClick={() => download(endpoint, filename)}
+                disabled={!!dlLoading || (MEP_TABS.includes(activeTab) && !mepData?.ok)}
+                style={{
+                  background: dlLoading === endpoint ? '#ccc' : VERT,
+                  color: '#fff', border: 'none', borderRadius: 6,
+                  padding: '11px 28px', fontSize: 13, fontWeight: 600,
+                  width: '100%', maxWidth: 320, cursor: 'pointer',
+                  opacity: (MEP_TABS.includes(activeTab) && !mepData?.ok) ? 0.5 : 1,
+                }}
+              >
+                {dlLoading === endpoint ? 'Génération en cours...' : '↓ Télécharger le PDF'}
+              </button>
             </div>
-
-            {/* Bouton PDF */}
-            {currentTab?.endpoint && (
-              <div style={{ marginTop: 20 }}>
-                <button
-                  onClick={() => download(currentTab.endpoint, currentTab.filename, mepPayloadExtra)}
-                  disabled={!!dlLoading || (MEP_TABS.includes(activeTab) && !mepData?.ok)}
-                  style={{
-                    background: dlLoading === currentTab.endpoint ? '#ccc' : VERT,
-                    color: '#fff', border: 'none', borderRadius: 6,
-                    padding: '11px 28px', fontSize: 13, fontWeight: 600,
-                    width: '100%', maxWidth: 320,
-                    opacity: (MEP_TABS.includes(activeTab) && !mepData?.ok) ? 0.5 : 1,
-                  }}
-                >
-                  {dlLoading === currentTab.endpoint ? 'Génération en cours...' : '↓ Télécharger le PDF'}
-                </button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
-    </>
+    </div>
   )
 }
