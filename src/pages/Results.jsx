@@ -571,23 +571,27 @@ export default function Results() {
   const currentTab = TABS.find(t => t.id === activeTab)
 
   // Mapping endpoints v6
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'')
+  const slug = (params.nom || 'Projet').replace(/\s+/g,'').slice(0,20)
   const ENDPOINT_MAP = {
-    'structure':        '/generate',
-    'boq-structure':    '/generate-boq',
-    'note-mep':         '/generate-note-mep',
-    'boq-mep':          '/generate-boq-mep',
-    'edge':             '/generate-edge',
-    'fiches-structure': '/generate-fiches-structure',
-    'fiches-mep':       '/generate-fiches-mep',
+    'structure':          '/generate',
+    'boq-structure':      '/generate-boq',
+    'note-mep':           '/generate-note-mep',
+    'boq-mep':            '/generate-boq-mep',
+    'edge':               '/generate-edge',
+    'rapport-executif':   '/generate-rapport-executif',
+    'fiches-structure':   '/generate-fiches-structure',
+    'fiches-mep':         '/generate-fiches-mep',
   }
   const FILENAME_MAP = {
-    'structure':        'note_structure.pdf',
-    'boq-structure':    'boq_structure.pdf',
-    'note-mep':         'note_mep.pdf',
-    'boq-mep':          'boq_mep.pdf',
-    'edge':             'edge.pdf',
-    'fiches-structure': 'fiches_structure.pdf',
-    'fiches-mep':       'fiches_mep.pdf',
+    'structure':          `TijanAI_NoteStructure_${slug}_${today}.pdf`,
+    'boq-structure':      `TijanAI_BOQStructure_${slug}_${today}.pdf`,
+    'note-mep':           `TijanAI_NoteMEP_${slug}_${today}.pdf`,
+    'boq-mep':            `TijanAI_BOQMEP_${slug}_${today}.pdf`,
+    'edge':               `TijanAI_EDGE_${slug}_${today}.pdf`,
+    'rapport-executif':   `TijanAI_RapportExecutif_${slug}_${today}.pdf`,
+    'fiches-structure':   `TijanAI_FichesStructure_${slug}_${today}.pdf`,
+    'fiches-mep':         `TijanAI_FichesMEP_${slug}_${today}.pdf`,
   }
 
   const endpoint = ENDPOINT_MAP[activeTab]
