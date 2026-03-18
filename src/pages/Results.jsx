@@ -490,8 +490,83 @@ export default function Results() {
       )
     }
 
+
+    // ── RAPPORT EXÉCUTIF ──
+    if (activeTab === 'rapport-executif') {
+      const boq = resultats.boq || {}
+      const analyse = resultats.analyse || {}
+      return (
+        <>
+          <Card>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>PROJET</div>
+                <div style={{ fontWeight: 700, fontSize: 18 }}>{params.nom}</div>
+                <div style={{ fontSize: 13, color: '#555' }}>{params.ville} — R+{(params.nb_niveaux||1)-1}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>SURFACE BÂTIE</div>
+                <div style={{ fontWeight: 600, fontSize: 16 }}>{fmt(boq.surface_batie_m2 || params.surface_emprise_m2 * params.nb_niveaux, 'm²')}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>BÉTON / ACIER</div>
+                <div style={{ fontWeight: 600 }}>{resultats.classe_beton || '—'} / {resultats.classe_acier || '—'}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>CONFORMITÉ EC2</div>
+                <Badge ok={analyse.conformite_ec2 === 'Conforme'} label={analyse.conformite_ec2 || '—'} />
+              </div>
+            </div>
+          </Card>
+          <SectionTitle>Budget global estimé</SectionTitle>
+          <Card>
+            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>STRUCTURE (BAS)</div>
+                <div style={{ fontSize: 20, fontWeight: 700 }}>{fmtFcfa(boq.total_bas_fcfa)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>STRUCTURE (HAUT)</div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>COÛT / m² BÂTI</div>
+                <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} FCFA/m²</div>
+                <div style={{ fontSize: 10, color: GRIS3 }}>Structure seule</div>
+              </div>
+            </div>
+            <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>Estimation ±15% — hors MEP, finitions, VRD</div>
+          </Card>
+          {analyse.note_ingenieur && (
+            <>
+              <SectionTitle>Note de synthèse ingénieur</SectionTitle>
+              <Card style={{ borderLeft: '3px solid #1565C0', background: '#E3F2FD' }}>
+                <div style={{ fontSize: 12, color: '#1565C0', fontStyle: 'italic' }}>{analyse.note_ingenieur}</div>
+              </Card>
+            </>
+          )}
+          {analyse.points_forts?.length > 0 && (
+            <>
+              <SectionTitle>Points forts</SectionTitle>
+              <Card>{analyse.points_forts.map((f,i) => <div key={i} style={{ fontSize: 12, color: '#2d7a3a', marginBottom: 4 }}>✅ {f}</div>)}</Card>
+            </>
+          )}
+          {analyse.alertes?.length > 0 && (
+            <>
+              <SectionTitle>Points d'attention</SectionTitle>
+              <Card style={{ borderLeft: '3px solid #E07B00' }}>{analyse.alertes.map((a,i) => <div key={i} style={{ fontSize: 12, color: '#E07B00', marginBottom: 4 }}>⚠ {a}</div>)}</Card>
+            </>
+          )}
+          <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>Ce rapport est destiné au maître d'ouvrage. Téléchargez le PDF complet ci-dessous.</div>
+        </>
+      )
+    }
+
     return null
   }
+
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'')
+  const slug = (params.nom || 'Projet').replace(/\s+/g,'').slice(0,20)
 
   const currentTab = TABS.find(t => t.id === activeTab)
 
@@ -556,7 +631,7 @@ export default function Results() {
           {endpoint && (
             <div style={{ marginTop: 20 }}>
               <button
-                onClick={() => download(endpoint, filename)}
+                onClick={() => { const nomFichier = `TijanAI_${activeTab.replace(/-/g,'')}_${slug}_${today}.pdf`; download(endpoint, nomFichier) }}
                 disabled={!!dlLoading || (MEP_TABS.includes(activeTab) && !mepData?.ok)}
                 style={{
                   background: dlLoading === endpoint ? '#ccc' : VERT,
