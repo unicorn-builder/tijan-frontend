@@ -83,7 +83,23 @@ export default function Results() {
   const [mepData, setMepData] = useState(null)
   const [mepLoading, setMepLoading] = useState(false)
   const [mepError, setMepError] = useState(false)
+  const [edgeOptimise, setEdgeOptimise] = useState(null)
+  const [edgeLoading, setEdgeLoading] = useState(false)
   const { download, loading: dlLoading } = usePdfDownload(params)
+
+  const optimiserEDGE = async () => {
+    if (!params?.nom || edgeLoading) return
+    setEdgeLoading(true)
+    try {
+      const res = await fetch(`${BACKEND}/calculate-mep-edge`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      })
+      const data = await res.json()
+      if (data.ok) setEdgeOptimise(data)
+    } catch { alert('Erreur optimisation EDGE') }
+    finally { setEdgeLoading(false) }
+  }
 
   const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'fiches-mep']
 
@@ -406,6 +422,58 @@ export default function Results() {
                 ))}
               </Card>
             </>
+          )}
+
+          {/* Bouton optimisation EDGE */}
+          {!edgeOptimise && !(edge.certifiable) && (
+            <div style={{ margin: '16px 0', textAlign: 'center' }}>
+              <button onClick={optimiserEDGE} disabled={edgeLoading} style={{
+                background: edgeLoading ? '#ccc' : '#E07B00',
+                color: '#fff', border: 'none', borderRadius: 8,
+                padding: '12px 28px', fontSize: 14, fontWeight: 700,
+                cursor: edgeLoading ? 'not-allowed' : 'pointer', width: '100%', maxWidth: 400,
+              }}>
+                {edgeLoading ? 'Optimisation en cours...' : '⚡ Optimiser vers certification EDGE'}
+              </button>
+              <div style={{ fontSize: 11, color: '#888', marginTop: 6 }}>
+                Active LED, isolation, WC économiques et robinetterie éco sur ce projet
+              </div>
+            </div>
+          )}
+
+          {/* Résultats optimisation EDGE */}
+          {edgeOptimise && (
+            <div style={{ background: '#EBF7ED', border: '1px solid #43A956', borderRadius: 8, padding: '16px 20px', marginBottom: 16 }}>
+              <div style={{ fontWeight: 700, color: '#2D7A3A', fontSize: 15, marginBottom: 12 }}>
+                ✅ Projet optimisé EDGE — {edgeOptimise.edge.niveau_certification}
+              </div>
+              <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 12 }}>
+                {[['Énergie', edgeOptimise.edge.economie_energie_pct], ['Eau', edgeOptimise.edge.economie_eau_pct], ['Matériaux', edgeOptimise.edge.economie_materiaux_pct]].map(([label, val]) => (
+                  <div key={label} style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 11, color: '#555' }}>{label}</div>
+                    <div style={{ fontSize: 22, fontWeight: 700, color: val >= 20 ? '#43A956' : '#E07B00' }}>{val}%</div>
+                    <div style={{ fontSize: 10, color: '#888' }}>Seuil : 20%</div>
+                  </div>
+                ))}
+              </div>
+              {edgeOptimise.surcout_edge && (
+                <div style={{ fontSize: 12, color: '#555', borderTop: '1px solid #C8E6C9', paddingTop: 10 }}>
+                  <strong>Surcoût d'optimisation :</strong>{' '}
+                  {(edgeOptimise.surcout_edge.total_fcfa / 1e6).toFixed(1)} M FCFA
+                  {' '}({edgeOptimise.surcout_edge.pct_boq_mep}% du BOQ MEP Basic)
+                  <div style={{ marginTop: 4, fontSize: 11, color: '#888' }}>
+                    LED {(edgeOptimise.surcout_edge.led_fcfa/1e6).toFixed(1)}M +
+                    Isolation {(edgeOptimise.surcout_edge.isolation_fcfa/1e6).toFixed(1)}M +
+                    WC éco {(edgeOptimise.surcout_edge.wc_fcfa/1e3).toFixed(0)}k +
+                    Robinetterie {(edgeOptimise.surcout_edge.robinetterie_fcfa/1e3).toFixed(0)}k FCFA
+                  </div>
+                </div>
+              )}
+              <button onClick={() => setEdgeOptimise(null)} style={{
+                marginTop: 10, background: 'none', border: '1px solid #43A956',
+                color: '#2D7A3A', borderRadius: 6, padding: '5px 14px', fontSize: 12, cursor: 'pointer'
+              }}>Revenir au projet original</button>
+            </div>
           )}
 
           {['mesures_energie', 'mesures_eau', 'mesures_materiaux'].map((key, i) => (
