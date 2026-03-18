@@ -573,8 +573,6 @@ export default function Results() {
   const currentTab = TABS.find(t => t.id === activeTab)
 
   // Mapping endpoints v6
-  const today = new Date().toISOString().slice(0,10).replace(/-/g,'')
-  const slug = (params.nom || 'Projet').replace(/\s+/g,'').slice(0,20)
   const ENDPOINT_MAP = {
     'structure':          '/generate',
     'boq-structure':      '/generate-boq',
