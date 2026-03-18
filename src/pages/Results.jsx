@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import ChatTijan from '../components/ChatTijan'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
 const Card = ({ children, style = {} }) => (
@@ -562,6 +563,7 @@ export default function Results() {
       )
     }
 
+    if (activeTab === 'chat') return <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} />
     return null
   }
 
