@@ -594,7 +594,7 @@ export default function Results() {
     'fiches-mep':         `TijanAI_FichesMEP_${slug}_${today}.pdf`,
   }
 
-  const endpoint = ENDPOINT_MAP[activeTab]
+  const endpoint = activeTab === 'chat' ? null : ENDPOINT_MAP[activeTab]
   const filename = FILENAME_MAP[activeTab]
 
   return (

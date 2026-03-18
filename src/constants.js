@@ -18,7 +18,7 @@ export const TABS = [
   { id: 'rapport-executif', label: 'Rapport exécutif',            endpoint: '/generate-rapport-executif', filename: 'rapport_executif.pdf', mep: false },
   { id: 'fiches-structure', label: 'Fiches techniques structure', endpoint: '/generate-fiches-structure', filename: 'fiches_structure.pdf', mep: false },
   { id: 'fiches-mep',       label: 'Fiches techniques MEP',       endpoint: '/generate-fiches-mep',       filename: 'fiches_mep.pdf',       mep: true  },
-  { id: 'chat', label: 'Discuter avec Tijan', endpoint: null, filename: '', mep: false },
+  { id: 'chat', label: 'Discuter avec Tijan', endpoint: 'chat', filename: '', mep: false },
   { id: 'plan-ba',          label: 'Plans BA',                    endpoint: null,                         filename: '',                     mep: false },
   { id: 'plan-mep',         label: 'Plans MEP',                   endpoint: null,                         filename: '',                     mep: false },
 ]
