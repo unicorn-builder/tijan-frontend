@@ -19,7 +19,14 @@ export default function Login() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, supabase } = useAuth()
+
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    })
+  }
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -93,6 +100,25 @@ export default function Login() {
               marginBottom: -2, cursor: 'pointer', transition: 'all 0.2s',
             }}>{label}</button>
           ))}
+        </div>
+
+        {/* Google OAuth */}
+        <button type="button" onClick={signInWithGoogle} style={{
+          width: '100%', background: '#fff', border: '1px solid #E5E7EB',
+          borderRadius: 8, padding: '11px 0', fontSize: 14, fontWeight: 600,
+          color: '#111', cursor: 'pointer', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16,
+        }}>
+          <svg width="18" height="18" viewBox="0 0 48 48">
+            <path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.9 3 4 11.9 4 23s8.9 20 20 20c11 0 19.7-7.7 19.7-20 0-1.3-.1-2.7-.2-3z"/>
+          </svg>
+          Continuer avec Google
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <div style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
+          <span style={{ fontSize: 11, color: '#9CA3AF' }}>ou</span>
+          <div style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
         </div>
 
         <form onSubmit={handleSubmit}>
