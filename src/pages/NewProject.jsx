@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { BACKEND, VERT, GRIS2 } from '../constants'
 
 export default function NewProject() {
   const navigate = useNavigate()
+  const { supabase, user } = useAuth()
   const [step, setStep] = useState('form')
   const [nom, setNom] = useState('')
   const [ville, setVille] = useState('Dakar')
