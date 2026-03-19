@@ -79,12 +79,12 @@ export default function NewProject() {
       if (user && supabase) {
         supabase.from('projets').insert({
           user_id: user.id,
-          nom: finalParams.nom || nom,
-          ville: finalParams.ville || ville,
-          pays: finalParams.pays || 'Senegal',
-          nb_niveaux: finalParams.nb_niveaux,
-          surface_emprise_m2: finalParams.surface_emprise_m2,
-          resultats_structure: data,
+          nom: payload.nom || nom,
+          ville: payload.ville || ville,
+          pays: payload.pays || 'Senegal',
+          nb_niveaux: payload.nb_niveaux,
+          surface_emprise_m2: payload.surface_emprise_m2,
+          resultats_structure: resultats,
         }).then(() => {}).catch(() => {})
       }
       navigate(`/projects/${Date.now()}/results`, { state: { params: payload, resultats } })
