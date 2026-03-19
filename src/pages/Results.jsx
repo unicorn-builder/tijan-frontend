@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ChatTijan from '../components/ChatTijan'
+import { useProjects } from '../hooks/useProjects'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
 const Card = ({ children, style = {} }) => (
@@ -83,6 +84,8 @@ export default function Results() {
   const [mepData, setMepData] = useState(null)
   const [mepLoading, setMepLoading] = useState(false)
   const [mepError, setMepError] = useState(false)
+  const [sauvegarde, setSauvegarde] = useState(false)
+  const { sauvegarderProjet } = useProjects()
   const [lang, setLang] = useState('fr')
   const [edgeOptimise, setEdgeOptimise] = useState(null)
   const [edgeLoading, setEdgeLoading] = useState(false)
