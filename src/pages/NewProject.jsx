@@ -75,6 +75,18 @@ export default function NewProject() {
       })
       const resultats = await res.json()
       if (!resultats.ok) { setStep('error'); setErrorMsg('Erreur lors du calcul.'); return }
+      // Sauvegarder dans Supabase
+      if (user && supabase) {
+        supabase.from('projets').insert({
+          user_id: user.id,
+          nom: finalParams.nom || nom,
+          ville: finalParams.ville || ville,
+          pays: finalParams.pays || 'Senegal',
+          nb_niveaux: finalParams.nb_niveaux,
+          surface_emprise_m2: finalParams.surface_emprise_m2,
+          resultats_structure: data,
+        }).then(() => {}).catch(() => {})
+      }
       navigate(`/projects/${Date.now()}/results`, { state: { params: payload, resultats } })
     } catch {
       setStep('error'); setErrorMsg('Erreur de connexion.')
