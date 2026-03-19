@@ -58,7 +58,7 @@ function usePdfDownload(params) {
     try {
       const res = await fetch(`${BACKEND}${endpoint}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...params, lang, ...extra }),
+        body: JSON.stringify({ ...params, ...extra }),
       })
       if (!res.ok) throw new Error(`${res.status}`)
       const blob = await res.blob()
@@ -83,7 +83,6 @@ export default function Results() {
   const [mepData, setMepData] = useState(null)
   const [mepLoading, setMepLoading] = useState(false)
   const [mepError, setMepError] = useState(false)
-  const [lang, setLang] = useState('fr')
   const [edgeOptimise, setEdgeOptimise] = useState(null)
   const [edgeLoading, setEdgeLoading] = useState(false)
   const { download, loading: dlLoading } = usePdfDownload(params)
@@ -675,11 +674,7 @@ export default function Results() {
           <span style={{ color: GRIS3, fontSize: 11 }}>Engineering Intelligence for Africa</span>
         </div>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={() => setLang('fr')} style={{ background: lang==='fr' ? VERT : '#fff', color: lang==='fr' ? '#fff' : '#555', border: `1px solid ${lang==='fr' ? VERT : GRIS2}`, borderRadius: 4, padding: '3px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>FR</button>
-          <button onClick={() => setLang('en')} style={{ background: lang==='en' ? VERT : '#fff', color: lang==='en' ? '#fff' : '#555', border: `1px solid ${lang==='en' ? VERT : GRIS2}`, borderRadius: 4, padding: '3px 10px', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>EN</button>
-          <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#B8860B' }}>Beta</div>
-        </div>
+        <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#B8860B' }}>Version bêta</div>
       </div>
 
       <div style={{ display: 'flex', height: 'calc(100vh - 56px)' }}>
