@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react'
+import { useProjects } from '../hooks/useProjects'
 import { useNavigate } from 'react-router-dom'
 import { BACKEND, VERT, GRIS2 } from '../constants'
 
 export default function NewProject() {
   const navigate = useNavigate()
+  const { sauvegarderProjet } = useProjects()
   const [step, setStep] = useState('form')
   const [nom, setNom] = useState('')
   const [ville, setVille] = useState('Dakar')
