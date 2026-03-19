@@ -70,12 +70,7 @@ export default function Login() {
     }}>
       {/* Logo + titre */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 10,
-          background: NAVY, borderRadius: 10, padding: '10px 20px', marginBottom: 12,
-        }}>
-          <span style={{ color: VERT, fontWeight: 800, fontSize: 18, letterSpacing: 1 }}>TIJAN AI</span>
-        </div>
+        <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 52, marginBottom: 8 }} />
         <div style={{ color: '#555', fontSize: 13 }}>Engineering Intelligence for Africa</div>
       </div>
 
