@@ -85,7 +85,7 @@ export default function NewProject() {
           nb_niveaux: payload.nb_niveaux,
           surface_emprise_m2: payload.surface_emprise_m2,
           resultats_structure: resultats,
-        }).then(() => {}).catch(() => {})
+        }).then(r => { console.log('SUPABASE SAVE', r) }).catch(e => { console.error('SUPABASE ERROR', e) })
       }
       navigate(`/projects/${Date.now()}/results`, { state: { params: payload, resultats } })
     } catch {
