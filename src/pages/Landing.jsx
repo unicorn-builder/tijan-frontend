@@ -46,6 +46,7 @@ export default function Landing() {
           <span style={{ fontSize: 11, color: '#888' }}>Engineering Intelligence for Africa</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {user && <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '6px 14px', fontSize: 12, color: '#555', cursor: 'pointer', fontWeight: 600 }}>Mes projets</button>}
           {user && <span style={{ fontSize: 12, color: '#555' }}>{user.email}</span>}
           <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
             background: VERT, color: '#fff', border: 'none', borderRadius: 6,
