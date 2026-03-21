@@ -52,6 +52,9 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
     content: `Bonjour ! Je suis Tijan AI, votre ingénieur virtuel sur le projet **${params?.nom || 'votre projet'}**.\n\nJe connais tous les détails de ce projet — structure, MEP, coûts, EDGE. Posez-moi n'importe quelle question ou demandez-moi de modifier un paramètre pour voir l'impact.`,
   }]
   const [messages, setMessages] = useState(savedChat?.length > 0 ? savedChat : defaultMsg)
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const bottomRef = useRef(null)
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])

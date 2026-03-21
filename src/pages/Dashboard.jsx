@@ -58,38 +58,7 @@ export default function Dashboard() {
 
   return (
     <div style={{ minHeight: '100vh', background: GRIS1, fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-      {/* Header */}
-      <div style={{
-        background: '#fff', borderBottom: `1px solid ${GRIS2}`,
-        padding: '0 32px', height: 56,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <img src="/tijan_logo_crop.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: 32 }} />
-          <span style={{ fontSize: 12, color: GRIS3, borderLeft: `1px solid ${GRIS2}`, paddingLeft: 16 }}>
-            Engineering Intelligence for Africa
-          </span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 13, color: '#555' }}>
-            Bonjour, <strong>{nomUser}</strong>
-          </span>
-          <button onClick={() => navigate('/projects/new')} style={{
-            background: VERT, color: '#fff', border: 'none',
-            borderRadius: 6, padding: '7px 16px', fontSize: 13,
-            fontWeight: 600, cursor: 'pointer',
-          }}>
-            + Nouveau projet
-          </button>
-          <button onClick={signOut} style={{
-            background: 'none', border: `1px solid ${GRIS2}`,
-            borderRadius: 6, padding: '7px 14px', fontSize: 12,
-            color: GRIS3, cursor: 'pointer',
-          }}>
-            Déconnexion
-          </button>
-        </div>
-      </div>
+      <Header />
 
       {/* Contenu */}
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 24px' }}>
