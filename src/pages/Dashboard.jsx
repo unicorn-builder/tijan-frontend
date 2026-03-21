@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useProjects } from '../hooks/useProjects'
+import { useCredits } from '../hooks/useCredits'
 
 const VERT = '#43A956'
 const VERT_LIGHT = '#EBF7ED'
@@ -26,6 +27,7 @@ function formatFcfa(n) {
 export default function Dashboard() {
   const { user, signOut } = useAuth()
   const { projets, loading, supprimerProjet } = useProjects()
+  const { restants } = useCredits()
   const navigate = useNavigate()
   const [confirmDelete, setConfirmDelete] = useState(null)
 
@@ -119,9 +121,9 @@ export default function Dashboard() {
               Créez votre premier projet pour générer vos dossiers techniques
             </div>
             <button onClick={() => navigate('/pricing')} style={{
-              background: '#fff', color: VERT, border: '1px solid ' + VERT,
+              background: '#F0FFF4', color: VERT, border: '1px solid ' + VERT,
               borderRadius: 6, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            }}>Acheter des crédits</button>
+            }}>{restants ?? '...'} crédit{restants !== 1 ? 's' : ''} · Acheter</button>
             <button onClick={() => navigate('/projects/new')} style={{
               background: VERT, color: '#fff', border: 'none',
               borderRadius: 8, padding: '12px 28px', fontSize: 14,
