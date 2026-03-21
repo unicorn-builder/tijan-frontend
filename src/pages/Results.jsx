@@ -67,7 +67,7 @@ function usePdfDownload(params) {
       const a = document.createElement('a')
       a.href = url; a.download = filename; a.click()
       URL.revokeObjectURL(url)
-    } catch { alert('Erreur lors de la génération du document.') }
+    } catch (e) { console.warn('PDF generation failed:', e) }
     finally { setLoading(null) }
   }
   return { download, loading }
@@ -100,14 +100,14 @@ export default function Results() {
       })
       const data = await res.json()
       if (data.ok) setEdgeOptimise(data)
-    } catch { alert('Erreur optimisation EDGE') }
+    } catch (e) { console.warn('EDGE optimization failed:', e) }
     finally { setEdgeLoading(false) }
   }
 
   const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'fiches-mep']
 
   useEffect(() => {
-    if (MEP_TABS.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom) {
+    if (MEP_TABS.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom && params?.portee_max_m) {
       // D'abord essayer de charger depuis Supabase
       if (supabase && user && state?.resultats_mep) {
         setMepData(state.resultats_mep)
