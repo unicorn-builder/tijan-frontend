@@ -4,10 +4,10 @@ import { useAuth } from '../context/AuthContext'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE } from '../constants'
 
 const SUGGESTIONS = [
-  "Explique-moi le choix du béton C35/45 pour ce projet",
-  "Quel est l'impact sur le coût si je réduis les portées à 5m ?",
-  "Quelles sont les 3 mesures EDGE les moins chères à mettre en place ?",
-  "Pourquoi des pieux forés plutôt que des semelles ?",
+  "Pourquoi ce choix de béton pour mon projet ?",
+  "Et si je réduisais les portées, ça changerait quoi ?",
+  "Comment obtenir la certification EDGE au moindre coût ?",
+  "Explique-moi le choix des fondations en termes simples",
   "Explique ce projet en langage simple pour mon client",
   "Compare le coût de ce projet avec un R+3 sur la même emprise",
 ]
@@ -49,7 +49,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
   const { supabase, user } = useAuth()
   const defaultMsg = [{
     role: 'assistant',
-    content: `Bonjour ! Je suis Tijan AI, votre ingénieur virtuel sur le projet **${params?.nom || 'votre projet'}**.\n\nJe connais tous les détails de ce projet — structure, MEP, coûts, EDGE. Posez-moi n'importe quelle question ou demandez-moi de modifier un paramètre pour voir l'impact.`,
+    content: `Salut ! 👋 Je suis Tijan, votre partenaire ingénierie sur **${params?.nom || 'votre projet'}**.\n\nJ'ai analysé votre projet en détail — structure, MEP, coûts, certification EDGE. N'hésitez pas à me poser toutes vos questions, même les plus pointues. Je suis là pour vous aider à prendre les meilleures décisions pour votre projet.`,
   }]
   const [messages, setMessages] = useState(savedChat?.length > 0 ? savedChat : defaultMsg)
   const [input, setInput] = useState('')
@@ -122,10 +122,10 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       }}>
         <div style={{ width: 8, height: 8, borderRadius: '50%', background: VERT }} />
         <span style={{ fontSize: 12, color: VERT, fontWeight: 600 }}>
-          Tijan AI — Ingénieur virtuel actif sur {params?.nom || 'votre projet'}
+          Tijan — Votre partenaire ingénierie sur {params?.nom || 'votre projet'}
         </span>
         <span style={{ fontSize: 11, color: GRIS3, marginLeft: 'auto' }}>
-          Contexte projet chargé ✓
+          Projet analysé ✓
         </span>
       </div>
 
@@ -198,7 +198,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       </div>
 
       <div style={{ fontSize: 10, color: GRIS3, marginTop: 6, textAlign: 'center' }}>
-        Tijan AI est un assistant d'ingénierie ±15%. Validez avec un BET agréé avant travaux.
+        Tijan vous accompagne dans vos décisions. Estimations ±15% — validation BET requise avant travaux.
       </div>
 
       <style>{`

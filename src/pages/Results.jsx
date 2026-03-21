@@ -651,7 +651,6 @@ export default function Results() {
       )
     }
 
-    if (activeTab === 'chat') return <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} />
     return null
   }
 
@@ -723,6 +722,10 @@ export default function Results() {
 
         <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
           {renderContent()}
+          {/* Chat toujours monté, caché si pas actif */}
+          <div style={{ display: activeTab === 'chat' ? 'block' : 'none', height: '100%' }}>
+            <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} />
+          </div>
           {endpoint && (
             <div style={{ marginTop: 20 }}>
               <button
