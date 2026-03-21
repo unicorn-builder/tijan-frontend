@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import ChatTijan from '../components/ChatTijan'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
+import { useLang } from '../translations'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
 const Card = ({ children, style = {} }) => (
@@ -60,7 +61,7 @@ function usePdfDownload(params) {
     try {
       const res = await fetch(`${BACKEND}${endpoint}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...params, ...extra }),
+        body: JSON.stringify({ ...params, lang, ...extra }),
       })
       if (!res.ok) throw new Error(`${res.status}`)
       const blob = await res.blob()
@@ -83,6 +84,7 @@ export default function Results() {
 
   const [activeTab, setActiveTab] = useState('structure')
   const { supabase, user } = useAuth()
+  const { lang, t } = useLang()
   const { restants, consommer } = useCredits()
   const [mepData, setMepData] = useState(state?.mepData || null)
   const [chatMessages, setChatMessages] = useState(state?.chatHistorique || [])
@@ -329,32 +331,32 @@ export default function Results() {
           </Card>
 
           <SectionTitle>Électricité (NF C 15-100)</SectionTitle>
-          <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
-            ['Puissance totale', fmt(el.puissance_totale_kva, 'kVA'), 'Transformateur', fmt(el.transfo_kva, 'kVA')],
-            ['Groupe électrogène', fmt(el.groupe_electrogene_kva, 'kVA'), 'Nb compteurs', fmt(el.nb_compteurs)],
-            ['Conso annuelle', fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture annuelle', fmtFcfa(el.facture_annuelle_fcfa)],
+          <DataTable headers={[t('indicateur'), t('valeur'), t('indicateur'), t('valeur')]} rows={[
+            [t('puissance_totale'), fmt(el.puissance_totale_kva, 'kVA'), t('transformateur'), fmt(el.transfo_kva, 'kVA')],
+            [t('groupe_electrogene'), fmt(el.groupe_electrogene_kva, 'kVA'), t('nb_compteurs'), fmt(el.nb_compteurs)],
+            [t('conso_annuelle'), fmt(el.conso_annuelle_kwh, 'kWh/an'), t('facture_annuelle'), fmtFcfa(el.facture_annuelle_fcfa)],
           ]} />
 
           <SectionTitle>Plomberie (DTU 60.11)</SectionTitle>
-          <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
-            ['Nb logements', fmt(pl.nb_logements), 'Besoin eau/jour', fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
-            ['Volume citerne', fmt(pl.volume_citerne_m3, 'm³'), 'Surpresseur', fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
-            ['CESI', fmt(pl.nb_chauffe_eau_solaire, 'unités'), 'Facture eau/an', fmtFcfa(pl.facture_eau_fcfa)],
+          <DataTable headers={[t('indicateur'), t('valeur'), t('indicateur'), t('valeur')]} rows={[
+            [t('nb_logements'), fmt(pl.nb_logements), t('besoin_eau_jour'), fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
+            [t('volume_citerne'), fmt(pl.volume_citerne_m3, 'm³'), t('surpresseur'), fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
+            ['CESI', fmt(pl.nb_chauffe_eau_solaire, 'unités'), t('facture_eau_an'), fmtFcfa(pl.facture_eau_fcfa)],
           ]} />
 
           <SectionTitle>CVC (EN 12831)</SectionTitle>
-          <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
-            ['Puissance frigo', fmt(cv.puissance_frigorifique_kw, 'kW'), 'Type VMC', cv.type_vmc || '—'],
+          <DataTable headers={[t('indicateur'), t('valeur'), t('indicateur'), t('valeur')]} rows={[
+            [t('puissance_frigo'), fmt(cv.puissance_frigorifique_kw, 'kW'), t('type_vmc'), cv.type_vmc || '—'],
             ['Splits séjour', fmt(cv.nb_splits_sejour), 'Splits chambre', fmt(cv.nb_splits_chambre)],
-            ['Cassettes', fmt(cv.nb_cassettes), 'Conso CVC/an', fmt(cv.conso_cvc_kwh_an, 'kWh/an')],
+            ['Cassettes', fmt(cv.nb_cassettes), t('conso_cvc_an'), fmt(cv.conso_cvc_kwh_an, 'kWh/an')],
           ]} />
 
           {mepData.securite_incendie && (
             <>
               <SectionTitle>Sécurité incendie (IT 246)</SectionTitle>
-              <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
-                ['Catégorie ERP', mepData.securite_incendie.categorie_erp, 'Détecteurs fumée', fmt(mepData.securite_incendie.nb_detecteurs_fumee)],
-                ['Extincteurs CO2', fmt(mepData.securite_incendie.nb_extincteurs_co2), 'Sprinklers', mepData.securite_incendie.sprinklers_requis ? 'Obligatoires' : 'Non requis'],
+              <DataTable headers={[t('indicateur'), t('valeur'), t('indicateur'), t('valeur')]} rows={[
+                [t('categorie_erp'), mepData.securite_incendie.categorie_erp, t('detecteurs_fumee'), fmt(mepData.securite_incendie.nb_detecteurs_fumee)],
+                [t('extincteurs'), fmt(mepData.securite_incendie.nb_extincteurs_co2), t('sprinklers'), mepData.securite_incendie.sprinklers_requis ? 'Obligatoires' : 'Non requis'],
               ]} />
             </>
           )}
@@ -399,9 +401,9 @@ export default function Results() {
     if (activeTab === 'edge' && mepData) {
       const edge = mepData.edge || {}
       const piliers = [
-        { key: 'economie_energie_pct', label: 'ÉCONOMIE ÉNERGIE' },
-        { key: 'economie_eau_pct', label: 'ÉCONOMIE EAU' },
-        { key: 'economie_materiaux_pct', label: 'ÉCONOMIE MATÉRIAUX' },
+        { key: 'economie_energie_pct', label: t('eco_energie') },
+        { key: 'economie_eau_pct', label: t('eco_eau') },
+        { key: 'economie_materiaux_pct', label: t('eco_materiaux') },
       ]
       return (
         <>
@@ -499,7 +501,7 @@ export default function Results() {
           {['mesures_energie', 'mesures_eau', 'mesures_materiaux'].map((key, i) => (
             edge[key]?.length > 0 && (
               <div key={key}>
-                <SectionTitle>{['Mesures énergie', 'Mesures eau', 'Mesures matériaux'][i]}</SectionTitle>
+                <SectionTitle>{[t('mesures_energie'), t('mesures_eau'), t('mesures_materiaux')][i]}</SectionTitle>
                 <Card>
                   {edge[key].map((m, j) => (
                     <div key={j} style={{ fontSize: 12, marginBottom: 4, color: m.statut?.includes('Intégré') ? '#2d7a3a' : '#333' }}>
@@ -560,18 +562,18 @@ export default function Results() {
         <>
           <Card>
             <SectionTitle>Fiche électricité (NF C 15-100)</SectionTitle>
-            <DataTable headers={['Paramètre', 'Valeur', 'Paramètre', 'Valeur']} rows={[
-              ['Puissance installée', fmt(el.puissance_totale_kva, 'kVA'), 'Transformateur', fmt(el.transfo_kva, 'kVA')],
-              ['Groupe électrogène', fmt(el.groupe_electrogene_kva, 'kVA'), 'Nb compteurs', fmt(el.nb_compteurs)],
-              ['Conso annuelle', fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture', fmtFcfa(el.facture_annuelle_fcfa)],
+            <DataTable headers={[t('parametre'), t('valeur'), t('parametre'), t('valeur')]} rows={[
+              ['Puissance installée', fmt(el.puissance_totale_kva, 'kVA'), t('transformateur'), fmt(el.transfo_kva, 'kVA')],
+              [t('groupe_electrogene'), fmt(el.groupe_electrogene_kva, 'kVA'), t('nb_compteurs'), fmt(el.nb_compteurs)],
+              [t('conso_annuelle'), fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture', fmtFcfa(el.facture_annuelle_fcfa)],
             ]} />
           </Card>
           <Card>
             <SectionTitle>Fiche plomberie (DTU 60.11)</SectionTitle>
-            <DataTable headers={['Paramètre', 'Valeur', 'Paramètre', 'Valeur']} rows={[
-              ['Nb logements', fmt(pl.nb_logements), 'Besoin eau/jour', fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
-              ['Volume citerne', fmt(pl.volume_citerne_m3, 'm³'), 'Surpresseur', fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
-              ['CESI', fmt(pl.nb_chauffe_eau_solaire, 'unités'), 'Facture eau/an', fmtFcfa(pl.facture_eau_fcfa)],
+            <DataTable headers={[t('parametre'), t('valeur'), t('parametre'), t('valeur')]} rows={[
+              [t('nb_logements'), fmt(pl.nb_logements), t('besoin_eau_jour'), fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
+              [t('volume_citerne'), fmt(pl.volume_citerne_m3, 'm³'), t('surpresseur'), fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
+              ['CESI', fmt(pl.nb_chauffe_eau_solaire, 'unités'), t('facture_eau_an'), fmtFcfa(pl.facture_eau_fcfa)],
             ]} />
           </Card>
           <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>Téléchargez le dossier complet ci-dessous.</div>
@@ -713,7 +715,7 @@ export default function Results() {
                 borderLeft: active ? `3px solid ${VERT}` : '3px solid transparent',
                 transition: 'all 0.15s', cursor: 'pointer',
               }}>
-                {tab.label}
+                {t(tab.id) || tab.label}
                 {disabled && <span style={{ marginLeft: 6, fontSize: 9, background: '#F0F0F0', color: '#888', borderRadius: 8, padding: '1px 6px' }}>Bientôt</span>}
               </button>
             )
@@ -739,7 +741,7 @@ export default function Results() {
                   opacity: (MEP_TABS.includes(activeTab) && !mepData?.ok) ? 0.5 : 1,
                 }}
               >
-                {dlLoading === endpoint ? 'Génération en cours...' : '↓ Télécharger le PDF'}
+                {dlLoading === endpoint ? t('generation_en_cours') : t('telecharger_pdf')}
               </button>
             </div>
           )}
