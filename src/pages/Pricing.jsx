@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
 import Header from '../components/Header'
-import { VERT } from '../constants'
+import { VERT, BACKEND } from '../constants'
 
 const NAVY = '#1B2A4A'
 
@@ -28,40 +28,20 @@ export default function Pricing() {
   const handlePay = async (pack) => {
     setPayLoading(true)
     try {
-      const response = await fetch('https://app.paydunya.com/sandbox-api/v1/checkout-invoice/create', {
+      const response = await fetch(`${BACKEND}/create-payment`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'PAYDUNYA-MASTER-KEY': import.meta.env.VITE_PAYDUNYA_MASTER_KEY,
-          'PAYDUNYA-PRIVATE-KEY': import.meta.env.VITE_PAYDUNYA_PRIVATE_KEY,
-          'PAYDUNYA-TOKEN': import.meta.env.VITE_PAYDUNYA_TOKEN,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          invoice: {
-            total_amount: pack.prix,
-            description: `Tijan AI — ${pack.label} (${pack.credits} dossier${pack.credits > 1 ? 's' : ''} technique${pack.credits > 1 ? 's' : ''})`,
-          },
-          store: {
-            name: 'Tijan AI',
-            tagline: 'Engineering Intelligence for Africa',
-            website_url: 'https://tijan-frontend.vercel.app',
-          },
-          custom_data: {
-            user_id: user.id,
-            nb_credits: pack.credits,
-            pack_id: pack.id,
-          },
-          actions: {
-            return_url: `https://tijan-frontend.vercel.app/payment-success?credits=${pack.credits}`,
-            cancel_url: 'https://tijan-frontend.vercel.app/pricing',
-          },
+          credits: pack.credits,
+          prix: pack.prix,
+          user_id: user.id,
         }),
       })
       const data = await response.json()
-      if (data.response_code === '00' && data.response_text === 'success') {
-        window.location.href = data.token
+      if (data.ok) {
+        window.location.href = data.url
       } else {
-        alert('Erreur PayDunya: ' + (data.response_text || 'Réessayez'))
+        alert('Erreur: ' + (data.error || 'Réessayez'))
       }
     } catch (e) {
       console.error('PayDunya error:', e)
