@@ -47,17 +47,11 @@ function Message({ msg }) {
 
 export default function ChatTijan({ params, resultatsStructure, resultatsMep, savedChat, onSaveChat }) {
   const { supabase, user } = useAuth()
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: `Bonjour ! Je suis Tijan AI, votre ingénieur virtuel sur le projet **${params?.nom || 'votre projet'}**.\n\nJe connais tous les détails de ce projet — structure, MEP, coûts, EDGE. Posez-moi n'importe quelle question ou demandez-moi de modifier un paramètre pour voir l'impact.`,
-    }
-  ])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const bottomRef = useRef(null)
-
-  useEffect(() => {
+  const defaultMsg = [{
+    role: 'assistant',
+    content: `Bonjour ! Je suis Tijan AI, votre ingénieur virtuel sur le projet **${params?.nom || 'votre projet'}**.\n\nJe connais tous les détails de ce projet — structure, MEP, coûts, EDGE. Posez-moi n'importe quelle question ou demandez-moi de modifier un paramètre pour voir l'impact.`,
+  }]
+  const [messages, setMessages] = useState(savedChat?.length > 0 ? savedChat : defaultMsg)
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
