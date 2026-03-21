@@ -19,6 +19,8 @@ const LIVRABLES = [
   { label: 'BOQ MEP 3 gammes', norme: 'Basic / High-End / Luxury', icon: '📊' },
   { label: 'Conformité EDGE IFC', norme: '+ Plan d\'action certification', icon: '🌱' },
   { label: 'Rapport exécutif', norme: 'Maître d\'ouvrage', icon: '📋' },
+  { label: 'Plans d\'exécution BA', norme: 'Bientôt disponible', icon: '🏗️' },
+  { label: 'Plans MEP', norme: 'Bientôt disponible', icon: '📐' },
 ]
 
 const CHIFFRES = [
