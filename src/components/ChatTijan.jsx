@@ -86,6 +86,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       if (data.ok) {
         const updated = [...newMessages, { role: 'assistant', content: data.reponse }]
         setMessages(updated)
+        if (onUpdateChat) onUpdateChat(updated)
         // Sauvegarder dans Supabase
         if (supabase && user && params?.nom) {
           supabase.from('projets')

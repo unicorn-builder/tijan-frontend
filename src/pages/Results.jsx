@@ -83,6 +83,7 @@ export default function Results() {
   const [activeTab, setActiveTab] = useState('structure')
   const { supabase, user } = useAuth()
   const [mepData, setMepData] = useState(state?.mepData || null)
+  const [chatMessages, setChatMessages] = useState(state?.chatHistorique || [])
   const [mepLoading, setMepLoading] = useState(false)
   const [mepError, setMepError] = useState(false)
   const [edgeOptimise, setEdgeOptimise] = useState(null)
@@ -648,7 +649,7 @@ export default function Results() {
       )
     }
 
-    if (activeTab === 'chat') return <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={state?.chatHistorique || []} />
+    if (activeTab === 'chat') return <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} />
     return null
   }
 
