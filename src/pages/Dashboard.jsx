@@ -118,6 +118,10 @@ export default function Dashboard() {
             <div style={{ fontSize: 13, color: GRIS3, marginBottom: 24 }}>
               Créez votre premier projet pour générer vos dossiers techniques
             </div>
+            <button onClick={() => navigate('/pricing')} style={{
+              background: '#fff', color: VERT, border: '1px solid ' + VERT,
+              borderRadius: 6, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}>Acheter des crédits</button>
             <button onClick={() => navigate('/projects/new')} style={{
               background: VERT, color: '#fff', border: 'none',
               borderRadius: 8, padding: '12px 28px', fontSize: 14,
