@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ChatTijan from '../components/ChatTijan'
+import { useAuth } from '../context/AuthContext'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
 const Card = ({ children, style = {} }) => (
@@ -80,6 +81,7 @@ export default function Results() {
   const params = state?.params || {}
 
   const [activeTab, setActiveTab] = useState('structure')
+  const { supabase, user } = useAuth()
   const [mepData, setMepData] = useState(null)
   const [mepLoading, setMepLoading] = useState(false)
   const [mepError, setMepError] = useState(false)
@@ -105,13 +107,28 @@ export default function Results() {
 
   useEffect(() => {
     if (MEP_TABS.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom) {
+      // D'abord essayer de charger depuis Supabase
+      if (supabase && user && state?.resultats_mep) {
+        setMepData(state.resultats_mep)
+        return
+      }
       setMepLoading(true)
       fetch(`${BACKEND}/calculate-mep`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       })
         .then(r => r.json())
-        .then(d => { setMepData(d); if (!d.ok) setMepError(true) })
+        .then(d => {
+          setMepData(d)
+          if (!d.ok) setMepError(true)
+          // Sauvegarder MEP dans Supabase
+          if (d.ok && supabase && user) {
+            const projectId = window.location.pathname.split('/projects/')[1]?.split('/')[0]
+            if (projectId) {
+              supabase.from('projets').update({ resultats_mep: d }).eq('nom', params.nom).eq('user_id', user.id).then(() => {})
+            }
+          }
+        })
         .catch(() => setMepError(true))
         .finally(() => setMepLoading(false))
     }
