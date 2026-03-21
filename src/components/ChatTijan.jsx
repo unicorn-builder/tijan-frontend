@@ -1,5 +1,6 @@
 // ChatTijan.jsx — Onglet conversation avec Tijan AI
 import { useState, useRef, useEffect } from 'react'
+import { useAuth } from '../context/AuthContext'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE } from '../constants'
 
 const SUGGESTIONS = [
@@ -44,7 +45,8 @@ function Message({ msg }) {
   )
 }
 
-export default function ChatTijan({ params, resultatsStructure, resultatsMep }) {
+export default function ChatTijan({ params, resultatsStructure, resultatsMep, savedChat, onSaveChat }) {
+  const { supabase, user } = useAuth()
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
@@ -82,7 +84,16 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep }) 
       })
       const data = await res.json()
       if (data.ok) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.reponse }])
+        const updated = [...newMessages, { role: 'assistant', content: data.reponse }]
+        setMessages(updated)
+        // Sauvegarder dans Supabase
+        if (supabase && user && params?.nom) {
+          supabase.from('projets')
+            .update({ chat_historique: updated })
+            .eq('nom', params.nom)
+            .eq('user_id', user.id)
+            .then(() => {})
+        }
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: "Une erreur s'est produite. Réessayez." }])
       }

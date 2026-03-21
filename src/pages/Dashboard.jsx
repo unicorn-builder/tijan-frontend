@@ -48,6 +48,7 @@ export default function Dashboard() {
         },
         resultats: projet.resultats_structure,
         mepData: projet.resultats_mep,
+        chatHistorique: projet.chat_historique || [],
       }
     })
   }

@@ -648,7 +648,7 @@ export default function Results() {
       )
     }
 
-    if (activeTab === 'chat') return <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} />
+    if (activeTab === 'chat') return <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={state?.chatHistorique || []} />
     return null
   }
 
