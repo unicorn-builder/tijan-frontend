@@ -84,6 +84,11 @@ export default function NewProject() {
           pays: payload.pays || 'Senegal',
           nb_niveaux: payload.nb_niveaux,
           surface_emprise_m2: payload.surface_emprise_m2,
+          portee_max_m: payload.portee_max_m,
+          portee_min_m: payload.portee_min_m,
+          nb_travees_x: payload.nb_travees_x,
+          nb_travees_y: payload.nb_travees_y,
+          usage: payload.usage || 'residentiel',
           resultats_structure: resultats,
         }).then(r => { console.log('SUPABASE SAVE', r) }).catch(e => { console.error('SUPABASE ERROR', e) })
       }
