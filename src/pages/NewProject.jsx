@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useCredits } from '../hooks/useCredits'
 import { BACKEND, VERT, GRIS2 } from '../constants'
 
 export default function NewProject() {
   const navigate = useNavigate()
   const { supabase, user } = useAuth()
+  const { restants, consommer } = useCredits()
   const [step, setStep] = useState('form')
   const [nom, setNom] = useState('')
   const [ville, setVille] = useState('Dakar')
@@ -75,6 +77,13 @@ export default function NewProject() {
       })
       const resultats = await res.json()
       if (!resultats.ok) { setStep('error'); setErrorMsg('Erreur lors du calcul.'); return }
+      // Consommer un crédit
+      if (consommer) {
+        const ok = await consommer()
+        if (!ok && restants <= 0) {
+          setStep('error'); setErrorMsg('Vous n\'avez plus de crédits. Achetez-en sur la page Pricing.'); return
+        }
+      }
       // Sauvegarder dans Supabase
       if (user && supabase) {
         supabase.from('projets').insert({
