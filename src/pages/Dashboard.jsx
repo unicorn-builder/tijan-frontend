@@ -62,7 +62,7 @@ export default function Dashboard() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 32 }} />
+          <img src="/tijan_logo_crop.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: 32 }} />
           <span style={{ fontSize: 12, color: GRIS3, borderLeft: `1px solid ${GRIS2}`, paddingLeft: 16 }}>
             Engineering Intelligence for Africa
           </span>

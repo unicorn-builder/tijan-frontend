@@ -80,7 +80,7 @@ export default function Pricing() {
         background: '#fff',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 32 }} />
+          <img src="/tijan_logo_crop.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: 32 }} />
           <span style={{ fontSize: 11, color: '#888' }}>Engineering Intelligence for Africa</span>
         </div>
         <button onClick={() => navigate('/dashboard')} style={{
