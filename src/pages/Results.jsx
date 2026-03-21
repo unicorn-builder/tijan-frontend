@@ -82,7 +82,7 @@ export default function Results() {
 
   const [activeTab, setActiveTab] = useState('structure')
   const { supabase, user } = useAuth()
-  const [mepData, setMepData] = useState(null)
+  const [mepData, setMepData] = useState(state?.mepData || null)
   const [mepLoading, setMepLoading] = useState(false)
   const [mepError, setMepError] = useState(false)
   const [edgeOptimise, setEdgeOptimise] = useState(null)
