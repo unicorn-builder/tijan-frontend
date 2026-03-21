@@ -17,7 +17,7 @@ export function useCredits() {
       .from('credits')
       .select('*')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
 
     if (error && error.code === 'PGRST116') {
       // Pas de ligne — créer avec 3 crédits gratuits (offre pionniers)
@@ -25,7 +25,7 @@ export function useCredits() {
         .from('credits')
         .insert({ user_id: user.id, total: 3, utilises: 0 })
         .select()
-        .single()
+        .maybeSingle()
       setCredits(newRow)
     } else if (data) {
       setCredits(data)
