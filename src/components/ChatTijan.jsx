@@ -45,7 +45,7 @@ function Message({ msg }) {
   )
 }
 
-export default function ChatTijan({ params, resultatsStructure, resultatsMep, savedChat, onSaveChat }) {
+export default function ChatTijan({ params, resultatsStructure, resultatsMep, savedChat, onUpdateChat }) {
   const { supabase, user } = useAuth()
   const defaultMsg = [{
     role: 'assistant',
