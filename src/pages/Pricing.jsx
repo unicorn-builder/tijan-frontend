@@ -203,7 +203,7 @@ export default function Pricing() {
             ))}
           </div>
           <div style={{ marginTop: 12, fontSize: 12, color: VERT, fontWeight: 600 }}>
-            + Conformité EDGE IFC gratuite · + Chat IA illimité · + Rapport exécutif gratuit
+            + Conformité EDGE IFC gratuite · + Chat IA illimité · + Rapport exécutif gratuit<br/>Plans d'exécution BA et MEP — disponibles très prochainement (1 crédit additionnel)
           </div>
         </div>
 

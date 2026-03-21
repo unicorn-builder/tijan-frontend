@@ -151,7 +151,7 @@ export default function Landing() {
           <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>LIVRABLES</div>
           <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>8 documents générés automatiquement</h2>
           <p style={{ fontSize: 14, color: '#666', marginTop: 8 }}>
-            Uploadez vos plans → Tijan AI analyse, dimensionne et chiffre → Téléchargez vos documents
+            Uploadez vos plans → Tijan AI analyse, dimensionne et chiffre → Téléchargez vos documents<br/>Plans d'exécution BA et MEP disponibles très prochainement.
           </p>
         </div>
         <div style={{
