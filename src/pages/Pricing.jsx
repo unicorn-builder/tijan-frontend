@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
+import Header from '../components/Header'
 import { VERT } from '../constants'
 
 const NAVY = '#1B2A4A'
@@ -73,23 +74,9 @@ export default function Pricing() {
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: "'DM Sans', sans-serif" }}>
 
-      {/* Nav */}
-      <nav style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 32px', height: 56, borderBottom: '0.5px solid #E5E5E5',
-        background: '#fff',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/tijan_logo_crop.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: 32 }} />
-          <span style={{ fontSize: 11, color: '#888' }}>Engineering Intelligence for Africa</span>
-        </div>
-        <button onClick={() => navigate('/dashboard')} style={{
-          background: 'none', border: `1px solid #E5E5E5`, borderRadius: 6,
-          padding: '6px 14px', fontSize: 12, color: '#555', cursor: 'pointer',
-        }}>← Mes projets</button>
-      </nav>
+      <Header />
 
-      <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 24px' }}>
+            <div style={{ maxWidth: 800, margin: '0 auto', padding: '40px 24px' }}>
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>

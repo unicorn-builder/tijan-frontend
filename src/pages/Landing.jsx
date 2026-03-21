@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import Header from '../components/Header'
 import { VERT } from '../constants'
 
 const NAVY = '#1B2A4A'
@@ -32,40 +32,13 @@ const CHIFFRES = [
 
 export default function Landing() {
   const navigate = useNavigate()
-  const { user, signOut } = useAuth()
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'DM Sans', sans-serif" }}>
 
-      {/* ── NAV ── */}
-      <nav style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 32px', height: 56, borderBottom: '0.5px solid #E5E5E5',
-        position: 'sticky', top: 0, background: '#fff', zIndex: 100,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 32, width: 'auto' }} />
-          <span style={{ fontSize: 11, color: '#888' }}>Engineering Intelligence for Africa</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {user && <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '6px 14px', fontSize: 12, color: '#555', cursor: 'pointer', fontWeight: 600 }}>Mes projets</button>}
-          {user && <span style={{ fontSize: 12, color: '#555' }}>{user.email}</span>}
-          <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
-            background: VERT, color: '#fff', border: 'none', borderRadius: 6,
-            padding: '7px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-          }}>
-            {user ? '+ Nouveau projet' : 'Commencer gratuitement'}
-          </button>
-          {user && (
-            <button onClick={signOut} style={{
-              background: 'none', border: `1px solid #E5E5E5`, borderRadius: 6,
-              padding: '6px 14px', fontSize: 12, color: '#888', cursor: 'pointer',
-            }}>Déconnexion</button>
-          )}
-        </div>
-      </nav>
+      <Header />
 
-      {/* ── HERO ── */}
+            {/* ── HERO ── */}
       <section style={{
         textAlign: 'center', padding: '56px 24px 40px',
         background: 'linear-gradient(180deg, #FAFFFE 0%, #fff 100%)',

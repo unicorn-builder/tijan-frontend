@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useProjects } from '../hooks/useProjects'
+import Header from '../components/Header'
 import { useCredits } from '../hooks/useCredits'
 
 const VERT = '#43A956'
