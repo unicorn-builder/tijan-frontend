@@ -19,7 +19,7 @@ export function useCredits() {
       .eq('user_id', user.id)
       .maybeSingle()
 
-    if (error && error.code === 'PGRST116') {
+    if (!data && !error) {
       // Pas de ligne — créer avec 3 crédits gratuits (offre pionniers)
       const { data: newRow } = await supabase
         .from('credits')

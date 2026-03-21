@@ -39,7 +39,7 @@ export default function Header({ showBack, backLabel, backTo }) {
             background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 6,
             padding: '5px 12px', fontSize: 11, color: VERT, cursor: 'pointer', fontWeight: 600,
           }}>
-            {restants ?? '...'} crédit{restants !== 1 ? 's' : ''}
+            {restants ?? '...'} crédit{restants !== 1 ? 's' : ''} · Tarifs
           </button>
         )}
         {user && (
