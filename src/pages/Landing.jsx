@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
+import { useAuth } from '../context/AuthContext'
 import { VERT } from '../constants'
 
 const NAVY = '#1B2A4A'
@@ -32,6 +33,7 @@ const CHIFFRES = [
 
 export default function Landing() {
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'DM Sans', sans-serif" }}>
