@@ -47,7 +47,7 @@ export default function Landing() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {user && <span style={{ fontSize: 12, color: '#555' }}>{user.email}</span>}
-          <button onClick={() => navigate('/projects/new')} style={{
+          <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
             background: VERT, color: '#fff', border: 'none', borderRadius: 6,
             padding: '7px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
           }}>
@@ -93,7 +93,7 @@ export default function Landing() {
         </p>
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => navigate('/projects/new')} style={{
+          <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
             background: VERT, color: '#fff', border: 'none', borderRadius: 8,
             padding: '13px 32px', fontSize: 15, fontWeight: 700, cursor: 'pointer',
           }}>
@@ -217,7 +217,7 @@ export default function Landing() {
           Rejoignez les professionnels qui utilisent Tijan AI pour produire des dossiers techniques
           10x plus vite et à une fraction du coût d'un BET traditionnel.
         </p>
-        <button onClick={() => navigate('/projects/new')} style={{
+        <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
           background: VERT, color: '#fff', border: 'none', borderRadius: 8,
           padding: '14px 36px', fontSize: 16, fontWeight: 700, cursor: 'pointer',
         }}>
