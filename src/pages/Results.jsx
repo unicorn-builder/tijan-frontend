@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ChatTijan from '../components/ChatTijan'
 import { useAuth } from '../context/AuthContext'
+import { useCredits } from '../hooks/useCredits'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
 const Card = ({ children, style = {} }) => (
@@ -82,6 +83,7 @@ export default function Results() {
 
   const [activeTab, setActiveTab] = useState('structure')
   const { supabase, user } = useAuth()
+  const { restants, consommer } = useCredits()
   const [mepData, setMepData] = useState(state?.mepData || null)
   const [chatMessages, setChatMessages] = useState(state?.chatHistorique || [])
   const [mepLoading, setMepLoading] = useState(false)
@@ -692,7 +694,10 @@ export default function Results() {
           <span style={{ color: GRIS3, fontSize: 11 }}>Engineering Intelligence for Africa</span>
         </div>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>
-        <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#B8860B' }}>Version bêta</div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button onClick={() => navigate('/pricing')} style={{ background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#43A956', fontWeight: 600, cursor: 'pointer' }}>{restants ?? '...'} crédit{restants !== 1 ? 's' : ''}</button>
+            <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#B8860B' }}>Beta</div>
+          </div>
       </div>
 
       <div style={{ display: 'flex', height: 'calc(100vh - 56px)' }}>
