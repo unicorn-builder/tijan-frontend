@@ -696,7 +696,6 @@ export default function Results() {
         <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button onClick={() => navigate('/pricing')} style={{ background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#43A956', fontWeight: 600, cursor: 'pointer' }}>{restants ?? '...'} crédit{restants !== 1 ? 's' : ''}</button>
-            <button onClick={() => { const nl = lang === 'fr' ? 'en' : 'fr'; localStorage.setItem('tijan_lang', nl); window.dispatchEvent(new Even'tijan_lang_change') }} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 4, padding: '3px 10px', fontSize: 11, fontWeight: 700, color: '#555', cursor: 'pointer' }}>{lang === 'fr' ? 'EN' : 'FR'}</button>
             <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#B8860B' }}>Beta</div>
           </div>
       </div>
