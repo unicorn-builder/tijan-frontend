@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { LangProvider } from './i18n.jsx'
 import ProtectedRoute from './components/ProtectedRoute'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
@@ -22,6 +23,7 @@ const MobileStyles = () => (
 
 export default function App() {
   return (
+    <LangProvider>
     <AuthProvider>
       <MobileStyles />
       <BrowserRouter>
@@ -37,5 +39,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </LangProvider>
   )
 }

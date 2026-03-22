@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useProjects } from '../hooks/useProjects'
 import Header from '../components/Header'
 import { useCredits } from '../hooks/useCredits'
+import { useLang } from '../i18n.jsx'
 
 const VERT = '#43A956'
 const VERT_LIGHT = '#EBF7ED'
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const { user, signOut } = useAuth()
   const { projets, loading, supprimerProjet } = useProjects()
   const { restants } = useCredits()
+  const { t } = useLang()
   const navigate = useNavigate()
   const [confirmDelete, setConfirmDelete] = useState(null)
 
@@ -64,15 +66,15 @@ export default function Dashboard() {
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 24px' }}>
         <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: NAVY, margin: 0 }}>Mes projets</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: NAVY, margin: 0 }}>{t('dash_titre')}</h1>
             <p style={{ fontSize: 13, color: GRIS3, marginTop: 4 }}>
-              {projets.length} projet{projets.length > 1 ? 's' : ''} sauvegardé{projets.length > 1 ? 's' : ''}
+              {projets.length} projet{projets.length > 1 ? 's' : ''} {projets.length > 1 ? t('dash_count_plural') : t('dash_count')}
             </p>
           </div>
           <button onClick={() => navigate('/projects/new')} style={{
             background: VERT, color: '#fff', border: 'none', borderRadius: 8,
             padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          }}>+ Nouveau projet</button>
+          }}>{t('dash_nouveau')}</button>
         </div>
 
         {loading ? (
@@ -91,10 +93,10 @@ export default function Dashboard() {
           }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🏗️</div>
             <div style={{ fontSize: 16, fontWeight: 600, color: NAVY, marginBottom: 8 }}>
-              Aucun projet pour l'instant
+              {t('dash_aucun')}
             </div>
             <div style={{ fontSize: 13, color: GRIS3, marginBottom: 24 }}>
-              Créez votre premier projet pour générer vos dossiers techniques
+              {t('dash_creer_desc')}
             </div>
             <button onClick={() => navigate('/pricing')} style={{
               background: '#F0FFF4', color: VERT, border: '1px solid ' + VERT,
@@ -180,7 +182,7 @@ export default function Dashboard() {
               Supprimer ce projet ?
             </div>
             <div style={{ fontSize: 13, color: GRIS3, marginBottom: 24 }}>
-              Cette action est irréversible. Tous les résultats seront perdus.
+              {t('dash_supprimer_desc')}
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button onClick={() => setConfirmDelete(null)} style={{

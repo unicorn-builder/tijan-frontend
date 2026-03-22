@@ -2,38 +2,40 @@ import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
 import { useAuth } from '../context/AuthContext'
 import { VERT } from '../constants'
+import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
 
-const CIBLES = [
-  { icon: '🏦', titre: 'Banques', desc: 'Challengez les dossiers techniques et coûts des projets que vous financez' },
-  { icon: '🏗️', titre: 'Promoteurs', desc: 'Obtenez des estimations fiables dès la phase d\'avant-projet' },
-  { icon: '🔨', titre: 'Constructeurs', desc: 'Chiffrez vos clients en quelques minutes, pas en semaines' },
-  { icon: '📐', titre: 'Bureaux d\'études', desc: 'Multipliez votre productivité par 10 sur les pré-études' },
-  { icon: '🏠', titre: 'Architectes', desc: 'Offrez de la valeur technique à vos clients sans sous-traiter' },
+const CIBLES_KEYS = [
+  { icon: '🏦', titre: 'cible_banques', desc: 'cible_banques_desc' },
+  { icon: '🏗️', titre: 'cible_promoteurs', desc: 'cible_promoteurs_desc' },
+  { icon: '🔨', titre: 'cible_constructeurs', desc: 'cible_constructeurs_desc' },
+  { icon: '📐', titre: 'cible_bet', desc: 'cible_bet_desc' },
+  { icon: '🏠', titre: 'cible_architectes', desc: 'cible_architectes_desc' },
 ]
 
-const LIVRABLES = [
-  { label: 'Note de calcul structure', norme: 'EC2 / EC8', icon: '📄' },
-  { label: 'BOQ Structure détaillé', norme: '7 lots', icon: '💰' },
-  { label: 'Note MEP complète', norme: 'NF C 15-100 / DTU 60.11', icon: '⚡' },
-  { label: 'BOQ MEP 3 gammes', norme: 'Basic / High-End / Luxury', icon: '📊' },
-  { label: 'Conformité EDGE IFC', norme: '+ Plan d\'action certification', icon: '🌱' },
-  { label: 'Rapport exécutif', norme: 'Maître d\'ouvrage', icon: '📋' },
-  { label: 'Plans d\'exécution BA', norme: 'Bientôt disponible', icon: '🏗️' },
-  { label: 'Plans MEP', norme: 'Bientôt disponible', icon: '📐' },
+const LIVRABLES_KEYS = [
+  { label: 'liv_note_structure', norme: 'EC2 / EC8', icon: '📄' },
+  { label: 'liv_boq_structure', norme: '7 lots', icon: '💰' },
+  { label: 'liv_note_mep', norme: 'NF C 15-100 / DTU 60.11', icon: '⚡' },
+  { label: 'liv_boq_mep', norme: 'Basic / High-End / Luxury', icon: '📊' },
+  { label: 'liv_edge', norme: 'liv_norme_edge', icon: '🌱' },
+  { label: 'liv_rapport', norme: 'liv_norme_rapport', icon: '📋' },
+  { label: 'liv_plans_ba', norme: 'bientot_dispo', icon: '🏗️' },
+  { label: 'liv_plans_mep', norme: 'bientot_dispo', icon: '📐' },
 ]
 
-const CHIFFRES = [
-  { val: '<5 min', label: 'pour un dossier complet' },
-  { val: '8', label: 'documents techniques' },
-  { val: '5', label: 'pays couverts' },
-  { val: '±15%', label: 'précision estimations' },
+const CHIFFRES_KEYS = [
+  { val: '<5 min', label: 'chiffre_dossier' },
+  { val: '8', label: 'chiffre_docs' },
+  { val: '5', label: 'chiffre_pays' },
+  { val: '±15%', label: 'chiffre_precision' },
 ]
 
 export default function Landing() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { t } = useLang()
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'DM Sans', sans-serif" }}>
@@ -51,23 +53,22 @@ export default function Landing() {
           padding: '4px 14px', fontSize: 11, color: '#555', marginBottom: 16,
         }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: VERT, display: 'inline-block' }} />
-          Moteur Eurocodes EC2/EC8 · Certifié
+          {t('badge_eurocodes')}
         </div>
 
         <h1 style={{
           fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 800, color: NAVY, lineHeight: 1.15,
           maxWidth: 700, margin: '0 auto 16px',
         }}>
-          Études structurelles et techniques complètes<br />
-          <span style={{ color: VERT }}>en moins de 5 minutes</span>
+          {t('hero_title_1')}<br />
+          <span style={{ color: VERT }}>{t('hero_title_2')}</span>
         </h1>
 
         <p style={{
           fontSize: 'clamp(13px, 2.5vw, 16px)', color: '#555', lineHeight: 1.6,
           maxWidth: 520, margin: '0 auto 28px',
         }}>
-          Tijan AI génère automatiquement notes de calcul, BOQ, rapport MEP et certification EDGE
-          pour vos projets de construction en Afrique.
+          {t('hero_subtitle')}
         </p>
 
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -75,13 +76,13 @@ export default function Landing() {
             background: VERT, color: '#fff', border: 'none', borderRadius: 8,
             padding: '13px 32px', fontSize: 15, fontWeight: 700, cursor: 'pointer',
           }}>
-            Analyser mon projet →
+            {t('cta_analyser')}
           </button>
           <button onClick={() => document.getElementById('livrables')?.scrollIntoView({ behavior: 'smooth' })} style={{
             background: '#fff', color: NAVY, border: `1.5px solid ${NAVY}`, borderRadius: 8,
             padding: '12px 28px', fontSize: 15, fontWeight: 600, cursor: 'pointer',
           }}>
-            Voir les livrables
+            {t('cta_livrables')}
           </button>
         </div>
 
@@ -90,10 +91,10 @@ export default function Landing() {
           display: 'flex', gap: 20, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap',
           flexWrap: 'wrap',
         }}>
-          {CHIFFRES.map((c, i) => (
+          {CHIFFRES_KEYS.map((c, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 28, fontWeight: 800, color: NAVY }}>{c.val}</div>
-              <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{c.label}</div>
+              <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{t(c.label)}</div>
             </div>
           ))}
         </div>
@@ -102,21 +103,21 @@ export default function Landing() {
       {/* ── POUR QUI ── */}
       <section style={{ padding: '32px 16px', background: '#FAFAFA' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>POUR QUI ?</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>Conçu pour les professionnels de la construction</h2>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>{t('pour_qui')}</div>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('pour_qui_titre')}</h2>
         </div>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
           gap: 14, maxWidth: 900, margin: '0 auto',
         }}>
-          {CIBLES.map((c, i) => (
+          {CIBLES_KEYS.map((c, i) => (
             <div key={i} style={{
               background: '#fff', border: '0.5px solid #E5E5E5', borderRadius: 10,
               padding: '18px 16px', textAlign: 'center',
             }}>
               <div style={{ fontSize: 28, marginBottom: 8 }}>{c.icon}</div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: NAVY, marginBottom: 4 }}>{c.titre}</div>
-              <div style={{ fontSize: 12, color: '#666', lineHeight: 1.5 }}>{c.desc}</div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: NAVY, marginBottom: 4 }}>{t(c.titre)}</div>
+              <div style={{ fontSize: 12, color: '#666', lineHeight: 1.5 }}>{t(c.desc)}</div>
             </div>
           ))}
         </div>
@@ -125,17 +126,17 @@ export default function Landing() {
       {/* ── LIVRABLES ── */}
       <section id="livrables" style={{ padding: '32px 16px' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>LIVRABLES</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>8 documents générés automatiquement</h2>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>{t('livrables_section')}</div>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('livrables_titre')}</h2>
           <p style={{ fontSize: 14, color: '#666', marginTop: 8 }}>
-            Uploadez vos plans → Tijan AI analyse, dimensionne et chiffre → Téléchargez vos documents<br/>Plans d'exécution BA et MEP disponibles très prochainement.
+            {t('livrables_desc')}<br/>{t('livrables_plans_soon')}
           </p>
         </div>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: 12, maxWidth: 900, margin: '0 auto',
         }}>
-          {LIVRABLES.map((l, i) => (
+          {LIVRABLES_KEYS.map((l, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 12,
               background: '#fff', border: '0.5px solid #E5E5E5', borderRadius: 8,
@@ -143,8 +144,8 @@ export default function Landing() {
             }}>
               <span style={{ fontSize: 22 }}>{l.icon}</span>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 13, color: '#111' }}>{l.label}</div>
-                <div style={{ fontSize: 11, color: '#888' }}>{l.norme}</div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: '#111' }}>{t(l.label)}</div>
+                <div style={{ fontSize: 11, color: '#888' }}>{t(l.norme)}</div>
               </div>
             </div>
           ))}
@@ -154,17 +155,17 @@ export default function Landing() {
       {/* ── COMMENT ÇA MARCHE ── */}
       <section style={{ padding: '32px 16px', background: '#FAFAFA' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>COMMENT ÇA MARCHE</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>3 étapes, 5 minutes</h2>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>{t('comment_section')}</div>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('comment_titre')}</h2>
         </div>
         <div style={{
           display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap',
           maxWidth: 800, margin: '0 auto',
         }}>
           {[
-            { step: '1', titre: 'Uploadez vos plans', desc: 'PDF ou saisie manuelle des paramètres du projet' },
-            { step: '2', titre: 'Tijan AI analyse', desc: 'Calcul structure EC2/EC8, MEP, EDGE, chiffrage multi-pays' },
-            { step: '3', titre: 'Téléchargez tout', desc: '8 documents PDF professionnels prêts à l\'emploi' },
+            { step: '1', titre: t('step1_titre'), desc: t('step1_desc') },
+            { step: '2', titre: t('step2_titre'), desc: t('step2_desc') },
+            { step: '3', titre: t('step3_titre'), desc: t('step3_desc') },
           ].map((s, i) => (
             <div key={i} style={{
               flex: '1 1 220px', textAlign: 'center',
@@ -189,20 +190,19 @@ export default function Landing() {
         background: NAVY,
       }}>
         <h2 style={{ fontSize: 'clamp(20px, 4vw, 28px)', fontWeight: 700, color: '#fff', marginBottom: 12 }}>
-          Prêt à transformer votre processus d'ingénierie ?
+          {t('cta_final_titre')}
         </h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
-          Rejoignez les professionnels qui utilisent Tijan AI pour produire des dossiers techniques
-          10x plus vite et à une fraction du coût d'un BET traditionnel.
+          {t('cta_final_desc')}
         </p>
         <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
           background: VERT, color: '#fff', border: 'none', borderRadius: 8,
           padding: '14px 36px', fontSize: 16, fontWeight: 700, cursor: 'pointer',
         }}>
-          Commencer maintenant →
+          {t('cta_commencer')}
         </button>
         <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 12 }}>
-          1 projet gratuit · Pas de carte bancaire requise
+          {t('cta_gratuit')}
         </div>
       </section>
 

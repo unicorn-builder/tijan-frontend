@@ -2,13 +2,15 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
+import { useLang } from '../i18n.jsx'
 
 const VERT = '#43A956'
 
-export default function Header({ showBack, backLabel, backTo }) {
+export default function Header() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { restants } = useCredits()
+  const { lang, setLang, t } = useLang()
 
   return (
     <nav style={{
@@ -16,52 +18,48 @@ export default function Header({ showBack, backLabel, backTo }) {
       padding: '0 10px', minHeight: 56, flexWrap: 'wrap', gap: 8, borderBottom: '0.5px solid #E5E5E5',
       background: '#fff', position: 'sticky', top: 0, zIndex: 100,
     }}>
-      {/* Gauche */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {showBack && (
-          <button onClick={() => navigate(backTo || '/')} style={{
-            background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
-            padding: '4px 8px', fontSize: 11, color: '#555', cursor: 'pointer',
-          }}>{backLabel || '← Accueil'}</button>
-        )}
         <img
           src="/tijan_logo_crop.png" alt="Tijan AI"
           onClick={() => navigate('/')}
           style={{ height: 24, cursor: 'pointer' }}
         />
-        <span style={{ fontSize: 11, color: '#888', display: 'none' }}>Engineering Intelligence for Africa</span>
       </div>
-
-      {/* Droite */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <button onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')} style={{
+          background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
+          padding: '4px 8px', fontSize: 11, fontWeight: 700, color: '#555', cursor: 'pointer',
+        }}>{lang === 'fr' ? 'EN' : 'FR'}</button>
         {user && (
           <button onClick={() => navigate('/pricing')} style={{
             background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 6,
             padding: '5px 12px', fontSize: 11, color: VERT, cursor: 'pointer', fontWeight: 600,
           }}>
-            {restants ?? '...'} crédit{restants !== 1 ? 's' : ''} · Tarifs
+            {restants ?? '...'} {restants !== 1 ? t('credits_label_plural') : t('credits_label')} · {t('tarifs')}
           </button>
         )}
         {user && (
           <button onClick={() => navigate('/dashboard')} style={{
             background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
             padding: '4px 8px', fontSize: 11, color: '#555', cursor: 'pointer',
-          }}>Mes projets</button>
+          }}>{t('mes_projets')}</button>
         )}
-        <button onClick={() => navigate('/pricing')} style={{
+        {!user && (
+          <button onClick={() => navigate('/pricing')} style={{
             background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
             padding: '4px 8px', fontSize: 11, color: '#555', cursor: 'pointer',
-          }}>Tarifs</button>
+          }}>{t('tarifs')}</button>
+        )}
         {user ? (
           <button onClick={signOut} style={{
             background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
             padding: '4px 8px', fontSize: 11, color: '#888', cursor: 'pointer',
-          }}>Déconnexion</button>
+          }}>{t('deconnexion')}</button>
         ) : (
           <button onClick={() => navigate('/login')} style={{
             background: VERT, color: '#fff', border: 'none', borderRadius: 6,
             padding: '7px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-          }}>Commencer gratuitement</button>
+          }}>{t('commencer_gratuit')}</button>
         )}
       </div>
     </nav>

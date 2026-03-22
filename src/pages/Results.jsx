@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import ChatTijan from '../components/ChatTijan'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
+import { useLang, TAB_KEYS } from '../i18n.jsx'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
 const Card = ({ children, style = {} }) => (
@@ -84,6 +85,7 @@ export default function Results() {
   const [activeTab, setActiveTab] = useState('structure')
   const { supabase, user } = useAuth()
   const { restants, consommer } = useCredits()
+  const { lang, setLang, t } = useLang()
   const [mepData, setMepData] = useState(state?.mepData || null)
   const [chatMessages, setChatMessages] = useState(state?.chatHistorique || [])
   const [mepLoading, setMepLoading] = useState(false)
@@ -143,7 +145,7 @@ export default function Results() {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ color: GRIS3, marginBottom: 16 }}>Aucun résultat disponible.</p>
+          <p style={{ color: GRIS3, marginBottom: 16 }}>{t('res_aucun')}</p>
           <button onClick={() => navigate('/projects/new')} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 24px', fontSize: 13, fontWeight: 600 }}>
             Nouveau projet
           </button>
@@ -169,7 +171,7 @@ export default function Results() {
       return (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: GRIS3 }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>🏗</div>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>Disponible prochainement</div>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>{t('res_bientot')}</div>
         </div>
       )
     }
@@ -188,7 +190,7 @@ export default function Results() {
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>BÉTON / ACIER</div>
                 <div style={{ fontWeight: 600 }}>{resultats.classe_beton || params.classe_beton || '—'} / {resultats.classe_acier || params.classe_acier || '—'}</div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>Auto-sélectionné</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_auto_select')}</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>SURFACE BÂTIE</div>
@@ -216,9 +218,9 @@ export default function Results() {
 
           {poteaux.length > 0 && (
             <>
-              <SectionTitle>Descente de charges — Poteaux (EC2/EC8)</SectionTitle>
+              <SectionTitle>{t('r_descente')}</SectionTitle>
               <DataTable
-                headers={['Niveau', 'NEd (kN)', 'Section', 'Armatures', 'Taux arm.', 'NRd (kN)', 'Vérif.']}
+                headers={[t('r_niveau'), 'NEd (kN)', t('r_section'), t('r_armatures'), t('r_taux_arm'), 'NRd (kN)', t('r_verif')]}
                 rows={poteaux.map(p => [
                   p.niveau || p.label,
                   fmt(p.NEd_kN, '', 1),
@@ -234,9 +236,9 @@ export default function Results() {
 
           {fondation.type && (
             <>
-              <SectionTitle>Fondations</SectionTitle>
+              <SectionTitle>{t('r_fondations')}</SectionTitle>
               <DataTable
-                headers={['Type', 'Diamètre', 'Longueur', 'Armatures', 'Nb pieux']}
+                headers={[t('r_type'), t('r_diametre'), t('r_longueur'), t('r_armatures'), t('r_nb_pieux')]}
                 rows={[[
                   fondation.type,
                   fondation.diam_pieu_mm ? `Ø${fondation.diam_pieu_mm} mm` : '—',
@@ -250,7 +252,7 @@ export default function Results() {
 
           {analyse.alertes?.length > 0 && (
             <>
-              <SectionTitle>Points d'attention</SectionTitle>
+              <SectionTitle>{t('r_points_attention')}</SectionTitle>
               <Card style={{ borderLeft: `3px solid ${ORANGE}` }}>
                 {analyse.alertes.map((a, i) => <div key={i} style={{ fontSize: 12, color: ORANGE, marginBottom: 4 }}>⚠ {a}</div>)}
               </Card>
@@ -259,7 +261,7 @@ export default function Results() {
 
           {analyse.recommandations?.length > 0 && (
             <>
-              <SectionTitle>Recommandations</SectionTitle>
+              <SectionTitle>{t('r_recommandations')}</SectionTitle>
               <Card>
                 {analyse.recommandations.map((r, i) => <div key={i} style={{ fontSize: 12, color: '#333', marginBottom: 4 }}>• {r}</div>)}
               </Card>
@@ -286,14 +288,14 @@ export default function Results() {
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>COÛT / m² BÂTI</div>
                 <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} — {fmt(boq.ratio_fcfa_m2_habitable)} FCFA/m²</div>
-                <div style={{ fontSize: 10, color: GRIS3 }}>Structure seule</div>
+                <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_structure_seule')}</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>BÉTON / ACIER</div>
                 <div style={{ fontWeight: 600 }}>{fmt(beton_m3, 'm³')} / {fmt(acier_kg, 'kg')}</div>
               </div>
             </div>
-            <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>Estimation ±15% — BOQ détaillé disponible en téléchargement.</div>
+            <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>{t('r_estimation_note')}</div>
           </Card>
         </>
       )
@@ -304,7 +306,7 @@ export default function Results() {
       if (mepLoading) return <Spinner text="Calcul MEP en cours..." />
       if (mepError || !mepData?.ok) return (
         <div style={{ textAlign: 'center', padding: 60, color: GRIS3 }}>
-          <div style={{ fontSize: 13, marginBottom: 12 }}>Données MEP non disponibles.</div>
+          <div style={{ fontSize: 13, marginBottom: 12 }}>{t('r_mep_non_dispo')}</div>
           <button onClick={() => { setMepError(false); setMepData(null) }} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '8px 20px', fontSize: 12 }}>
             Réessayer
           </button>
@@ -330,33 +332,33 @@ export default function Results() {
             </div>
           </Card>
 
-          <SectionTitle>Électricité (NF C 15-100)</SectionTitle>
-          <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
-            ['Puissance totale', fmt(el.puissance_totale_kva, 'kVA'), 'Transformateur', fmt(el.transfo_kva, 'kVA')],
-            ['Groupe électrogène', fmt(el.groupe_electrogene_kva, 'kVA'), 'Nb compteurs', fmt(el.nb_compteurs)],
-            ['Conso annuelle', fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture annuelle', fmtFcfa(el.facture_annuelle_fcfa)],
+          <SectionTitle>{t('r_electricite')}</SectionTitle>
+          <DataTable headers={[t('r_indicateur'), t('r_valeur'), t('r_indicateur'), t('r_valeur')]} rows={[
+            [t('r_puissance_totale'), fmt(el.puissance_totale_kva, 'kVA'), t('r_transfo'), fmt(el.transfo_kva, 'kVA')],
+            [t('r_groupe_elec'), fmt(el.groupe_electrogene_kva, 'kVA'), t('r_nb_compteurs'), fmt(el.nb_compteurs)],
+            [t('r_conso_annuelle'), fmt(el.conso_annuelle_kwh, 'kWh/an'), t('r_facture_annuelle'), fmtFcfa(el.facture_annuelle_fcfa)],
           ]} />
 
-          <SectionTitle>Plomberie (DTU 60.11)</SectionTitle>
-          <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
-            ['Nb logements', fmt(pl.nb_logements), 'Besoin eau/jour', fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
-            ['Volume citerne', fmt(pl.volume_citerne_m3, 'm³'), 'Surpresseur', fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
-            ['CESI', fmt(pl.nb_chauffe_eau_solaire, 'unités'), 'Facture eau/an', fmtFcfa(pl.facture_eau_fcfa)],
+          <SectionTitle>{t('r_plomberie')}</SectionTitle>
+          <DataTable headers={[t('r_indicateur'), t('r_valeur'), t('r_indicateur'), t('r_valeur')]} rows={[
+            [t('r_nb_logements'), fmt(pl.nb_logements), t('r_besoin_eau_jour'), fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
+            [t('r_volume_citerne'), fmt(pl.volume_citerne_m3, 'm³'), t('r_surpresseur'), fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
+            [t('r_cesi'), fmt(pl.nb_chauffe_eau_solaire, 'unités'), t('r_facture_eau'), fmtFcfa(pl.facture_eau_fcfa)],
           ]} />
 
-          <SectionTitle>CVC (EN 12831)</SectionTitle>
-          <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
-            ['Puissance frigo', fmt(cv.puissance_frigorifique_kw, 'kW'), 'Type VMC', cv.type_vmc || '—'],
-            ['Splits séjour', fmt(cv.nb_splits_sejour), 'Splits chambre', fmt(cv.nb_splits_chambre)],
-            ['Cassettes', fmt(cv.nb_cassettes), 'Conso CVC/an', fmt(cv.conso_cvc_kwh_an, 'kWh/an')],
+          <SectionTitle>{t('r_cvc')}</SectionTitle>
+          <DataTable headers={[t('r_indicateur'), t('r_valeur'), t('r_indicateur'), t('r_valeur')]} rows={[
+            [t('r_puissance_frigo_label'), fmt(cv.puissance_frigorifique_kw, 'kW'), t('r_type_vmc'), cv.type_vmc || '—'],
+            [t('r_splits_sejour'), fmt(cv.nb_splits_sejour), t('r_splits_chambre'), fmt(cv.nb_splits_chambre)],
+            [t('r_cassettes'), fmt(cv.nb_cassettes), t('r_conso_cvc'), fmt(cv.conso_cvc_kwh_an, 'kWh/an')],
           ]} />
 
           {mepData.securite_incendie && (
             <>
-              <SectionTitle>Sécurité incendie (IT 246)</SectionTitle>
-              <DataTable headers={['Indicateur', 'Valeur', 'Indicateur', 'Valeur']} rows={[
-                ['Catégorie ERP', mepData.securite_incendie.categorie_erp, 'Détecteurs fumée', fmt(mepData.securite_incendie.nb_detecteurs_fumee)],
-                ['Extincteurs CO2', fmt(mepData.securite_incendie.nb_extincteurs_co2), 'Sprinklers', mepData.securite_incendie.sprinklers_requis ? 'Obligatoires' : 'Non requis'],
+              <SectionTitle>{t('r_securite_incendie')}</SectionTitle>
+              <DataTable headers={[t('r_indicateur'), t('r_valeur'), t('r_indicateur'), t('r_valeur')]} rows={[
+                [t('r_categorie_erp'), mepData.securite_incendie.categorie_erp, t('r_detecteurs'), fmt(mepData.securite_incendie.nb_detecteurs_fumee)],
+                [t('r_extincteurs'), fmt(mepData.securite_incendie.nb_extincteurs_co2), 'Sprinklers', mepData.securite_incendie.sprinklers_requis ? t('r_sprinklers_obl') : t('r_sprinklers_non')],
               ]} />
             </>
           )}
@@ -401,9 +403,9 @@ export default function Results() {
     if (activeTab === 'edge' && mepData) {
       const edge = mepData.edge || {}
       const piliers = [
-        { key: 'economie_energie_pct', label: 'ÉCONOMIE ÉNERGIE' },
-        { key: 'economie_eau_pct', label: 'ÉCONOMIE EAU' },
-        { key: 'economie_materiaux_pct', label: 'ÉCONOMIE MATÉRIAUX' },
+        { key: 'economie_energie_pct', label: t('r_eco_energie') },
+        { key: 'economie_eau_pct', label: t('r_eco_eau') },
+        { key: 'economie_materiaux_pct', label: t('r_eco_materiaux') },
       ]
       return (
         <>
@@ -425,16 +427,16 @@ export default function Results() {
               ))}
             </div>
             <div style={{ marginTop: 12, fontSize: 11, color: ORANGE }}>
-              Certification IFC/World Bank — 20% d'économie requis sur les 3 piliers
+              {t('r_edge_note')}
             </div>
           </Card>
 
           {edge.plan_action?.length > 0 && (
             <>
-              <SectionTitle>Plan d'action — Optimisation vers certification</SectionTitle>
+              <SectionTitle>{t('r_plan_action')}</SectionTitle>
               <Card style={{ borderLeft: `3px solid ${ORANGE}` }}>
                 <div style={{ fontSize: 12, color: ORANGE, marginBottom: 8, fontWeight: 600 }}>
-                  Coût de mise en conformité estimé : {fmtFcfa(edge.cout_mise_conformite_fcfa)} | ROI : {edge.roi_ans} ans
+                  {t('r_cout_conformite')} : {fmtFcfa(edge.cout_mise_conformite_fcfa)} | ROI : {edge.roi_ans} ans
                 </div>
                 {edge.plan_action.map((a, i) => (
                   <div key={i} style={{ fontSize: 12, marginBottom: 6, padding: '6px 10px', background: '#FFFBF0', borderRadius: 4 }}>
@@ -455,10 +457,10 @@ export default function Results() {
                 padding: '12px 28px', fontSize: 14, fontWeight: 700,
                 cursor: edgeLoading ? 'not-allowed' : 'pointer', width: '100%', maxWidth: 400,
               }}>
-                {edgeLoading ? 'Optimisation en cours...' : '⚡ Optimiser vers certification EDGE'}
+                {edgeLoading ? t('r_optimisation_cours') : t('r_optimiser_edge')}
               </button>
               <div style={{ fontSize: 11, color: '#888', marginTop: 6 }}>
-                Active LED, isolation, WC économiques et robinetterie éco sur ce projet
+                {t('r_optimise_note')}
               </div>
             </div>
           )}
@@ -494,14 +496,14 @@ export default function Results() {
               <button onClick={() => setEdgeOptimise(null)} style={{
                 marginTop: 10, background: 'none', border: '1px solid #43A956',
                 color: '#2D7A3A', borderRadius: 6, padding: '5px 14px', fontSize: 12, cursor: 'pointer'
-              }}>Revenir au projet original</button>
+              }}>{t('r_revenir_original')}</button>
             </div>
           )}
 
           {['mesures_energie', 'mesures_eau', 'mesures_materiaux'].map((key, i) => (
             edge[key]?.length > 0 && (
               <div key={key}>
-                <SectionTitle>{['Mesures énergie', 'Mesures eau', 'Mesures matériaux'][i]}</SectionTitle>
+                <SectionTitle>{[t('r_mesures_energie'), t('r_mesures_eau'), t('r_mesures_materiaux')][i]}</SectionTitle>
                 <Card>
                   {edge[key].map((m, j) => (
                     <div key={j} style={{ fontSize: 12, marginBottom: 4, color: m.statut?.includes('Intégré') ? '#2d7a3a' : '#333' }}>
@@ -523,7 +525,7 @@ export default function Results() {
       return (
         <>
           <Card>
-            <SectionTitle>Fiche béton armé — Poteaux</SectionTitle>
+            <SectionTitle>{t('r_fiche_beton')}</SectionTitle>
             {poteaux.length > 0 ? (
               <DataTable
                 headers={['Niveau', 'Section', 'Armatures longitudinales', 'Cadres', 'Béton']}
@@ -535,12 +537,12 @@ export default function Results() {
                   resultats.classe_beton || params.classe_beton || 'C30/37',
                 ])}
               />
-            ) : <div style={{ fontSize: 12, color: GRIS3 }}>Données non disponibles.</div>}
+            ) : <div style={{ fontSize: 12, color: GRIS3 }}>{t('r_donnees_non_dispo')}</div>}
           </Card>
           {fondation.type && (
             <Card>
-              <SectionTitle>Fiche fondations</SectionTitle>
-              <DataTable headers={['Type', 'Diamètre', 'Longueur', 'Armatures', 'Nb pieux']} rows={[[
+              <SectionTitle>{t('r_fiche_fondations')}</SectionTitle>
+              <DataTable headers={[t('r_type'), t('r_diametre'), t('r_longueur'), t('r_armatures'), t('r_nb_pieux')]} rows={[[
                 fondation.type,
                 fondation.diam_pieu_mm ? `Ø${fondation.diam_pieu_mm} mm` : '—',
                 fondation.longueur_pieu_m ? `${fondation.longueur_pieu_m} m` : '—',
@@ -549,7 +551,7 @@ export default function Results() {
               ]]} />
             </Card>
           )}
-          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>Téléchargez le dossier complet ci-dessous.</div>
+          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>{t('r_telecharger_complet')}</div>
         </>
       )
     }
@@ -561,22 +563,22 @@ export default function Results() {
       return (
         <>
           <Card>
-            <SectionTitle>Fiche électricité (NF C 15-100)</SectionTitle>
-            <DataTable headers={['Paramètre', 'Valeur', 'Paramètre', 'Valeur']} rows={[
-              ['Puissance installée', fmt(el.puissance_totale_kva, 'kVA'), 'Transformateur', fmt(el.transfo_kva, 'kVA')],
-              ['Groupe électrogène', fmt(el.groupe_electrogene_kva, 'kVA'), 'Nb compteurs', fmt(el.nb_compteurs)],
-              ['Conso annuelle', fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture', fmtFcfa(el.facture_annuelle_fcfa)],
+            <SectionTitle>{t('r_fiche_elec')}</SectionTitle>
+            <DataTable headers={[t('r_parametre'), t('r_valeur'), t('r_parametre'), t('r_valeur')]} rows={[
+              [t('r_puissance_totale'), fmt(el.puissance_totale_kva, 'kVA'), t('r_transfo'), fmt(el.transfo_kva, 'kVA')],
+              [t('r_groupe_elec'), fmt(el.groupe_electrogene_kva, 'kVA'), t('r_nb_compteurs'), fmt(el.nb_compteurs)],
+              [t('r_conso_annuelle'), fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture', fmtFcfa(el.facture_annuelle_fcfa)],
             ]} />
           </Card>
           <Card>
-            <SectionTitle>Fiche plomberie (DTU 60.11)</SectionTitle>
-            <DataTable headers={['Paramètre', 'Valeur', 'Paramètre', 'Valeur']} rows={[
-              ['Nb logements', fmt(pl.nb_logements), 'Besoin eau/jour', fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
-              ['Volume citerne', fmt(pl.volume_citerne_m3, 'm³'), 'Surpresseur', fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
-              ['CESI', fmt(pl.nb_chauffe_eau_solaire, 'unités'), 'Facture eau/an', fmtFcfa(pl.facture_eau_fcfa)],
+            <SectionTitle>{t('r_fiche_plomb')}</SectionTitle>
+            <DataTable headers={[t('r_parametre'), t('r_valeur'), t('r_parametre'), t('r_valeur')]} rows={[
+              [t('r_nb_logements'), fmt(pl.nb_logements), t('r_besoin_eau_jour'), fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
+              [t('r_volume_citerne'), fmt(pl.volume_citerne_m3, 'm³'), t('r_surpresseur'), fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
+              [t('r_cesi'), fmt(pl.nb_chauffe_eau_solaire, 'unités'), t('r_facture_eau'), fmtFcfa(pl.facture_eau_fcfa)],
             ]} />
           </Card>
-          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>Téléchargez le dossier complet ci-dessous.</div>
+          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>{t('r_telecharger_complet')}</div>
         </>
       )
     }
@@ -609,7 +611,7 @@ export default function Results() {
               </div>
             </div>
           </Card>
-          <SectionTitle>Budget global estimé</SectionTitle>
+          <SectionTitle>{t('r_budget_global')}</SectionTitle>
           <Card>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               <div>
@@ -623,14 +625,14 @@ export default function Results() {
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>COÛT / m² BÂTI</div>
                 <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} FCFA/m²</div>
-                <div style={{ fontSize: 10, color: GRIS3 }}>Structure seule</div>
+                <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_structure_seule')}</div>
               </div>
             </div>
-            <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>Estimation ±15% — hors MEP, finitions, VRD</div>
+            <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>{t('r_estimation_hors')}</div>
           </Card>
           {analyse.note_ingenieur && (
             <>
-              <SectionTitle>Note de synthèse ingénieur</SectionTitle>
+              <SectionTitle>{t('r_note_ingenieur')}</SectionTitle>
               <Card style={{ borderLeft: '3px solid #1565C0', background: '#E3F2FD' }}>
                 <div style={{ fontSize: 12, color: '#1565C0', fontStyle: 'italic' }}>{analyse.note_ingenieur}</div>
               </Card>
@@ -638,17 +640,17 @@ export default function Results() {
           )}
           {analyse.points_forts?.length > 0 && (
             <>
-              <SectionTitle>Points forts</SectionTitle>
+              <SectionTitle>{t('r_points_forts')}</SectionTitle>
               <Card>{analyse.points_forts.map((f,i) => <div key={i} style={{ fontSize: 12, color: '#2d7a3a', marginBottom: 4 }}>✅ {f}</div>)}</Card>
             </>
           )}
           {analyse.alertes?.length > 0 && (
             <>
-              <SectionTitle>Points d'attention</SectionTitle>
+              <SectionTitle>{t('r_points_attention')}</SectionTitle>
               <Card style={{ borderLeft: '3px solid #E07B00' }}>{analyse.alertes.map((a,i) => <div key={i} style={{ fontSize: 12, color: '#E07B00', marginBottom: 4 }}>⚠ {a}</div>)}</Card>
             </>
           )}
-          <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>Ce rapport est destiné au maître d'ouvrage. Téléchargez le PDF complet ci-dessous.</div>
+          <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>{t('r_rapport_dest')}</div>
         </>
       )
     }
@@ -697,6 +699,7 @@ export default function Results() {
         </div>
         {!isMobile && <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>}
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 4, padding: '2px 6px', fontSize: 9, fontWeight: 700, color: '#555', cursor: 'pointer' }}>{lang === 'fr' ? 'EN' : 'FR'}</button>
             <button onClick={() => navigate('/pricing')} style={{ background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 4, padding: '2px 6px', fontSize: 9, color: '#43A956', fontWeight: 600, cursor: 'pointer' }}>{restants ?? '...'} cr.</button>
             <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '2px 6px', fontSize: 9, color: '#B8860B' }}>Beta</div>
           </div>
@@ -716,8 +719,8 @@ export default function Results() {
                 borderLeft: active ? `3px solid ${VERT}` : '3px solid transparent',
                 transition: 'all 0.15s', cursor: 'pointer',
               }}>
-                {tab.label}
-                {disabled && <span style={{ marginLeft: 6, fontSize: 9, background: '#F0F0F0', color: '#888', borderRadius: 8, padding: '1px 6px' }}>Bientôt</span>}
+                {t(TAB_KEYS[tab.id]) || tab.label}
+                {disabled && <span style={{ marginLeft: 6, fontSize: 9, background: '#F0F0F0', color: '#888', borderRadius: 8, padding: '1px 6px' }}>{t('res_bientot_badge')}</span>}
               </button>
             )
           })}
@@ -742,7 +745,7 @@ export default function Results() {
                   opacity: (MEP_TABS.includes(activeTab) && !mepData?.ok) ? 0.5 : 1,
                 }}
               >
-                {dlLoading === endpoint ? 'Génération en cours...' : '↓ Télécharger le PDF'}
+                {dlLoading === endpoint ? t('res_generation') : t('res_telecharger')}
               </button>
             </div>
           )}

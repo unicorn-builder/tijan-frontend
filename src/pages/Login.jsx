@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../i18n.jsx'
 
 const VERT = '#43A956'
 const VERT_DARK = '#2D7A3A'
@@ -20,6 +21,7 @@ export default function Login() {
   const [success, setSuccess] = useState('')
 
   const { signIn, signUp, supabase } = useAuth()
+  const { t } = useLang()
 
   const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
@@ -41,16 +43,16 @@ export default function Login() {
         if (error) throw error
         navigate('/')
       } else {
-        if (!nom.trim()) throw new Error('Veuillez entrer votre nom.')
-        if (password.length < 6) throw new Error('Le mot de passe doit contenir au moins 6 caractères.')
+        if (!nom.trim()) throw new Error(t('signup_nom_required'))
+        if (password.length < 6) throw new Error(t('signup_password_short'))
         const { error } = await signUp(email, password, nom)
         if (error) throw error
-        setSuccess('Compte créé ! Vérifiez votre email pour confirmer votre inscription.')
+        setSuccess(t('signup_success'))
       }
     } catch (err) {
       const msg = err.message || 'Une erreur est survenue.'
-      if (msg.includes('Invalid login')) setError('Email ou mot de passe incorrect.')
-      else if (msg.includes('already registered')) setError('Cet email est déjà utilisé.')
+      if (msg.includes('Invalid login')) setError(t('login_email_invalid'))
+      else if (msg.includes('already registered')) setError(t('login_already_registered'))
       else setError(msg)
     } finally {
       setLoading(false)
@@ -86,7 +88,7 @@ export default function Login() {
       }}>
         {/* Tabs */}
         <div style={{ display: 'flex', marginBottom: 28, gap: 0, borderBottom: `2px solid ${GRIS2}` }}>
-          {[['login', 'Se connecter'], ['signup', 'Créer un compte']].map(([m, label]) => (
+          {[['login', t('login_tab')], ['signup', t('signup_tab')]].map(([m, label]) => (
             <button key={m} onClick={() => { setMode(m); setError(''); setSuccess('') }} style={{
               flex: 1, background: 'none', border: 'none',
               paddingBottom: 12, fontSize: 14, fontWeight: mode === m ? 700 : 400,
@@ -107,12 +109,12 @@ export default function Login() {
           <svg width="18" height="18" viewBox="0 0 48 48">
             <path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.9 3 4 11.9 4 23s8.9 20 20 20c11 0 19.7-7.7 19.7-20 0-1.3-.1-2.7-.2-3z"/>
           </svg>
-          Continuer avec Google
+          {t('login_google')}
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
           <div style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
-          <span style={{ fontSize: 11, color: '#9CA3AF' }}>ou</span>
+          <span style={{ fontSize: 11, color: '#9CA3AF' }}>{t('login_ou')}</span>
           <div style={{ flex: 1, height: 1, background: '#E5E7EB' }} />
         </div>
 
@@ -192,13 +194,13 @@ export default function Login() {
               transition: 'background 0.2s',
             }}
           >
-            {loading ? 'Chargement...' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+            {loading ? t('login_loading') : mode === 'login' ? t('login_submit') : t('signup_submit')}
           </button>
         </form>
 
         {mode === 'login' && (
           <div style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: GRIS3 }}>
-            Pas encore de compte ?{' '}
+            {t('login_no_account')}{' '}
             <button onClick={() => setMode('signup')} style={{
               background: 'none', border: 'none', color: VERT,
               fontWeight: 600, cursor: 'pointer', fontSize: 12,
@@ -210,7 +212,7 @@ export default function Login() {
       </div>
 
       <div style={{ marginTop: 24, fontSize: 11, color: GRIS3, textAlign: 'center' }}>
-        Tijan AI — Plateforme BIM/Ingénierie pour l'Afrique
+        {t('login_footer')}
       </div>
     </div>
   )

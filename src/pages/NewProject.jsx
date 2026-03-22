@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
 import { BACKEND, VERT, GRIS2 } from '../constants'
+import { useLang } from '../i18n.jsx'
 
 export default function NewProject() {
   const navigate = useNavigate()
   const { supabase, user } = useAuth()
   const { restants, consommer } = useCredits()
+  const { t } = useLang()
   const [step, setStep] = useState('form')
   const [nom, setNom] = useState('')
   const [ville, setVille] = useState('Dakar')
@@ -20,13 +22,13 @@ export default function NewProject() {
   const solRef = useRef(null)
 
   const loading = step === 'uploading' || step === 'calculating'
-  const loadingText = step === 'uploading' ? 'Lecture des plans...' : 'Tijan analyse votre projet...'
+  const loadingText = step === 'uploading' ? t('np_uploading') : t('np_calculating')
 
   async function lancer() {
-    if (!nom.trim()) { setErrorMsg('Veuillez nommer votre projet.'); return }
-    if (!ville.trim()) { setErrorMsg('Veuillez indiquer la ville.'); return }
-    if (!mainFile) { setErrorMsg('Veuillez uploader vos plans.'); return }
-    if (!surfaceTerrain) { setErrorMsg('Veuillez indiquer la surface du terrain.'); return }
+    if (!nom.trim()) { setErrorMsg(t('np_err_nom')); return }
+    if (!ville.trim()) { setErrorMsg(t('np_err_ville')); return }
+    if (!mainFile) { setErrorMsg(t('np_err_plans')); return }
+    if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
     setErrorMsg('')
     setStep('uploading')
 
@@ -77,12 +79,12 @@ export default function NewProject() {
         body: JSON.stringify(payload),
       })
       const resultats = await res.json()
-      if (!resultats.ok) { setStep('error'); setErrorMsg('Erreur lors du calcul.'); return }
+      if (!resultats.ok) { setStep('error'); setErrorMsg(t('np_err_calcul')); return }
       // Consommer un crédit
       if (consommer) {
         const ok = await consommer()
         if (!ok && restants <= 0) {
-          setStep('error'); setErrorMsg('Vous n\'avez plus de crédits. Achetez-en sur la page Pricing.'); return
+          setStep('error'); setErrorMsg(t('np_err_credits')); return
         }
       }
       // Sauvegarder dans Supabase
@@ -104,7 +106,7 @@ export default function NewProject() {
       }
       navigate(`/projects/${Date.now()}/results`, { state: { params: payload, resultats } })
     } catch {
-      setStep('error'); setErrorMsg('Erreur de connexion.')
+      setStep('error'); setErrorMsg(t('np_err_connexion'))
     }
   }
 
@@ -113,38 +115,38 @@ export default function NewProject() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#fff', padding: 24 }}>
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, padding: '14px 24px', display: 'flex', alignItems: 'center', borderBottom: `0.5px solid ${GRIS2}`, background: '#fff', zIndex: 10 }}>
-        <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', fontSize: 13, color: '#888', cursor: 'pointer' }}>← Accueil</button>
+        <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', fontSize: 13, color: '#888', cursor: 'pointer' }}>{t('np_accueil')}</button>
         <img src="/tijan_logo.png" alt="Tijan AI" style={{ height: 26, objectFit: 'contain', marginLeft: 16 }} />
         <span style={{ fontSize: 11, color: '#888', marginLeft: 8 }}>Engineering Intelligence for Africa</span>
       </div>
 
       <div style={{ width: '100%', maxWidth: 520, paddingTop: 60 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 24, fontWeight: 600, color: '#111', marginBottom: 8 }}>Nouveau projet</div>
-          <div style={{ fontSize: 14, color: '#888' }}>Nommez votre projet et déposez vos plans</div>
+          <div style={{ fontSize: 24, fontWeight: 600, color: '#111', marginBottom: 8 }}>{t('np_titre')}</div>
+          <div style={{ fontSize: 14, color: '#888' }}>{t('np_desc')}</div>
         </div>
 
         {!loading && step !== 'error' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
-                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>Nom du projet *</label>
+                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_nom')} *</label>
                 <input value={nom} onChange={e => setNom(e.target.value)} placeholder="ex: Résidence Sakho" style={inp} />
               </div>
               <div>
-                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>Ville *</label>
+                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_ville')} *</label>
                 <input value={ville} onChange={e => setVille(e.target.value)} placeholder="Dakar" style={inp} />
               </div>
             </div>
 
             <div>
-              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>Surface du terrain (m²) *</label>
+              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_surface')} *</label>
               <input type="number" value={surfaceTerrain} onChange={e => setSurfaceTerrain(e.target.value)} placeholder="ex: 1400" style={inp} min="50" />
-              <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>L'emprise bâtie sera estimée à 70% si non détectée depuis les plans.</div>
+              <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>{t('np_emprise_note')}</div>
             </div>
 
             <div>
-              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>Plans architecturaux *</label>
+              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_plans')} *</label>
               <div
                 onClick={() => mainRef.current?.click()}
                 onDragOver={e => { e.preventDefault(); setDragging(true) }}
@@ -154,16 +156,16 @@ export default function NewProject() {
               >
                 {mainFile
                   ? <div><div style={{ fontSize: 13, fontWeight: 500, color: VERT, marginBottom: 4 }}>✓ {mainFile.name}</div><div style={{ fontSize: 11, color: '#888' }}>Cliquez pour changer</div></div>
-                  : <div><div style={{ fontSize: 13, color: '#555', marginBottom: 6 }}>Déposez vos plans ou cliquez pour choisir</div><div style={{ fontSize: 11, color: '#888' }}>PDF uniquement — DWG et Revit bientôt disponibles</div></div>
+                  : <div><div style={{ fontSize: 13, color: '#555', marginBottom: 6 }}>{t('np_drop')}</div><div style={{ fontSize: 11, color: '#888' }}>{t('np_format')}</div></div>
                 }
                 <input ref={mainRef} type="file" accept=".pdf,.dwg,.dxf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) setMainFile(f) }} />
               </div>
             </div>
 
             <div>
-              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>Étude de sol <span style={{ color: '#aaa' }}>(optionnel)</span></label>
+              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_sol')} <span style={{ color: '#aaa' }}>({t('np_sol_opt')})</span></label>
               <div onClick={() => solRef.current?.click()} style={{ border: `1px dashed ${solFile ? VERT : GRIS2}`, borderRadius: 8, padding: '14px 20px', textAlign: 'center', cursor: 'pointer', background: solFile ? '#F0FAF1' : '#FAFAFA' }}>
-                {solFile ? <div style={{ fontSize: 12, color: VERT }}>✓ {solFile.name}</div> : <div style={{ fontSize: 12, color: '#aaa' }}>Ajouter une étude de sol (PDF)</div>}
+                {solFile ? <div style={{ fontSize: 12, color: VERT }}>✓ {solFile.name}</div> : <div style={{ fontSize: 12, color: '#aaa' }}>{t('np_sol_add')}</div>}
                 <input ref={solRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) setSolFile(f) }} />
               </div>
             </div>
@@ -173,7 +175,7 @@ export default function NewProject() {
             <button onClick={lancer} style={{ width: '100%', padding: 13, background: VERT, color: '#fff', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
               Lancer l'analyse
             </button>
-            <div style={{ fontSize: 11, color: '#aaa', textAlign: 'center' }}>Si vos plans ne sont pas lisibles, l'analyse sera lancée avec des paramètres standards.</div>
+            <div style={{ fontSize: 11, color: '#aaa', textAlign: 'center' }}>{t('np_disclaimer')}</div>
           </div>
         )}
 
@@ -187,7 +189,7 @@ export default function NewProject() {
         {step === 'error' && (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>{errorMsg}</div>
-            <button onClick={() => { setStep('form'); setErrorMsg('') }} style={{ padding: '10px 28px', background: VERT, color: '#fff', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Réessayer</button>
+            <button onClick={() => { setStep('form'); setErrorMsg('') }} style={{ padding: '10px 28px', background: VERT, color: '#fff', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>{t('np_reessayer')}</button>
           </div>
         )}
       </div>

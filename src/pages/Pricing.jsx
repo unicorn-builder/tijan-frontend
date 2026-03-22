@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
 import Header from '../components/Header'
 import { VERT, BACKEND } from '../constants'
+import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
 
@@ -22,6 +23,7 @@ export default function Pricing() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { restants, loading: creditsLoading } = useCredits()
+  const { t } = useLang()
   const [selectedPack, setSelectedPack] = useState(2)
   const [payLoading, setPayLoading] = useState(false)
 
@@ -65,13 +67,13 @@ export default function Pricing() {
             background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 20,
             padding: '4px 14px', fontSize: 11, color: '#B8860B', marginBottom: 12,
           }}>
-            Offre Pionniers — Tarifs de lancement
+            {t('pr_badge')}
           </div>
           <h1 style={{ fontSize: 32, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
             Achetez des crédits
           </h1>
           <p style={{ fontSize: 14, color: '#666' }}>
-            1 crédit = 1 dossier technique complet (notes de calcul + BOQ + fiches techniques)
+            {t('pr_desc')}
           </p>
           {!creditsLoading && (
             <div style={{
@@ -110,7 +112,7 @@ export default function Pricing() {
                     {pack.credits}
                   </div>
                   <div style={{ fontSize: 13, color: '#888', marginBottom: 12 }}>
-                    crédit{pack.credits > 1 ? 's' : ''}
+                    {pack.credits > 1 ? t('credits_label_plural') : t('credits_label')}
                   </div>
                   <div style={{ fontSize: 22, fontWeight: 700, color: '#111', marginBottom: 4 }}>
                     {formatFCFA(pack.prix)}
@@ -142,10 +144,10 @@ export default function Pricing() {
               minWidth: 300,
             }}
           >
-            {payLoading ? 'Redirection vers PayDunya...' : `Acheter — ${formatFCFA(PACKS.find(p => p.id === selectedPack)?.prix || 0)}`}
+            {payLoading ? t('pr_redirection') : `Acheter — ${formatFCFA(PACKS.find(p => p.id === selectedPack)?.prix || 0)}`}
           </button>
           <div style={{ fontSize: 11, color: '#888', marginTop: 8 }}>
-            Wave · Orange Money · Free Money · Carte bancaire
+            {t('pr_moyens')}
           </div>
         </div>
 
@@ -154,7 +156,7 @@ export default function Pricing() {
           marginTop: 40, background: '#fff', border: '0.5px solid #E5E5E5',
           borderRadius: 12, padding: '24px',
         }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 12 }}>Chaque crédit inclut :</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 12 }}>{t('pr_inclus_titre')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
             {[
               '📄 Note de calcul structure (EC2/EC8)',
@@ -170,7 +172,7 @@ export default function Pricing() {
             ))}
           </div>
           <div style={{ marginTop: 12, fontSize: 12, color: VERT, fontWeight: 600 }}>
-            + Conformité EDGE IFC gratuite · + Chat IA illimité · + Rapport exécutif gratuit<br/>Plans d'exécution BA et MEP — disponibles très prochainement (1 crédit additionnel)
+            {t('pr_gratuit')}<br/>{t('pr_plans_soon')}
           </div>
         </div>
 

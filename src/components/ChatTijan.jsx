@@ -1,6 +1,7 @@
 // ChatTijan.jsx — Onglet conversation avec Tijan AI
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useLang } from '../i18n.jsx'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE } from '../constants'
 
 const SUGGESTIONS = [
@@ -47,6 +48,7 @@ function Message({ msg }) {
 
 export default function ChatTijan({ params, resultatsStructure, resultatsMep, savedChat, onUpdateChat }) {
   const { supabase, user } = useAuth()
+  const { t } = useLang()
   const defaultMsg = [{
     role: 'assistant',
     content: `Salut ! 👋 Je suis Tijan, votre partenaire ingénierie sur **${params?.nom || 'votre projet'}**.\n\nJ'ai analysé votre projet en détail — structure, MEP, coûts, certification EDGE. N'hésitez pas à me poser toutes vos questions, même les plus pointues. Je suis là pour vous aider à prendre les meilleures décisions pour votre projet.`,
@@ -97,7 +99,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
         setMessages(prev => [...prev, { role: 'assistant', content: "Une erreur s'est produite. Réessayez." }])
       }
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: "Impossible de joindre Tijan AI. Vérifiez votre connexion." }])
+      setMessages(prev => [...prev, { role: 'assistant', content: "{t('chat_erreur')}" }])
     } finally {
       setLoading(false)
     }
@@ -122,7 +124,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       }}>
         <div style={{ width: 8, height: 8, borderRadius: '50%', background: VERT }} />
         <span style={{ fontSize: 12, color: VERT, fontWeight: 600 }}>
-          Tijan — Votre partenaire ingénierie sur {params?.nom || 'votre projet'}
+          Tijan — {t('chat_titre')} {params?.nom || 'votre projet'}
         </span>
         <span style={{ fontSize: 11, color: GRIS3, marginLeft: 'auto' }}>
           Projet analysé ✓
@@ -198,17 +200,17 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       </div>
 
       <div style={{ fontSize: 10, color: GRIS3, marginTop: 6, textAlign: 'center' }}>
-        Tijan vous accompagne dans vos décisions. Estimations ±15% — validation BET requise avant travaux.
+        {t('chat_disclaimer')}
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 6 }}>
         <button onClick={() => { envoyer("J'ai un problème technique avec la plateforme. Pouvez-vous m'aider ?"); if (supabase && user) supabase.from('support_tickets').insert({ user_id: user.id, user_email: user.email, projet_nom: params?.nom, message: 'Problème technique signalé', type: 'probleme' }).then(() => {}) }} style={{
           background: 'none', border: '1px solid #E5E5E5', borderRadius: 12,
           padding: '4px 12px', fontSize: 10, color: '#888', cursor: 'pointer',
-        }}>Signaler un problème</button>
+        }}>{t('chat_signaler')}</button>
         <button onClick={() => { envoyer("J'aimerais être contacté par l'équipe Tijan AI pour discuter de mon projet."); if (supabase && user) supabase.from('support_tickets').insert({ user_id: user.id, user_email: user.email, projet_nom: params?.nom, message: 'Demande de contact', type: 'contact' }).then(() => {}) }} style={{
           background: 'none', border: '1px solid #E5E5E5', borderRadius: 12,
           padding: '4px 12px', fontSize: 10, color: '#888', cursor: 'pointer',
-        }}>Contacter l'équipe</button>
+        }}>{t('chat_contacter')}</button>
       </div>
 
       <style>{`
