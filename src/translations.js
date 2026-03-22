@@ -300,3 +300,17 @@ export const T = {
 export function useTranslation(lang = 'fr') {
   return T[lang] || T['fr']
 }
+
+
+// Hook useLang — compatible avec le bouton FR/EN du Header
+
+export function useLang() {
+  const [lang, setLang] = useState(localStorage.getItem('tijan_lang') || 'fr')
+  useEffect(() => {
+    const handler = () => setLang(localStorage.getItem('tijan_lang') || 'fr')
+    window.addEventListener('tijan_lang_change', handler)
+    return () => window.removeEventListener('tijan_lang_change', handler)
+  }, [])
+  const t = (key) => T[lang]?.[key] || T['fr']?.[key] || key
+  return { lang, t }
+}
