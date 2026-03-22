@@ -138,7 +138,9 @@ export default function Results() {
   }, [activeTab])
 
   if (!params?.nom) {
-    return (
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+
+  return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
         <div style={{ textAlign: 'center' }}>
           <p style={{ color: GRIS3, marginBottom: 16 }}>Aucun résultat disponible.</p>
@@ -688,26 +690,26 @@ export default function Results() {
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: '100vh', background: '#FAFAFA' }}>
       <div style={{ background: '#fff', borderBottom: `1px solid ${GRIS2}`, padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '5px 12px', fontSize: 12, color: '#555', cursor: 'pointer' }}>← Accueil</button>
-          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '5px 12px', fontSize: 12, color: '#555', cursor: 'pointer' }}>Mes projets</button>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: isMobile ? '3px 8px' : '5px 12px', fontSize: isMobile ? 10 : 12, color: '#555', cursor: 'pointer' }}>← Accueil</button>
+          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: isMobile ? '3px 8px' : '5px 12px', fontSize: isMobile ? 10 : 12, color: '#555', cursor: 'pointer' }}>Mes projets</button>
           <img src="/tijan_logo.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: 22, objectFit: 'contain' }} />
           <span style={{ color: GRIS3, fontSize: 11 }}>Engineering Intelligence for Africa</span>
         </div>
         <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button onClick={() => navigate('/pricing')} style={{ background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#43A956', fontWeight: 600, cursor: 'pointer' }}>{restants ?? '...'} crédit{restants !== 1 ? 's' : ''}</button>
+            <button onClick={() => navigate('/pricing')} style={{ background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 4, padding: isMobile ? '2px 6px' : '3px 10px', fontSize: isMobile ? 9 : 11, color: '#43A956', fontWeight: 600, cursor: 'pointer' }}>{restants ?? '...'} cr.</button>
             <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#B8860B' }}>Beta</div>
           </div>
       </div>
 
-      <div style={{ display: 'flex', height: 'calc(100vh - 56px)', flexDirection: window?.innerWidth < 768 ? 'column' : 'row' }}>
-        <div style={{ width: 220, minWidth: 220, background: '#fff', borderRight: `1px solid ${GRIS2}`, padding: '16px 0', overflowY: 'auto', flexShrink: 0 }}>
+      <div style={{ display: 'flex', height: isMobile ? 'auto' : 'calc(100vh - 56px)', minHeight: isMobile ? '100vh' : 'auto', flexDirection: isMobile ? 'column' : 'row' }}>
+        <div style={{ width: isMobile ? '100%' : 220, minWidth: isMobile ? 'unset' : 220, background: '#fff', borderRight: isMobile ? 'none' : `1px solid ${GRIS2}`, borderBottom: isMobile ? `1px solid ${GRIS2}` : 'none', padding: isMobile ? '8px 0' : '16px 0', overflowY: isMobile ? 'hidden' : 'auto', overflowX: isMobile ? 'auto' : 'hidden', flexShrink: 0, display: isMobile ? 'flex' : 'block', whiteSpace: isMobile ? 'nowrap' : 'normal' }}>
           {TABS.map(tab => {
             const disabled = !tab.endpoint
             const active = activeTab === tab.id
             return (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-                display: 'block', width: '100%', textAlign: 'left', padding: '10px 20px',
+                display: isMobile ? 'inline-block' : 'block', width: isMobile ? 'auto' : '100%', textAlign: 'left', padding: '10px 20px',
                 border: 'none', fontSize: 12, fontWeight: active ? 600 : 400,
                 color: disabled ? '#BBB' : active ? VERT : '#444',
                 background: active ? VERT_LIGHT : 'transparent',
@@ -721,7 +723,7 @@ export default function Results() {
           })}
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : 24 }}>
           {renderContent()}
           {/* Chat toujours monté, caché si pas actif */}
           <div style={{ display: activeTab === 'chat' ? 'block' : 'none', height: '100%' }}>
