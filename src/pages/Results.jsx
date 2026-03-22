@@ -61,7 +61,7 @@ function usePdfDownload(params) {
     try {
       const res = await fetch(`${BACKEND}${endpoint}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...params, ...extra }),
+        body: JSON.stringify({ ...params, lang, ...extra }),
       })
       if (!res.ok) throw new Error(`${res.status}`)
       const blob = await res.blob()
@@ -195,7 +195,7 @@ export default function Results() {
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>SURFACE BÂTIE</div>
                 <div style={{ fontWeight: 600 }}>{fmt(surf_batie, 'm²')}</div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>Emprise {fmt(surf, 'm²')} × {niv} niv.</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_emprise')} {fmt(surf, 'm²')} × {niv} niv.</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>BÉTON / ACIER</div>
@@ -324,11 +324,11 @@ export default function Results() {
         <>
           <Card>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-              <div><div style={{ fontSize: 11, color: GRIS3 }}>PUISSANCE INSTALLÉE</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(el.puissance_totale_kva, 'kVA')}</div></div>
-              <div><div style={{ fontSize: 11, color: GRIS3 }}>TRANSFORMATEUR</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(el.transfo_kva, 'kVA')}</div></div>
-              <div><div style={{ fontSize: 11, color: GRIS3 }}>BESOIN EAU/JOUR</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(pl.besoin_total_m3_j, 'm³/j', 2)}</div></div>
-              <div><div style={{ fontSize: 11, color: GRIS3 }}>PUISSANCE FRIGO</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(cv.puissance_frigorifique_kw, 'kW')}</div></div>
-              {asc.nb_ascenseurs > 0 && <div><div style={{ fontSize: 11, color: GRIS3 }}>ASCENSEURS</div><div style={{ fontWeight: 700, fontSize: 18 }}>{asc.nb_ascenseurs} × {asc.capacite_kg} kg</div></div>}
+              <div><div style={{ fontSize: 11, color: GRIS3 }}>{t('r_puissance_installee')}</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(el.puissance_totale_kva, 'kVA')}</div></div>
+              <div><div style={{ fontSize: 11, color: GRIS3 }}>{t('r_transformateur')}</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(el.transfo_kva, 'kVA')}</div></div>
+              <div><div style={{ fontSize: 11, color: GRIS3 }}>{t('r_besoin_eau')}</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(pl.besoin_total_m3_j, 'm³/j', 2)}</div></div>
+              <div><div style={{ fontSize: 11, color: GRIS3 }}>{t('r_puissance_frigo')}</div><div style={{ fontWeight: 700, fontSize: 18 }}>{fmt(cv.puissance_frigorifique_kw, 'kW')}</div></div>
+              {asc.nb_ascenseurs > 0 && <div><div style={{ fontSize: 11, color: GRIS3 }}>{t('r_ascenseurs')}</div><div style={{ fontWeight: 700, fontSize: 18 }}>{asc.nb_ascenseurs} × {asc.capacite_kg} kg</div></div>}
             </div>
           </Card>
 
