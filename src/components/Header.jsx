@@ -7,7 +7,6 @@ const VERT = '#43A956'
 
 export default function Header({ showBack, backLabel, backTo }) {
   const navigate = useNavigate()
-  const [lang, setLang] = useState(localStorage.getItem('tijan_lang') || 'fr')
   const { user, signOut } = useAuth()
   const { restants } = useCredits()
 

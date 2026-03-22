@@ -688,7 +688,8 @@ export default function Results() {
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: '100vh', background: '#FAFAFA' }}>
       <div style={{ background: '#fff', borderBottom: `1px solid ${GRIS2}`, padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: `1px solid ${GRIS2}`, borderRadius: 6, padding: '5px 12px', fontSize: 12, color: '#555' }}>← Accueil</button>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '5px 12px', fontSize: 12, color: '#555', cursor: 'pointer' }}>← Accueil</button>
+          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '5px 12px', fontSize: 12, color: '#555', cursor: 'pointer' }}>Mes projets</button>
           <img src="/tijan_logo.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: 22, objectFit: 'contain' }} />
           <span style={{ color: GRIS3, fontSize: 11 }}>Engineering Intelligence for Africa</span>
         </div>
