@@ -201,11 +201,11 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
         Tijan vous accompagne dans vos décisions. Estimations ±15% — validation BET requise avant travaux.
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 6 }}>
-        <button onClick={() => envoyer("J'ai un problème technique avec la plateforme. Pouvez-vous m'aider ?")} style={{
+        <button onClick={() => { envoyer("J'ai un problème technique avec la plateforme. Pouvez-vous m'aider ?"); if (supabase && user) supabase.from('support_tickets').insert({ user_id: user.id, user_email: user.email, projet_nom: params?.nom, message: 'Problème technique signalé', type: 'probleme' }).then(() => {}) }} style={{
           background: 'none', border: '1px solid #E5E5E5', borderRadius: 12,
           padding: '4px 12px', fontSize: 10, color: '#888', cursor: 'pointer',
         }}>Signaler un problème</button>
-        <button onClick={() => envoyer("J'aimerais être contacté par l'équipe Tijan AI pour discuter de mon projet.")} style={{
+        <button onClick={() => { envoyer("J'aimerais être contacté par l'équipe Tijan AI pour discuter de mon projet."); if (supabase && user) supabase.from('support_tickets').insert({ user_id: user.id, user_email: user.email, projet_nom: params?.nom, message: 'Demande de contact', type: 'contact' }).then(() => {}) }} style={{
           background: 'none', border: '1px solid #E5E5E5', borderRadius: 12,
           padding: '4px 12px', fontSize: 10, color: '#888', cursor: 'pointer',
         }}>Contacter l'équipe</button>
