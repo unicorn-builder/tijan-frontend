@@ -58,7 +58,7 @@ export default function Landing() {
           fontSize: 40, fontWeight: 800, color: NAVY, lineHeight: 1.15,
           maxWidth: 700, margin: '0 auto 16px',
         }}>
-          Dossiers techniques complets<br />
+          Études structurelles et techniques complètes<br />
           <span style={{ color: VERT }}>en moins de 5 minutes</span>
         </h1>
 
