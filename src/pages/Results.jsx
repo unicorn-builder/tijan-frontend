@@ -749,8 +749,8 @@ export default function Results() {
             </div>
           )}
         </div>
-      </div>
         </TranslateBlock>
+      </div>
     </div>
   )
 }
