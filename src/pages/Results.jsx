@@ -137,10 +137,10 @@ export default function Results() {
     }
   }, [activeTab])
 
-  if (!params?.nom) {
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
 
-  return (
+  if (!params?.nom) {
+    return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
         <div style={{ textAlign: 'center' }}>
           <p style={{ color: GRIS3, marginBottom: 16 }}>Aucun résultat disponible.</p>
