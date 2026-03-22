@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useProjects } from '../hooks/useProjects'
 import Header from '../components/Header'
-import { useLang } from '../translations'
 import { useCredits } from '../hooks/useCredits'
 
 const VERT = '#43A956'
@@ -29,7 +28,6 @@ function formatFcfa(n) {
 export default function Dashboard() {
   const { user, signOut } = useAuth()
   const { projets, loading, supprimerProjet } = useProjects()
-  const { t } = useLang()
   const { restants } = useCredits()
   const navigate = useNavigate()
   const [confirmDelete, setConfirmDelete] = useState(null)

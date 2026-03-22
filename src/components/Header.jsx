@@ -1,6 +1,5 @@
 // Header.jsx — Header réutilisable Tijan AI
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
 
@@ -9,12 +8,6 @@ const VERT = '#43A956'
 export default function Header({ showBack, backLabel, backTo }) {
   const navigate = useNavigate()
   const [lang, setLang] = useState(localStorage.getItem('tijan_lang') || 'fr')
-  const toggleLang = () => {
-    const newLang = lang === 'fr' ? 'en' : 'fr'
-    setLang(newLang)
-    localStorage.setItem('tijan_lang', newLang)
-    window.dispatchEvent(new Event('tijan_lang_change'))
-  }
   const { user, signOut } = useAuth()
   const { restants } = useCredits()
 
@@ -42,11 +35,6 @@ export default function Header({ showBack, backLabel, backTo }) {
 
       {/* Droite */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button onClick={toggleLang} style={{
-            background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
-            padding: '5px 10px', fontSize: 11, fontWeight: 700, cursor: 'pointer',
-            color: '#555',
-          }}>{lang === 'fr' ? 'EN' : 'FR'}</button>
         {user && (
           <button onClick={() => navigate('/pricing')} style={{
             background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 6,
