@@ -48,6 +48,10 @@ export default function Header({ showBack, backLabel, backTo }) {
             padding: '5px 12px', fontSize: 12, color: '#555', cursor: 'pointer',
           }}>Mes projets</button>
         )}
+        <button onClick={() => navigate('/pricing')} style={{
+            background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
+            padding: '5px 12px', fontSize: 12, color: '#555', cursor: 'pointer',
+          }}>Tarifs</button>
         {user ? (
           <button onClick={signOut} style={{
             background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
