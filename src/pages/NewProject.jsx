@@ -153,7 +153,7 @@ export default function NewProject() {
               >
                 {mainFile
                   ? <div><div style={{ fontSize: 13, fontWeight: 500, color: VERT, marginBottom: 4 }}>✓ {mainFile.name}</div><div style={{ fontSize: 11, color: '#888' }}>Cliquez pour changer</div></div>
-                  : <div><div style={{ fontSize: 13, color: '#555', marginBottom: 6 }}>Déposez vos plans ou cliquez pour choisir</div><div style={{ fontSize: 11, color: '#888' }}>PDF, DWG, DXF</div></div>
+                  : <div><div style={{ fontSize: 13, color: '#555', marginBottom: 6 }}>Déposez vos plans ou cliquez pour choisir</div><div style={{ fontSize: 11, color: '#888' }}>PDF uniquement — DWG et Revit bientôt disponibles</div></div>
                 }
                 <input ref={mainRef} type="file" accept=".pdf,.dwg,.dxf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) setMainFile(f) }} />
               </div>
