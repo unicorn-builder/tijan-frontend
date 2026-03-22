@@ -13,7 +13,7 @@ export default function Header({ showBack, backLabel, backTo }) {
   return (
     <nav style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 24px', height: 56, borderBottom: '0.5px solid #E5E5E5',
+      padding: '0 16px', minHeight: 56, flexWrap: 'wrap', gap: 8, borderBottom: '0.5px solid #E5E5E5',
       background: '#fff', position: 'sticky', top: 0, zIndex: 100,
     }}>
       {/* Gauche */}
@@ -27,13 +27,13 @@ export default function Header({ showBack, backLabel, backTo }) {
         <img
           src="/tijan_logo_crop.png" alt="Tijan AI"
           onClick={() => navigate('/')}
-          style={{ height: 28, cursor: 'pointer' }}
+          style={{ height: 24, cursor: 'pointer' }}
         />
-        <span style={{ fontSize: 11, color: '#888' }}>Engineering Intelligence for Africa</span>
+        <span className="hide-mobile" style={{ fontSize: 11, color: '#888' }}>Engineering Intelligence for Africa</span>
       </div>
 
       {/* Droite */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
         {user && (
           <button onClick={() => navigate('/pricing')} style={{
             background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 6,

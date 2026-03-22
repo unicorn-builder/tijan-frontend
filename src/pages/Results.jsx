@@ -700,8 +700,8 @@ export default function Results() {
           </div>
       </div>
 
-      <div style={{ display: 'flex', height: 'calc(100vh - 56px)' }}>
-        <div style={{ width: 220, background: '#fff', borderRight: `1px solid ${GRIS2}`, padding: '16px 0', overflowY: 'auto', flexShrink: 0 }}>
+      <div style={{ display: 'flex', height: 'calc(100vh - 56px)', flexDirection: window?.innerWidth < 768 ? 'column' : 'row' }}>
+        <div style={{ width: 220, minWidth: 220, background: '#fff', borderRight: `1px solid ${GRIS2}`, padding: '16px 0', overflowY: 'auto', flexShrink: 0 }}>
           {TABS.map(tab => {
             const disabled = !tab.endpoint
             const active = activeTab === tab.id

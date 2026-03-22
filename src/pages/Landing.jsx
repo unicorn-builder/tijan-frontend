@@ -55,7 +55,7 @@ export default function Landing() {
         </div>
 
         <h1 style={{
-          fontSize: 40, fontWeight: 800, color: NAVY, lineHeight: 1.15,
+          fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 800, color: NAVY, lineHeight: 1.15,
           maxWidth: 700, margin: '0 auto 16px',
         }}>
           Études structurelles et techniques complètes<br />
@@ -63,14 +63,14 @@ export default function Landing() {
         </h1>
 
         <p style={{
-          fontSize: 16, color: '#555', lineHeight: 1.6,
+          fontSize: 'clamp(13px, 2.5vw, 16px)', color: '#555', lineHeight: 1.6,
           maxWidth: 520, margin: '0 auto 28px',
         }}>
           Tijan AI génère automatiquement notes de calcul, BOQ, rapport MEP et certification EDGE
           pour vos projets de construction en Afrique.
         </p>
 
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
             background: VERT, color: '#fff', border: 'none', borderRadius: 8,
             padding: '13px 32px', fontSize: 15, fontWeight: 700, cursor: 'pointer',
@@ -87,7 +87,7 @@ export default function Landing() {
 
         {/* Chiffres */}
         <div style={{
-          display: 'flex', gap: 40, justifyContent: 'center', marginTop: 40,
+          display: 'flex', gap: 20, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap',
           flexWrap: 'wrap',
         }}>
           {CHIFFRES.map((c, i) => (
@@ -100,13 +100,13 @@ export default function Landing() {
       </section>
 
       {/* ── POUR QUI ── */}
-      <section style={{ padding: '48px 24px', background: '#FAFAFA' }}>
+      <section style={{ padding: '32px 16px', background: '#FAFAFA' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>POUR QUI ?</div>
           <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>Conçu pour les professionnels de la construction</h2>
         </div>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
           gap: 14, maxWidth: 900, margin: '0 auto',
         }}>
           {CIBLES.map((c, i) => (
@@ -123,7 +123,7 @@ export default function Landing() {
       </section>
 
       {/* ── LIVRABLES ── */}
-      <section id="livrables" style={{ padding: '48px 24px' }}>
+      <section id="livrables" style={{ padding: '32px 16px' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>LIVRABLES</div>
           <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>8 documents générés automatiquement</h2>
@@ -132,7 +132,7 @@ export default function Landing() {
           </p>
         </div>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: 12, maxWidth: 900, margin: '0 auto',
         }}>
           {LIVRABLES.map((l, i) => (
@@ -152,7 +152,7 @@ export default function Landing() {
       </section>
 
       {/* ── COMMENT ÇA MARCHE ── */}
-      <section style={{ padding: '48px 24px', background: '#FAFAFA' }}>
+      <section style={{ padding: '32px 16px', background: '#FAFAFA' }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>COMMENT ÇA MARCHE</div>
           <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>3 étapes, 5 minutes</h2>
@@ -185,10 +185,10 @@ export default function Landing() {
 
       {/* ── CTA FINAL ── */}
       <section style={{
-        padding: '48px 24px', textAlign: 'center',
+        padding: '32px 16px', textAlign: 'center',
         background: NAVY,
       }}>
-        <h2 style={{ fontSize: 28, fontWeight: 700, color: '#fff', marginBottom: 12 }}>
+        <h2 style={{ fontSize: 'clamp(20px, 4vw, 28px)', fontWeight: 700, color: '#fff', marginBottom: 12 }}>
           Prêt à transformer votre processus d'ingénierie ?
         </h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
@@ -209,7 +209,7 @@ export default function Landing() {
       {/* ── FOOTER ── */}
       <footer style={{
         padding: '20px 32px', borderTop: '0.5px solid #E5E5E5',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8,
         fontSize: 11, color: '#aaa',
       }}>
         <div>© 2026 Tijan AI · Engineering Intelligence for Africa</div>

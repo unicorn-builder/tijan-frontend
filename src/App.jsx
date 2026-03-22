@@ -9,9 +9,21 @@ import Results from './pages/Results'
 import Pricing from './pages/Pricing'
 import PaymentSuccess from './pages/PaymentSuccess'
 
+const MobileStyles = () => (
+  <style>{`
+    @media (max-width: 768px) {
+      .hide-mobile { display: none !important; }
+      nav { padding: 0 12px !important; }
+      nav button { padding: 4px 8px !important; font-size: 11px !important; }
+      nav img { height: 20px !important; }
+    }
+  `}</style>
+)
+
 export default function App() {
   return (
     <AuthProvider>
+      <MobileStyles />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />

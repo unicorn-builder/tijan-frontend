@@ -85,7 +85,7 @@ export default function Pricing() {
         </div>
 
         {/* Packs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 32 }}>
           {PACKS.map(pack => {
             const selected = selectedPack === pack.id
             return (
@@ -155,7 +155,7 @@ export default function Pricing() {
           borderRadius: 12, padding: '24px',
         }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 12 }}>Chaque crédit inclut :</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
             {[
               '📄 Note de calcul structure (EC2/EC8)',
               '💰 BOQ Structure détaillé (7 lots)',
