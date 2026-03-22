@@ -126,7 +126,7 @@ export default function Results() {
           if (!d.ok) setMepError(true)
           // Sauvegarder MEP dans Supabase
           if (d.ok && supabase && user) {
-            const projectId = window.location.pathname.spli'/projects/'[1]?.spli'/'[0]
+            const projectId = window.location.pathname.split('/projects/')[1]?.split('/')[0]
             if (projectId) {
               supabase.from('projets').update({ resultats_mep: d }).eq('nom', params.nom).eq('user_id', user.id).then(() => {})
             }
