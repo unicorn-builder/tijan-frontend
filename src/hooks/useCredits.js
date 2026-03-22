@@ -23,7 +23,7 @@ export function useCredits() {
       // Pas de ligne — créer avec 3 crédits gratuits (offre pionniers)
       const { data: newRow } = await supabase
         .from('credits')
-        .insert({ user_id: user.id, total: 3, utilises: 0 })
+        .insert({ user_id: user.id, total: 1, utilises: 0 })
         .select()
         .maybeSingle()
       setCredits(newRow)
