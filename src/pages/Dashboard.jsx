@@ -65,7 +65,7 @@ export default function Dashboard() {
       {/* Contenu */}
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 24px' }}>
         <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: NAVY, margin: 0 }}>{t('mes_projets_titre')}</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: NAVY, margin: 0 }}>Mes projets</h1>
           <p style={{ fontSize: 13, color: GRIS3, marginTop: 4 }}>
             {projets.length} projet{projets.length > 1 ? 's' : ''} sauvegardé{projets.length > 1 ? 's' : ''}
           </p>

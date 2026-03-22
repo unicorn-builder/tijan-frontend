@@ -4,6 +4,7 @@ import ChatTijan from '../components/ChatTijan'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
 import { useTranslate } from '../hooks/useTranslate'
+import TranslateBlock from '../components/TranslateBlock'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
 const Card = ({ children, style = {} }) => (
@@ -723,6 +724,7 @@ export default function Results() {
           })}
         </div>
 
+        <TranslateBlock lang={lang} cacheKey={activeTab}>
         <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
           {renderContent()}
           {/* Chat toujours monté, caché si pas actif */}
@@ -748,6 +750,7 @@ export default function Results() {
           )}
         </div>
       </div>
+        </TranslateBlock>
     </div>
   )
 }
