@@ -62,11 +62,17 @@ export default function Dashboard() {
 
       {/* Contenu */}
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 24px' }}>
-        <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: NAVY, margin: 0 }}>Mes projets</h1>
-          <p style={{ fontSize: 13, color: GRIS3, marginTop: 4 }}>
-            {projets.length} projet{projets.length > 1 ? 's' : ''} sauvegardé{projets.length > 1 ? 's' : ''}
-          </p>
+        <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: NAVY, margin: 0 }}>Mes projets</h1>
+            <p style={{ fontSize: 13, color: GRIS3, marginTop: 4 }}>
+              {projets.length} projet{projets.length > 1 ? 's' : ''} sauvegardé{projets.length > 1 ? 's' : ''}
+            </p>
+          </div>
+          <button onClick={() => navigate('/projects/new')} style={{
+            background: VERT, color: '#fff', border: 'none', borderRadius: 8,
+            padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          }}>+ Nouveau projet</button>
         </div>
 
         {loading ? (
