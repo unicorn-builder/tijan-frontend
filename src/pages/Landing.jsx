@@ -202,7 +202,7 @@ export default function Landing() {
           Commencer maintenant →
         </button>
         <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 12 }}>
-          Pas de carte bancaire requise · Version bêta gratuite
+          1 projet gratuit · Pas de carte bancaire requise
         </div>
       </section>
 
