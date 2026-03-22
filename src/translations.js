@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 // translations.js — Tijan AI
 // Toutes les strings FR/EN du frontend
 
