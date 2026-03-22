@@ -40,9 +40,10 @@ export default function NewProject() {
       if (data.ok) parsed = data
     } catch {}
 
-    const surface_emprise_m2 = (parsed.surface_emprise_m2 && parsed.surface_emprise_m2 > 100)
-      ? parseFloat(parsed.surface_emprise_m2)
-      : Math.round(parseFloat(surfaceTerrain) * 0.70)
+    // Priorité : surface terrain saisie × 0.70, sauf si le parser extrait une emprise réaliste
+    const terrainCalc = Math.round(parseFloat(surfaceTerrain) * 0.70)
+    const parsedEmprise = parseFloat(parsed.surface_emprise_m2) || 0
+    const surface_emprise_m2 = terrainCalc > 0 ? terrainCalc : (parsedEmprise > 100 ? parsedEmprise : 500)
 
     let sol_context = undefined
     if (solFile) {
