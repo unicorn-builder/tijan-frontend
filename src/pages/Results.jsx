@@ -688,16 +688,16 @@ export default function Results() {
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: '100vh', background: '#FAFAFA' }}>
-      <div style={{ background: '#fff', borderBottom: `1px solid ${GRIS2}`, padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: isMobile ? '3px 8px' : '5px 12px', fontSize: isMobile ? 10 : 12, color: '#555', cursor: 'pointer' }}>← Accueil</button>
-          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: isMobile ? '3px 8px' : '5px 12px', fontSize: isMobile ? 10 : 12, color: '#555', cursor: 'pointer' }}>Mes projets</button>
-          <img src="/tijan_logo.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: 22, objectFit: 'contain' }} />
-          <span style={{ color: GRIS3, fontSize: 11 }}>Engineering Intelligence for Africa</span>
+      <div style={{ background: '#fff', borderBottom: `1px solid ${GRIS2}`, padding: isMobile ? '0 8px' : '0 24px', height: isMobile ? 44 : 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 16 }}>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: '#555', cursor: 'pointer' }}>←</button>
+          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: '#555', cursor: 'pointer' }}>Projets</button>
+          <img src="/tijan_logo.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: isMobile ? 18 : 22, objectFit: 'contain' }} />
+          {!isMobile && <span style={{ color: GRIS3, fontSize: 11 }}>Engineering Intelligence for Africa</span>}
         </div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button onClick={() => navigate('/pricing')} style={{ background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 4, padding: isMobile ? '2px 6px' : '3px 10px', fontSize: isMobile ? 9 : 11, color: '#43A956', fontWeight: 600, cursor: 'pointer' }}>{restants ?? '...'} cr.</button>
+        {!isMobile && <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>}
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button onClick={() => navigate('/pricing')} style={{ background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 4, padding: '2px 6px', fontSize: 9, color: '#43A956', fontWeight: 600, cursor: 'pointer' }}>{restants ?? '...'} cr.</button>
             <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '2px 6px', fontSize: 9, color: '#B8860B' }}>Beta</div>
           </div>
       </div>
