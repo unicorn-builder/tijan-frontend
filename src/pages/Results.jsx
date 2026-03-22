@@ -698,7 +698,7 @@ export default function Results() {
         <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button onClick={() => navigate('/pricing')} style={{ background: '#F0FFF4', border: '1px solid #43A956', borderRadius: 4, padding: isMobile ? '2px 6px' : '3px 10px', fontSize: isMobile ? 9 : 11, color: '#43A956', fontWeight: 600, cursor: 'pointer' }}>{restants ?? '...'} cr.</button>
-            <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '3px 10px', fontSize: 11, color: '#B8860B' }}>Beta</div>
+            <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 4, padding: '2px 6px', fontSize: 9, color: '#B8860B' }}>Beta</div>
           </div>
       </div>
 

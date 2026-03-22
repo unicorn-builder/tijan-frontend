@@ -13,7 +13,7 @@ export default function Header({ showBack, backLabel, backTo }) {
   return (
     <nav style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 16px', minHeight: 56, flexWrap: 'wrap', gap: 8, borderBottom: '0.5px solid #E5E5E5',
+      padding: '0 10px', minHeight: 56, flexWrap: 'wrap', gap: 8, borderBottom: '0.5px solid #E5E5E5',
       background: '#fff', position: 'sticky', top: 0, zIndex: 100,
     }}>
       {/* Gauche */}
@@ -21,7 +21,7 @@ export default function Header({ showBack, backLabel, backTo }) {
         {showBack && (
           <button onClick={() => navigate(backTo || '/')} style={{
             background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
-            padding: '5px 12px', fontSize: 12, color: '#555', cursor: 'pointer',
+            padding: '4px 8px', fontSize: 11, color: '#555', cursor: 'pointer',
           }}>{backLabel || '← Accueil'}</button>
         )}
         <img
@@ -29,7 +29,7 @@ export default function Header({ showBack, backLabel, backTo }) {
           onClick={() => navigate('/')}
           style={{ height: 24, cursor: 'pointer' }}
         />
-        <span className="hide-mobile" style={{ fontSize: 11, color: '#888' }}>Engineering Intelligence for Africa</span>
+        <span style={{ fontSize: 11, color: '#888', display: 'none' }}>Engineering Intelligence for Africa</span>
       </div>
 
       {/* Droite */}
@@ -45,17 +45,17 @@ export default function Header({ showBack, backLabel, backTo }) {
         {user && (
           <button onClick={() => navigate('/dashboard')} style={{
             background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
-            padding: '5px 12px', fontSize: 12, color: '#555', cursor: 'pointer',
+            padding: '4px 8px', fontSize: 11, color: '#555', cursor: 'pointer',
           }}>Mes projets</button>
         )}
         <button onClick={() => navigate('/pricing')} style={{
             background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
-            padding: '5px 12px', fontSize: 12, color: '#555', cursor: 'pointer',
+            padding: '4px 8px', fontSize: 11, color: '#555', cursor: 'pointer',
           }}>Tarifs</button>
         {user ? (
           <button onClick={signOut} style={{
             background: 'none', border: '1px solid #E5E5E5', borderRadius: 6,
-            padding: '5px 12px', fontSize: 12, color: '#888', cursor: 'pointer',
+            padding: '4px 8px', fontSize: 11, color: '#888', cursor: 'pointer',
           }}>Déconnexion</button>
         ) : (
           <button onClick={() => navigate('/login')} style={{
