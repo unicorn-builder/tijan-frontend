@@ -22,7 +22,7 @@ const Badge = ({ ok, label }) => (
   <span style={{
     background: ok ? VERT_LIGHT : ORANGE_LT, color: ok ? VERT : ORANGE,
     border: `1px solid ${ok ? VERT : ORANGE}`, borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700,
-  }}>{label || (ok ? 'Conforme' : 'À vérifier')}</span>
+  }}>{label || (ok ? t('r_conforme') : 'À vérifier')}</span>
 )
 
 const DataTable = ({ headers, rows, colWidths }) => (
@@ -203,7 +203,7 @@ export default function Results() {
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>CONFORMITÉ EC2</div>
-                <Badge ok={analyse.conformite_ec2 === 'Conforme'} label={analyse.conformite_ec2 || 'Vérifiée'} />
+                <Badge ok={analyse.conformite_ec2 === 'Conforme'} label={analyse.conformite_ec2 === 'Conforme' ? t('r_conforme') : (analyse.conformite_ec2 || t('r_verifiee'))} />
               </div>
             </div>
             {analyse.commentaire_global && (
@@ -413,7 +413,7 @@ export default function Results() {
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 6 }}>VERDICT EDGE BASIQUE</div>
-                <Badge ok={edge.certifiable} label={edge.certifiable ? '✓ Certifiable EDGE Basique' : '✗ Non certifiable'} />
+                <Badge ok={edge.certifiable} label={edge.certifiable ? t('r_certifiable') : t('r_non_certifiable')} />
                 {edge.niveau_certification && <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>{edge.niveau_certification}</div>}
               </div>
               {piliers.map(({ key, label }) => (
@@ -422,7 +422,7 @@ export default function Results() {
                   <div style={{ fontWeight: 700, fontSize: 26, color: (edge[key] || 0) >= 20 ? VERT : ORANGE }}>
                     {edge[key] !== undefined ? `${edge[key]}%` : '—'}
                   </div>
-                  <div style={{ fontSize: 10, color: GRIS3 }}>Seuil EDGE : 20%</div>
+                  <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_seuil_edge')}</div>
                 </div>
               ))}
             </div>
@@ -528,7 +528,7 @@ export default function Results() {
             <SectionTitle>{t('r_fiche_beton')}</SectionTitle>
             {poteaux.length > 0 ? (
               <DataTable
-                headers={['Niveau', 'Section', 'Armatures longitudinales', 'Cadres', 'Béton']}
+                headers={[t('r_niveau'), t('r_section'), t('r_armatures'), 'Cadres', 'Béton']}
                 rows={poteaux.map(p => [
                   p.niveau || p.label,
                   `${p.section_mm}×${p.section_mm} mm`,
@@ -607,7 +607,7 @@ export default function Results() {
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>CONFORMITÉ EC2</div>
-                <Badge ok={analyse.conformite_ec2 === 'Conforme'} label={analyse.conformite_ec2 || '—'} />
+                <Badge ok={analyse.conformite_ec2 === 'Conforme'} label={analyse.conformite_ec2 === 'Conforme' ? t('r_conforme') : (analyse.conformite_ec2 || '—')} />
               </div>
             </div>
           </Card>
