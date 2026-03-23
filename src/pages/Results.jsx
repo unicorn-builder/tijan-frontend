@@ -183,26 +183,26 @@ export default function Results() {
           <Card>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, minWidth: 180 }}>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>PROJET</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_projet')}</div>
                 <div style={{ fontWeight: 700, fontSize: 15 }}>{params.nom}</div>
                 <div style={{ fontSize: 12, color: '#555' }}>{params.ville} — R+{niv - 1}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>BÉTON / ACIER</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_beton_acier')}</div>
                 <div style={{ fontWeight: 600 }}>{resultats.classe_beton || params.classe_beton || '—'} / {resultats.classe_acier || params.classe_acier || '—'}</div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_auto_select')}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>SURFACE BÂTIE</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_surface_batie')}</div>
                 <div style={{ fontWeight: 600 }}>{fmt(surf_batie, 'm²')}</div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_emprise')} {fmt(surf, 'm²')} × {niv} niv.</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_emprise')} {fmt(surf, 'm²')} × {niv} {t('r_niv')}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>BÉTON / ACIER</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_beton_acier')}</div>
                 <div style={{ fontWeight: 600 }}>{fmt(beton_m3, 'm³')} / {fmt(acier_kg, 'kg')}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>CONFORMITÉ EC2</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_conformite')}</div>
                 <Badge ok={analyse.conformite_ec2 === 'Conforme'} label={analyse.conformite_ec2 === 'Conforme' ? t('r_conforme') : (analyse.conformite_ec2 || t('r_verifiee'))} />
               </div>
             </div>
@@ -286,12 +286,12 @@ export default function Results() {
                 <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa)}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>COÛT / m² BÂTI</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
                 <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} — {fmt(boq.ratio_fcfa_m2_habitable)} FCFA/m²</div>
                 <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_structure_seule')}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>BÉTON / ACIER</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_beton_acier')}</div>
                 <div style={{ fontWeight: 600 }}>{fmt(beton_m3, 'm³')} / {fmt(acier_kg, 'kg')}</div>
               </div>
             </div>
@@ -412,7 +412,7 @@ export default function Results() {
           <Card>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 6 }}>VERDICT EDGE BASIQUE</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 6 }}>{t('r_verdict_edge')}</div>
                 <Badge ok={edge.certifiable} label={edge.certifiable ? t('r_certifiable') : t('r_non_certifiable')} />
                 {edge.niveau_certification && <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>{edge.niveau_certification}</div>}
               </div>
@@ -593,20 +593,20 @@ export default function Results() {
           <Card>
             <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>PROJET</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_projet')}</div>
                 <div style={{ fontWeight: 700, fontSize: 18 }}>{params.nom}</div>
                 <div style={{ fontSize: 13, color: '#555' }}>{params.ville} — R+{(params.nb_niveaux||1)-1}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>SURFACE BÂTIE</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_surface_batie')}</div>
                 <div style={{ fontWeight: 600, fontSize: 16 }}>{fmt(boq.surface_batie_m2 || params.surface_emprise_m2 * params.nb_niveaux, 'm²')}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>BÉTON / ACIER</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_beton_acier')}</div>
                 <div style={{ fontWeight: 600 }}>{resultats.classe_beton || '—'} / {resultats.classe_acier || '—'}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>CONFORMITÉ EC2</div>
+                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_conformite')}</div>
                 <Badge ok={analyse.conformite_ec2 === 'Conforme'} label={analyse.conformite_ec2 === 'Conforme' ? t('r_conforme') : (analyse.conformite_ec2 || '—')} />
               </div>
             </div>
@@ -615,15 +615,15 @@ export default function Results() {
           <Card>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>STRUCTURE (BAS)</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_structure_bas')}</div>
                 <div style={{ fontSize: 20, fontWeight: 700 }}>{fmtFcfa(boq.total_bas_fcfa)}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>STRUCTURE (HAUT)</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_structure_haut')}</div>
                 <div style={{ fontSize: 20, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa)}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>COÛT / m² BÂTI</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
                 <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} FCFA/m²</div>
                 <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_structure_seule')}</div>
               </div>
