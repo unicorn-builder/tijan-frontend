@@ -53,7 +53,7 @@ const Spinner = ({ text = 'Chargement...' }) => (
   </div>
 )
 
-function usePdfDownload(params) {
+function usePdfDownload(params, lang = 'fr') {
   const [loading, setLoading] = useState(null)
   const download = async (endpoint, filename, extra = {}) => {
     if (!params || !endpoint) return
@@ -92,7 +92,7 @@ export default function Results() {
   const [mepError, setMepError] = useState(false)
   const [edgeOptimise, setEdgeOptimise] = useState(null)
   const [edgeLoading, setEdgeLoading] = useState(false)
-  const { download, loading: dlLoading } = usePdfDownload(params)
+  const { download, loading: dlLoading } = usePdfDownload(params, lang)
 
   const optimiserEDGE = async () => {
     if (!params?.nom || edgeLoading) return
