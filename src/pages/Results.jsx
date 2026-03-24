@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import ChatTijan from '../components/ChatTijan'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
@@ -78,9 +78,19 @@ function usePdfDownload(params, lang = 'fr') {
 export default function Results() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { id: projectId } = useParams()
   const state = location.state
-  const resultats = state?.resultats || {}
-  const params = state?.params || {}
+  const [dbProjet, setDbProjet] = useState(null)
+
+  const resultats = state?.resultats || dbProjet?.resultats_structure || {}
+  const deviseInfo = resultats?.devise_info || null
+  const params = state?.params || (dbProjet ? {
+    nom: dbProjet.nom, ville: dbProjet.ville, pays: dbProjet.pays || 'Senegal',
+    nb_niveaux: dbProjet.nb_niveaux, surface_emprise_m2: dbProjet.surface_emprise_m2,
+    portee_max_m: dbProjet.portee_max_m, portee_min_m: dbProjet.portee_min_m,
+    nb_travees_x: dbProjet.nb_travees_x, nb_travees_y: dbProjet.nb_travees_y,
+    usage: dbProjet.usage || 'residentiel',
+  } : {})
 
   const [activeTab, setActiveTab] = useState('structure')
   const { supabase, user } = useAuth()
@@ -93,6 +103,19 @@ export default function Results() {
   const [edgeOptimise, setEdgeOptimise] = useState(null)
   const [edgeLoading, setEdgeLoading] = useState(false)
   const { download, loading: dlLoading } = usePdfDownload(params, lang)
+
+  // Load project from Supabase if opened by URL (no location.state)
+  useEffect(() => {
+    if (!state?.resultats && projectId && supabase) {
+      supabase.from('projets').select('*').eq('id', projectId).single()
+        .then(({ data, error }) => {
+          if (data && !error) {
+            setDbProjet(data)
+            if (data.resultats_mep) setMepData(data.resultats_mep)
+          }
+        })
+    }
+  }, [projectId, supabase])
 
   const optimiserEDGE = async () => {
     if (!params?.nom || edgeLoading) return
@@ -279,11 +302,11 @@ export default function Results() {
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>COÛT STRUCTURE (BAS)</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#111' }}>{fmtFcfa(boq.total_bas_fcfa)}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: '#111' }}>{fmtFcfa(boq.total_bas_fcfa, deviseInfo)}</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>COÛT STRUCTURE (HAUT)</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa)}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa, deviseInfo)}</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
@@ -336,14 +359,14 @@ export default function Results() {
           <DataTable headers={[t('r_indicateur'), t('r_valeur'), t('r_indicateur'), t('r_valeur')]} rows={[
             [t('r_puissance_totale'), fmt(el.puissance_totale_kva, 'kVA'), t('r_transfo'), fmt(el.transfo_kva, 'kVA')],
             [t('r_groupe_elec'), fmt(el.groupe_electrogene_kva, 'kVA'), t('r_nb_compteurs'), fmt(el.nb_compteurs)],
-            [t('r_conso_annuelle'), fmt(el.conso_annuelle_kwh, 'kWh/an'), t('r_facture_annuelle'), fmtFcfa(el.facture_annuelle_fcfa)],
+            [t('r_conso_annuelle'), fmt(el.conso_annuelle_kwh, 'kWh/an'), t('r_facture_annuelle'), fmtFcfa(el.facture_annuelle_fcfa, deviseInfo)],
           ]} />
 
           <SectionTitle>{t('r_plomberie')}</SectionTitle>
           <DataTable headers={[t('r_indicateur'), t('r_valeur'), t('r_indicateur'), t('r_valeur')]} rows={[
             [t('r_nb_logements'), fmt(pl.nb_logements), t('r_besoin_eau_jour'), fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
             [t('r_volume_citerne'), fmt(pl.volume_citerne_m3, 'm³'), t('r_surpresseur'), fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
-            [t('r_cesi'), fmt(pl.nb_chauffe_eau_solaire, 'unités'), t('r_facture_eau'), fmtFcfa(pl.facture_eau_fcfa)],
+            [t('r_cesi'), fmt(pl.nb_chauffe_eau_solaire, 'unités'), t('r_facture_eau'), fmtFcfa(pl.facture_eau_fcfa, deviseInfo)],
           ]} />
 
           <SectionTitle>{t('r_cvc')}</SectionTitle>
@@ -380,7 +403,7 @@ export default function Results() {
               {[['BASIC', boqm.basic_fcfa, false], ['HIGH-END', boqm.hend_fcfa, true], ['LUXURY', boqm.luxury_fcfa, false]].map(([label, val, accent]) => (
                 <div key={label} style={{ flex: 1, minWidth: 140 }}>
                   <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{label}</div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: accent ? VERT : '#111' }}>{fmtFcfa(val)}</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: accent ? VERT : '#111' }}>{fmtFcfa(val, deviseInfo)}</div>
                 </div>
               ))}
             </div>
@@ -436,12 +459,12 @@ export default function Results() {
               <SectionTitle>{t('r_plan_action')}</SectionTitle>
               <Card style={{ borderLeft: `3px solid ${ORANGE}` }}>
                 <div style={{ fontSize: 12, color: ORANGE, marginBottom: 8, fontWeight: 600 }}>
-                  {t('r_cout_conformite')} : {fmtFcfa(edge.cout_mise_conformite_fcfa)} | ROI : {edge.roi_ans} ans
+                  {t('r_cout_conformite')} : {fmtFcfa(edge.cout_mise_conformite_fcfa, deviseInfo)} | ROI : {edge.roi_ans} ans
                 </div>
                 {edge.plan_action.map((a, i) => (
                   <div key={i} style={{ fontSize: 12, marginBottom: 6, padding: '6px 10px', background: '#FFFBF0', borderRadius: 4 }}>
                     <strong>[{a.pilier}]</strong> {a.action} — <span style={{ color: VERT }}>+{a.gain_pct}%</span>
-                    {a.cout_fcfa > 0 && <span style={{ color: GRIS3 }}> — {fmtFcfa(a.cout_fcfa)}</span>}
+                    {a.cout_fcfa > 0 && <span style={{ color: GRIS3 }}> — {fmtFcfa(a.cout_fcfa, deviseInfo)}</span>}
                   </div>
                 ))}
               </Card>
@@ -567,7 +590,7 @@ export default function Results() {
             <DataTable headers={[t('r_parametre'), t('r_valeur'), t('r_parametre'), t('r_valeur')]} rows={[
               [t('r_puissance_totale'), fmt(el.puissance_totale_kva, 'kVA'), t('r_transfo'), fmt(el.transfo_kva, 'kVA')],
               [t('r_groupe_elec'), fmt(el.groupe_electrogene_kva, 'kVA'), t('r_nb_compteurs'), fmt(el.nb_compteurs)],
-              [t('r_conso_annuelle'), fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture', fmtFcfa(el.facture_annuelle_fcfa)],
+              [t('r_conso_annuelle'), fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture', fmtFcfa(el.facture_annuelle_fcfa, deviseInfo)],
             ]} />
           </Card>
           <Card>
@@ -575,7 +598,7 @@ export default function Results() {
             <DataTable headers={[t('r_parametre'), t('r_valeur'), t('r_parametre'), t('r_valeur')]} rows={[
               [t('r_nb_logements'), fmt(pl.nb_logements), t('r_besoin_eau_jour'), fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
               [t('r_volume_citerne'), fmt(pl.volume_citerne_m3, 'm³'), t('r_surpresseur'), fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
-              [t('r_cesi'), fmt(pl.nb_chauffe_eau_solaire, 'unités'), t('r_facture_eau'), fmtFcfa(pl.facture_eau_fcfa)],
+              [t('r_cesi'), fmt(pl.nb_chauffe_eau_solaire, 'unités'), t('r_facture_eau'), fmtFcfa(pl.facture_eau_fcfa, deviseInfo)],
             ]} />
           </Card>
           <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>{t('r_telecharger_complet')}</div>
@@ -616,11 +639,11 @@ export default function Results() {
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_structure_bas')}</div>
-                <div style={{ fontSize: 20, fontWeight: 700 }}>{fmtFcfa(boq.total_bas_fcfa)}</div>
+                <div style={{ fontSize: 20, fontWeight: 700 }}>{fmtFcfa(boq.total_bas_fcfa, deviseInfo)}</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_structure_haut')}</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa)}</div>
+                <div style={{ fontSize: 20, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa, deviseInfo)}</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>

@@ -30,9 +30,17 @@ export const fmt = (v, unit = '', dec = 0) => {
   return unit ? `${n} ${unit}` : n
 }
 
-export const fmtFcfa = (v) => {
+export const fmtFcfa = (v, deviseInfo = null) => {
   if (!v || isNaN(v)) return '—'
-  if (v >= 1e9) return `${(v / 1e9).toFixed(2)} Mds FCFA`
-  if (v >= 1e6) return `${(v / 1e6).toFixed(1)} M FCFA`
-  return `${Math.round(v).toLocaleString('fr-FR')} FCFA`
+  if (deviseInfo && deviseInfo.devise !== 'XOF' && deviseInfo.taux_depuis_fcfa) {
+    const local = v * deviseInfo.taux_depuis_fcfa
+    const sym = deviseInfo.symbole || deviseInfo.devise
+    if (local >= 1e9) return (local / 1e9).toFixed(2) + ' B ' + sym
+    if (local >= 1e6) return (local / 1e6).toFixed(1) + ' M ' + sym
+    if (local >= 1e3) return (local / 1e3).toFixed(0) + 'k ' + sym
+    return Math.round(local).toLocaleString('en') + ' ' + sym
+  }
+  if (v >= 1e9) return (v / 1e9).toFixed(2) + ' Mds FCFA'
+  if (v >= 1e6) return (v / 1e6).toFixed(1) + ' M FCFA'
+  return Math.round(v).toLocaleString('fr-FR') + ' FCFA'
 }
