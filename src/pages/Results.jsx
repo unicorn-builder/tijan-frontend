@@ -4,6 +4,7 @@ import ChatTijan from '../components/ChatTijan'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
 import { useLang, TAB_KEYS } from '../i18n.jsx'
+import ReviewModal from '../components/ReviewModal'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
 const Card = ({ children, style = {} }) => (
@@ -46,7 +47,7 @@ const DataTable = ({ headers, rows, colWidths }) => (
   </div>
 )
 
-const Spinner = ({ text = 'Chargement...' }) => (
+const Spinner = ({ text = '' }) => (
   <div style={{ textAlign: 'center', padding: 60 }}>
     <div style={{ width: 32, height: 32, border: `3px solid ${GRIS2}`, borderTop: `3px solid ${VERT}`, borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
     <div style={{ fontSize: 13, color: GRIS3 }}>{text}</div>
@@ -59,17 +60,22 @@ function usePdfDownload(params, lang = 'fr') {
     if (!params || !endpoint) return
     setLoading(endpoint)
     try {
+      // Strip dwg_geometry from params — only pass via extra when needed (plans)
+      const { dwg_geometry, dwgGeometry, ...cleanParams } = params
       const res = await fetch(`${BACKEND}${endpoint}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...params, lang, ...extra }),
+        body: JSON.stringify({ ...cleanParams, lang, ...extra }),
       })
-      if (!res.ok) throw new Error(`${res.status}`)
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '')
+        throw new Error(`${res.status}: ${errText.slice(0, 200)}`)
+      }
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url; a.download = filename; a.click()
       URL.revokeObjectURL(url)
-    } catch (e) { console.warn('PDF generation failed:', e) }
+    } catch (e) { console.warn('PDF generation failed:', e); alert('Erreur téléchargement: ' + e.message) }
     finally { setLoading(null) }
   }
   return { download, loading }
@@ -84,6 +90,7 @@ export default function Results() {
 
   const resultats = state?.resultats || dbProjet?.resultats_structure || {}
   const deviseInfo = resultats?.devise_info || null
+  const dwgGeometry = state?.dwgGeometry || null
   const params = state?.params || (dbProjet ? {
     nom: dbProjet.nom, ville: dbProjet.ville, pays: dbProjet.pays || 'Senegal',
     nb_niveaux: dbProjet.nb_niveaux, surface_emprise_m2: dbProjet.surface_emprise_m2,
@@ -102,6 +109,7 @@ export default function Results() {
   const [mepError, setMepError] = useState(false)
   const [edgeOptimise, setEdgeOptimise] = useState(null)
   const [edgeLoading, setEdgeLoading] = useState(false)
+  const [showReviewModal, setShowReviewModal] = useState(false)
   const { download, loading: dlLoading } = usePdfDownload(params, lang)
 
   // Load project from Supabase if opened by URL (no location.state)
@@ -131,7 +139,7 @@ export default function Results() {
     finally { setEdgeLoading(false) }
   }
 
-  const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'fiches-mep']
+  const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'fiches-mep', 'plan-mep']
 
   useEffect(() => {
     if (MEP_TABS.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom && params?.portee_max_m) {
@@ -170,7 +178,7 @@ export default function Results() {
         <div style={{ textAlign: 'center' }}>
           <p style={{ color: GRIS3, marginBottom: 16 }}>{t('res_aucun')}</p>
           <button onClick={() => navigate('/projects/new')} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '10px 24px', fontSize: 13, fontWeight: 600 }}>
-            Nouveau projet
+            {lang === 'en' ? 'New project' : 'Nouveau projet'}
           </button>
         </div>
       </div>
@@ -190,12 +198,65 @@ export default function Results() {
   const acier_kg = boq.acier_kg || 0
 
   const renderContent = () => {
-    if (activeTab === 'plan-ba' || activeTab === 'plan-mep') {
+    if (activeTab === 'plan-ba') {
+      const nbPages = (params.nb_niveaux || 4) + 5
       return (
-        <div style={{ textAlign: 'center', padding: '60px 20px', color: GRIS3 }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>🏗</div>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>{t('res_bientot')}</div>
-        </div>
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{t('res_plan_ba_titre') || 'Plans Structure (BA)'}</div>
+              <div style={{ fontSize: 11, color: GRIS3 }}>{nbPages} {lang === 'en' ? 'pages' : 'planches'} A3</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { const extra = dwgGeometry ? { dwg_geometry: dwgGeometry } : {}; download('/generate-plans-structure', `TijanAI_PlansStructure_${slug}_${today}.pdf`, extra) }} disabled={!!dlLoading} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
+                {dlLoading === '/generate-plans-structure' ? '...' : 'PDF'}
+              </button>
+              <button onClick={() => { const extra = dwgGeometry ? { dwg_geometry: dwgGeometry } : {}; download('/generate-plans-structure-dwg', `TijanAI_PlansStructure_${slug}_${today}.dxf`, extra) }} disabled={!!dlLoading} style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
+                {dlLoading === '/generate-plans-structure-dwg' ? '...' : 'DWG'}
+              </button>
+            </div>
+          </div>
+          <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {['Coffrage', 'Ferraillage poteaux', 'Ferraillage poutres', 'Ferraillage dalles', 'Fondations', 'Voiles', 'Escaliers', 'Coupes', 'Nomenclature', 'Détails'].map(s => (
+              <span key={s} style={{ fontSize: 10, background: VERT_LIGHT, color: VERT, padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
+            ))}
+          </div>
+          <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>
+            {t('res_plan_ba_note') || 'Plans A3 paysage — géométrie DXF architecte — calculs EC2/EC8 réels'}
+          </div>
+        </Card>
+      )
+    }
+
+    if (activeTab === 'plan-mep') {
+      const nbLots = 7
+      const nbLevels = params.nb_niveaux || 4
+      const nbPages = nbLots * nbLevels
+      return (
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{t('res_plan_mep_titre') || 'Plans MEP (7 lots)'}</div>
+              <div style={{ fontSize: 11, color: GRIS3 }}>{nbPages} {lang === 'en' ? 'pages' : 'planches'} A3 ({nbLots} lots x {nbLevels} {lang === 'en' ? 'levels' : 'niveaux'})</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => { const extra = dwgGeometry ? { dwg_geometry: dwgGeometry } : {}; download('/generate-plans-mep', `TijanAI_PlansMEP_${slug}_${today}.pdf`, extra) }} disabled={!!dlLoading} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
+                {dlLoading === '/generate-plans-mep' ? '...' : 'PDF'}
+              </button>
+              <button onClick={() => { const extra = dwgGeometry ? { dwg_geometry: dwgGeometry } : {}; download('/generate-plans-mep-dwg', `TijanAI_PlansMEP_${slug}_${today}.dxf`, extra) }} disabled={!!dlLoading} style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
+                {dlLoading === '/generate-plans-mep-dwg' ? '...' : 'DWG'}
+              </button>
+            </div>
+          </div>
+          <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {['Plomberie', 'Électricité', 'CVC', 'Séc. Incendie', 'Courants faibles', 'Ascenseurs', 'GTB'].map(s => (
+              <span key={s} style={{ fontSize: 10, background: VERT_LIGHT, color: VERT, padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
+            ))}
+          </div>
+          <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>
+            {t('res_plan_mep_note') || 'Plans A3 paysage — géométrie DXF architecte — calculs MEP réels'}
+          </div>
+        </Card>
       )
     }
 
@@ -310,7 +371,7 @@ export default function Results() {
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
-                <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} — {fmt(boq.ratio_fcfa_m2_habitable)} FCFA/m²</div>
+                <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} — {fmt(boq.ratio_fcfa_m2_habitable)} {deviseInfo?.symbole || 'FCFA'}/m²</div>
                 <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_structure_seule')}</div>
               </div>
               <div>
@@ -324,8 +385,8 @@ export default function Results() {
       )
     }
 
-    // ── MEP chargement ──
-    if (MEP_TABS.includes(activeTab)) {
+    // ── MEP chargement (sauf plan-mep qui génère son propre calcul côté backend) ──
+    if (MEP_TABS.includes(activeTab) && activeTab !== 'plan-mep') {
       if (mepLoading) return <Spinner text="Calcul MEP en cours..." />
       if (mepError || !mepData?.ok) return (
         <div style={{ textAlign: 'center', padding: 60, color: GRIS3 }}>
@@ -409,7 +470,7 @@ export default function Results() {
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${GRIS2}` }}>
               <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>COÛT MEP / m² BÂTI</div>
-              <div style={{ fontWeight: 600 }}>{fmt(ratio_b)} — {fmt(ratio_h)} FCFA/m² <span style={{ fontSize: 11, color: GRIS3 }}>(basic → high-end)</span></div>
+              <div style={{ fontWeight: 600 }}>{fmt(ratio_b)} — {fmt(ratio_h)} {deviseInfo?.symbole || 'FCFA'}/m² <span style={{ fontSize: 11, color: GRIS3 }}>(basic → high-end)</span></div>
               <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }}>Détail complet disponible dans le PDF</div>
             </div>
             {boqm.recommandation && (
@@ -506,13 +567,13 @@ export default function Results() {
               {edgeOptimise.surcout_edge && (
                 <div style={{ fontSize: 12, color: '#555', borderTop: '1px solid #C8E6C9', paddingTop: 10 }}>
                   <strong>Surcoût d'optimisation :</strong>{' '}
-                  {(edgeOptimise.surcout_edge.total_fcfa / 1e6).toFixed(1)} M FCFA
+                  {fmtFcfa(edgeOptimise.surcout_edge.total_fcfa, deviseInfo)}
                   {' '}({edgeOptimise.surcout_edge.pct_boq_mep}% du BOQ MEP Basic)
                   <div style={{ marginTop: 4, fontSize: 11, color: '#888' }}>
                     LED {(edgeOptimise.surcout_edge.led_fcfa/1e6).toFixed(1)}M +
                     Isolation {(edgeOptimise.surcout_edge.isolation_fcfa/1e6).toFixed(1)}M +
                     WC éco {(edgeOptimise.surcout_edge.wc_fcfa/1e3).toFixed(0)}k +
-                    Robinetterie {(edgeOptimise.surcout_edge.robinetterie_fcfa/1e3).toFixed(0)}k FCFA
+                    Robinetterie {fmtFcfa(edgeOptimise.surcout_edge.robinetterie_fcfa, deviseInfo)}
                   </div>
                 </div>
               )}
@@ -647,7 +708,7 @@ export default function Results() {
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
-                <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} FCFA/m²</div>
+                <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} {deviseInfo?.symbole || 'FCFA'}/m²</div>
                 <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_structure_seule')}</div>
               </div>
             </div>
@@ -696,6 +757,8 @@ export default function Results() {
     'rapport-executif':   '/generate-rapport-executif',
     'fiches-structure':   '/generate-fiches-structure',
     'fiches-mep':         '/generate-fiches-mep',
+    'plan-ba':            '/generate-plans-structure',
+    'plan-mep':           '/generate-plans-mep',
   }
   const FILENAME_MAP = {
     'structure':          `TijanAI_NoteStructure_${slug}_${today}.pdf`,
@@ -706,6 +769,8 @@ export default function Results() {
     'rapport-executif':   `TijanAI_RapportExecutif_${slug}_${today}.pdf`,
     'fiches-structure':   `TijanAI_FichesStructure_${slug}_${today}.pdf`,
     'fiches-mep':         `TijanAI_FichesMEP_${slug}_${today}.pdf`,
+    'plan-ba':            `TijanAI_PlansStructure_${slug}_${today}.pdf`,
+    'plan-mep':           `TijanAI_PlansMEP_${slug}_${today}.pdf`,
   }
 
   const endpoint = activeTab === 'chat' ? null : ENDPOINT_MAP[activeTab]
@@ -753,24 +818,141 @@ export default function Results() {
           {renderContent()}
           {/* Chat toujours monté, caché si pas actif */}
           <div style={{ display: activeTab === 'chat' ? 'block' : 'none', height: '100%' }}>
-            <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} />
+            <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} onModify={async (newParams) => {
+                const merged = { ...params, ...newParams }
+                try {
+                  const res = await fetch(BACKEND + '/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(merged),
+                  })
+                  const data = await res.json()
+                  if (data.ok) {
+                    // Refresh the page with new results
+                    navigate(window.location.pathname, {
+                      state: { params: merged, resultats: data, mepData: null, chatHistorique: chatMessages },
+                      replace: true,
+                    })
+                    window.location.reload()
+                  }
+                } catch(e) { console.warn('Recalcul failed:', e) }
+              }} />
           </div>
-          {endpoint && (
-            <div style={{ marginTop: 20 }}>
+          {endpoint && activeTab !== 'plan-ba' && activeTab !== 'plan-mep' && (
+            <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <button
-                onClick={() => { const nomFichier = `TijanAI_${activeTab.replace(/-/g,'')}_${slug}_${today}.pdf`; download(endpoint, nomFichier) }}
-                disabled={!!dlLoading || (MEP_TABS.includes(activeTab) && !mepData?.ok)}
+                onClick={() => {
+                  const nomFichier = `TijanAI_${activeTab.replace(/-/g,'')}_${slug}_${today}.pdf`
+                  download(endpoint, nomFichier)
+                }}
+                disabled={!!dlLoading || (MEP_TABS.includes(activeTab) && activeTab !== 'plan-mep' && !mepData?.ok)}
                 style={{
                   background: dlLoading === endpoint ? '#ccc' : VERT,
                   color: '#fff', border: 'none', borderRadius: 6,
                   padding: '11px 28px', fontSize: 13, fontWeight: 600,
-                  width: '100%', maxWidth: 320, cursor: 'pointer',
-                  opacity: (MEP_TABS.includes(activeTab) && !mepData?.ok) ? 0.5 : 1,
+                  cursor: 'pointer',
+                  opacity: (MEP_TABS.includes(activeTab) && !mepData?.ok && activeTab !== 'plan-mep') ? 0.5 : 1,
                 }}
               >
-                {dlLoading === endpoint ? t('res_generation') : t('res_telecharger')}
+                {dlLoading === endpoint ? t('res_generation') : (t('res_telecharger') || 'Télécharger PDF')}
               </button>
+              {activeTab === 'boq-structure' && (
+                <button
+                  onClick={() => download('/generate-boq-xlsx', `TijanAI_BOQStructure_${slug}_${today}.xlsx`)}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading === '/generate-boq-xlsx' ? '...' : 'Excel'}
+                </button>
+              )}
+              {activeTab === 'boq-mep' && (
+                <button
+                  onClick={() => download('/generate-boq-mep-xlsx', `TijanAI_BOQMEP_${slug}_${today}.xlsx`)}
+                  disabled={!!dlLoading || !mepData?.ok}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: (dlLoading || !mepData?.ok) ? 0.5 : 1 }}
+                >
+                  {dlLoading === '/generate-boq-mep-xlsx' ? '...' : 'Excel'}
+                </button>
+              )}
+              {activeTab === 'structure' && (
+                <button
+                  onClick={() => download('/generate-note-docx', `TijanAI_NoteStructure_${slug}_${today}.docx`)}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading === '/generate-note-docx' ? '...' : 'Word'}
+                </button>
+              )}
+              {activeTab === 'rapport-executif' && (
+                <button
+                  onClick={() => download('/generate-rapport-docx', `TijanAI_RapportExecutif_${slug}_${today}.docx`)}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading === '/generate-rapport-docx' ? '...' : 'Word'}
+                </button>
+              )}
             </div>
+          )}
+
+          {/* Engineer Review CTA */}
+          {resultats?.ok && activeTab !== 'chat' && (
+            <div style={{
+              marginTop: 24, padding: 20, borderRadius: 10,
+              border: '1.5px solid #E5E5E5', background: '#FAFFFE',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#1B2A4A', marginBottom: 4 }}>
+                    {lang === 'en' ? 'Get your project reviewed by a licensed engineer' : 'Faites valider votre projet par un ingénieur agréé'}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#888' }}>
+                    {lang === 'en'
+                      ? 'Annotated PDF + signed validation letter — 48-72h turnaround'
+                      : 'PDF annoté + lettre de validation signée — délai 48-72h'}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowReviewModal(true)}
+                  style={{
+                    background: '#1B2A4A', color: '#fff', border: 'none', borderRadius: 6,
+                    padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {lang === 'en' ? 'Request Engineer Review' : 'Demander une revue ingénieur'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Review Modal */}
+          {showReviewModal && (
+            <ReviewModal
+              lang={lang}
+              restants={restants}
+              onClose={() => setShowReviewModal(false)}
+              onConfirm={async (scopes, cost) => {
+                const projectId = window.location.pathname.split('/projects/')[1]?.split('/')[0]
+                if (!user || !projectId) return
+                try {
+                  const ok = await consommer(cost)
+                  if (!ok) { alert(lang === 'en' ? 'Not enough credits' : 'Crédits insuffisants'); return }
+                  const { error } = await supabase.from('engineer_reviews').insert({
+                    project_id: projectId,
+                    user_id: user.id,
+                    scope: scopes.join('+'),
+                    status: 'paid',
+                    prix_fcfa: cost * 200000,
+                    commission_fcfa: cost * 50000,
+                    engineer_payout_fcfa: cost * 150000,
+                  })
+                  if (error) { alert('Error: ' + error.message); return }
+                  setShowReviewModal(false)
+                  navigate('/projects/' + projectId + '/review/success')
+                } catch (e) { alert('Error: ' + e.message) }
+              }}
+            />
           )}
         </div>
       </div>
