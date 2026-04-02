@@ -93,25 +93,19 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       const data = await res.json()
       if (data.ok) {
         let reponseText = data.reponse
-        let modifParams = null
 
-        // Detect modification request
-        const modifMatch = reponseText.match(/<MODIF>(.*?)<\/MODIF>/s)
-        if (modifMatch) {
-          try {
-            modifParams = JSON.parse(modifMatch[1])
-            reponseText = reponseText.replace(/<MODIF>.*?<\/MODIF>/s, '').trim()
-            reponseText = (lang === 'en' ? '🔄 Recalculating with new parameters...\n\n' : '🔄 Recalcul en cours avec les nouveaux paramètres...\n\n') + reponseText
-          } catch(e) { console.warn('MODIF parse error:', e) }
+        // Backend already handles <MODIF> and returns recalcul results
+        if (data.recalcul && data.updated_resultats) {
+          reponseText = (lang === 'en' ? '✅ Studies updated with new parameters.\n\n' : '✅ Études mises à jour avec les nouveaux paramètres.\n\n') + reponseText
         }
 
         const updated = [...newMessages, { role: 'assistant', content: reponseText }]
         setMessages(updated)
         if (onUpdateChat) onUpdateChat(updated)
 
-        // If modification detected, recalculate
-        if (modifParams && onModify) {
-          onModify(modifParams)
+        // If backend recalculated, update results in-place
+        if (data.recalcul && data.updated_resultats && onModify) {
+          onModify(data.updated_params, data.updated_resultats, data.updated_mep)
         }
         // Sauvegarder dans Supabase
         if (supabase && user && params?.nom) {

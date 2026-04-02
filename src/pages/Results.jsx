@@ -818,24 +818,27 @@ export default function Results() {
           {renderContent()}
           {/* Chat toujours monté, caché si pas actif */}
           <div style={{ display: activeTab === 'chat' ? 'block' : 'none', height: '100%' }}>
-            <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} onModify={async (newParams) => {
-                const merged = { ...params, ...newParams }
-                try {
-                  const res = await fetch(BACKEND + '/calculate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(merged),
-                  })
-                  const data = await res.json()
-                  if (data.ok) {
-                    // Refresh the page with new results
-                    navigate(window.location.pathname, {
-                      state: { params: merged, resultats: data, mepData: null, chatHistorique: chatMessages },
-                      replace: true,
-                    })
-                    window.location.reload()
-                  }
-                } catch(e) { console.warn('Recalcul failed:', e) }
+            <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} onModify={(updatedParams, updatedResultats, updatedMep) => {
+                // Update in-place — no page reload
+                navigate(window.location.pathname, {
+                  state: {
+                    params: updatedParams,
+                    resultats: updatedResultats,
+                    mepData: updatedMep ? { ok: true, ...updatedMep } : null,
+                    chatHistorique: chatMessages,
+                    dwgGeometry: dwgGeometry,
+                  },
+                  replace: true,
+                })
+                // Show toast notification
+                const toast = document.createElement('div')
+                toast.textContent = lang === 'en' ? 'Studies updated ✓' : 'Études mises à jour ✓'
+                toast.style.cssText = 'position:fixed;top:16px;right:16px;background:#43A956;color:#fff;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;animation:fadeInOut 3s ease-in-out forwards;font-family:DM Sans,sans-serif'
+                const style = document.createElement('style')
+                style.textContent = '@keyframes fadeInOut{0%{opacity:0;transform:translateY(-10px)}10%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}'
+                document.head.appendChild(style)
+                document.body.appendChild(toast)
+                setTimeout(() => { toast.remove(); style.remove() }, 3200)
               }} />
           </div>
           {endpoint && activeTab !== 'plan-ba' && activeTab !== 'plan-mep' && (
