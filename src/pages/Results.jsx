@@ -876,24 +876,7 @@ export default function Results() {
               >
                 {dlLoading === endpoint ? t('res_generation') : (t('res_telecharger') || 'Télécharger PDF')}
               </button>
-              {activeTab === 'boq-structure' && (
-                <button
-                  onClick={() => download('/generate-boq-xlsx', `TijanAI_BOQStructure_${slug}_${today}.xlsx`)}
-                  disabled={!!dlLoading}
-                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
-                >
-                  {dlLoading === '/generate-boq-xlsx' ? '...' : 'Excel'}
-                </button>
-              )}
-              {activeTab === 'boq-mep' && (
-                <button
-                  onClick={() => download('/generate-boq-mep-xlsx', `TijanAI_BOQMEP_${slug}_${today}.xlsx`)}
-                  disabled={!!dlLoading || !mepData?.ok}
-                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: (dlLoading || !mepData?.ok) ? 0.5 : 1 }}
-                >
-                  {dlLoading === '/generate-boq-mep-xlsx' ? '...' : 'Excel'}
-                </button>
-              )}
+              {/* Excel BOQ buttons removed — PDF is the reference output */}
               {activeTab === 'structure' && (
                 <button
                   onClick={() => download('/generate-note-docx', `TijanAI_NoteStructure_${slug}_${today}.docx`)}
