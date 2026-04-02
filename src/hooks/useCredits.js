@@ -35,14 +35,14 @@ export function useCredits() {
 
   const restants = credits ? credits.total - credits.utilises : 0
 
-  const consommer = async () => {
-    if (restants <= 0) return false
+  const consommer = async (n = 1) => {
+    if (restants < n) return false
     const { error } = await supabase
       .from('credits')
-      .update({ utilises: credits.utilises + 1, updated_at: new Date().toISOString() })
+      .update({ utilises: credits.utilises + n, updated_at: new Date().toISOString() })
       .eq('user_id', user.id)
     if (!error) {
-      setCredits(prev => ({ ...prev, utilises: prev.utilises + 1 }))
+      setCredits(prev => ({ ...prev, utilises: prev.utilises + n }))
       return true
     }
     return false

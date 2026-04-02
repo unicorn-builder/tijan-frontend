@@ -40,21 +40,21 @@ export default function PaymentSuccess() {
           padding: '12px 20px', fontSize: 18, fontWeight: 700, color: VERT,
           marginBottom: 24,
         }}>
-          {done ? restants : '...'} crédits disponibles
+          {done ? restants : '...'} crédits {lang === 'en' ? 'available' : 'disponibles'}
         </div>
         <button onClick={() => navigate('/projects/new')} style={{
           background: VERT, color: '#fff', border: 'none', borderRadius: 8,
           padding: '12px 28px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
           width: '100%',
         }}>
-          Créer un projet →
+          {lang === 'en' ? 'Create a project →' : 'Créer un projet →'}
         </button>
         <button onClick={() => navigate('/dashboard')} style={{
           background: 'none', border: `1px solid #E5E5E5`, borderRadius: 8,
           padding: '10px 28px', fontSize: 13, color: '#555', cursor: 'pointer',
           width: '100%', marginTop: 8,
         }}>
-          Retour au dashboard
+          {lang === 'en' ? 'Back to dashboard' : 'Retour au dashboard'}
         </button>
       </div>
     </div>

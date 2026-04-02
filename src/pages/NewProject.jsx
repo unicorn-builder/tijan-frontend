@@ -15,14 +15,17 @@ export default function NewProject() {
   const [ville, setVille] = useState('Dakar')
   const [surfaceTerrain, setSurfaceTerrain] = useState('')
   const [mainFile, setMainFile] = useState(null)
+  const [mainFiles, setMainFiles] = useState([])
+  const [nbNiveaux, setNbNiveaux] = useState('')
   const [solFile, setSolFile] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [dragging, setDragging] = useState(false)
   const mainRef = useRef(null)
   const solRef = useRef(null)
 
+  const [parseProgress, setParseProgress] = useState('')
   const loading = step === 'uploading' || step === 'calculating'
-  const loadingText = step === 'uploading' ? t('np_uploading') : t('np_calculating')
+  const loadingText = step === 'uploading' ? (parseProgress || t('np_uploading')) : t('np_calculating')
 
   async function lancer() {
     if (!nom.trim()) { setErrorMsg(t('np_err_nom')); return }
@@ -32,14 +35,34 @@ export default function NewProject() {
     setErrorMsg('')
     setStep('uploading')
 
-    const form = new FormData()
-    form.append('file', mainFile)
-    form.append('ville', ville)
+    // Always send ONE file to /parse — the biggest one (most geometry)
+    // For multi-DWG: nb_niveaux = user input or file count
+    const allFiles = mainFiles.length > 1 ? mainFiles : [mainFile]
+    const fileToSend = allFiles.length > 1
+      ? [...allFiles].sort((a, b) => b.size - a.size)[0]
+      : mainFile
+    const userNiveaux = parseInt(nbNiveaux) || (allFiles.length > 1 ? allFiles.length : null)
+
     let parsed = {}
     try {
+      setParseProgress(allFiles.length > 1
+        ? `Analyse du plan principal (${fileToSend.name})... peut prendre 1-2 minutes`
+        : 'Analyse du plan en cours...')
+
+      const form = new FormData()
+      form.append('file', fileToSend)
+      form.append('ville', ville)
+      if (userNiveaux) form.append('nb_niveaux', String(userNiveaux))
       const res = await fetch(`${BACKEND}/parse`, { method: 'POST', body: form })
       const data = await res.json()
       if (data.ok) parsed = data
+
+      // Override nb_niveaux: user field > file count > parsed value
+      if (userNiveaux) {
+        parsed.nb_niveaux = userNiveaux
+        if (parsed.donnees_moteur) parsed.donnees_moteur.nb_niveaux = userNiveaux
+      }
+      setParseProgress('')
     } catch {}
 
     // Priorité : surface terrain saisie × 0.70, sauf si le parser extrait une emprise réaliste
@@ -72,6 +95,9 @@ export default function NewProject() {
       surface_terrain_m2: parseFloat(surfaceTerrain),
     }
     if (sol_context) payload.sol_context = sol_context
+    if (parsed.urn) payload.urn = parsed.urn
+    // Store DWG geometry for plan generation
+    const dwgGeometry = parsed.dwg_geometry || null
 
     try {
       const res = await fetch(`${BACKEND}/calculate`, {
@@ -101,10 +127,11 @@ export default function NewProject() {
           nb_travees_x: payload.nb_travees_x,
           nb_travees_y: payload.nb_travees_y,
           usage: payload.usage || 'residentiel',
+          urn: payload.urn || null,
           resultats_structure: resultats,
         }).then(r => { console.log('SUPABASE SAVE', r) }).catch(e => { console.error('SUPABASE ERROR', e) })
       }
-      navigate(`/projects/${Date.now()}/results`, { state: { params: payload, resultats } })
+      navigate(`/projects/${Date.now()}/results`, { state: { params: payload, resultats, dwgGeometry } })
     } catch {
       setStep('error'); setErrorMsg(t('np_err_connexion'))
     }
@@ -146,19 +173,36 @@ export default function NewProject() {
             </div>
 
             <div>
+              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>Nombre de niveaux (R+?)</label>
+              <input type="number" value={nbNiveaux} onChange={e => setNbNiveaux(e.target.value)} placeholder={mainFiles.length > 1 ? `${mainFiles.length} fichiers détectés` : "ex: 10 pour R+8 avec SS"} style={inp} min="2" max="40" />
+              <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>SS + RDC + étages + terrasse. Laissez vide pour détection automatique.</div>
+            </div>
+
+            <div>
               <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_plans')} *</label>
               <div
                 onClick={() => mainRef.current?.click()}
                 onDragOver={e => { e.preventDefault(); setDragging(true) }}
                 onDragLeave={() => setDragging(false)}
-                onDrop={e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) setMainFile(f) }}
+                onDrop={e => {
+                  e.preventDefault(); setDragging(false)
+                  const files = Array.from(e.dataTransfer.files)
+                  if (files.length > 1) { setMainFiles(files); setMainFile(files[0]); if (!nbNiveaux) setNbNiveaux(String(files.length)) }
+                  else if (files[0]) { setMainFile(files[0]); setMainFiles([]) }
+                }}
                 style={{ border: `2px dashed ${dragging ? VERT : mainFile ? VERT : GRIS2}`, borderRadius: 8, padding: '24px 20px', textAlign: 'center', cursor: 'pointer', background: mainFile ? '#F0FAF1' : '#FAFAFA' }}
               >
-                {mainFile
-                  ? <div><div style={{ fontSize: 13, fontWeight: 500, color: VERT, marginBottom: 4 }}>✓ {mainFile.name}</div><div style={{ fontSize: 11, color: '#888' }}>Cliquez pour changer</div></div>
-                  : <div><div style={{ fontSize: 13, color: '#555', marginBottom: 6 }}>{t('np_drop')}</div><div style={{ fontSize: 11, color: '#888' }}>{t('np_format')}</div></div>
+                {mainFiles.length > 1
+                  ? <div><div style={{ fontSize: 13, fontWeight: 500, color: VERT, marginBottom: 4 }}>✓ {mainFiles.length} fichiers DWG</div>{mainFiles.map((f,i) => <div key={i} style={{ fontSize: 10, color: '#888' }}>{f.name}</div>)}<div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>Cliquez pour changer</div></div>
+                  : mainFile
+                    ? <div><div style={{ fontSize: 13, fontWeight: 500, color: VERT, marginBottom: 4 }}>✓ {mainFile.name}</div><div style={{ fontSize: 11, color: '#888' }}>Cliquez pour changer</div></div>
+                    : <div><div style={{ fontSize: 13, color: '#555', marginBottom: 6 }}>{t('np_drop')}</div><div style={{ fontSize: 11, color: '#888' }}>PDF, DWG, DXF — un ou plusieurs fichiers</div></div>
                 }
-                <input ref={mainRef} type="file" accept=".pdf,.dwg,.dxf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) setMainFile(f) }} />
+                <input ref={mainRef} type="file" accept=".pdf,.dwg,.dxf" multiple style={{ display: 'none' }} onChange={e => {
+                  const files = Array.from(e.target.files || [])
+                  if (files.length > 1) { setMainFiles(files); setMainFile(files[0]); if (!nbNiveaux) setNbNiveaux(String(files.length)) }
+                  else if (files[0]) { setMainFile(files[0]); setMainFiles([]) }
+                }} />
               </div>
             </div>
 

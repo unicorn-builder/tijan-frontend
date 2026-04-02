@@ -1,5 +1,5 @@
 // Dashboard.jsx — Liste des projets de l'utilisateur
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useProjects } from '../hooks/useProjects'
@@ -30,9 +30,18 @@ export default function Dashboard() {
   const { user, signOut } = useAuth()
   const { projets, loading, supprimerProjet } = useProjects()
   const { restants } = useCredits()
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const navigate = useNavigate()
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [reviews, setReviews] = useState([])
+  const { supabase } = useAuth()
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('engineer_reviews').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+        .then(({ data }) => setReviews(data || []))
+    }
+  }, [user])
 
   const nomUser = user?.user_metadata?.nom_complet || user?.email?.split('@')[0] || 'Utilisateur'
 
@@ -84,7 +93,7 @@ export default function Dashboard() {
               borderTop: `3px solid ${VERT}`, borderRadius: '50%',
               animation: 'spin 0.8s linear infinite', margin: '0 auto 12px',
             }} />
-            Chargement...
+            {lang === 'en' ? 'Loading...' : 'Chargement...'}
           </div>
         ) : projets.length === 0 ? (
           <div style={{
@@ -101,13 +110,13 @@ export default function Dashboard() {
             <button onClick={() => navigate('/pricing')} style={{
               background: '#F0FFF4', color: VERT, border: '1px solid ' + VERT,
               borderRadius: 6, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            }}>{restants ?? '...'} crédit{restants !== 1 ? 's' : ''} · Acheter</button>
+            }}>{restants ?? '...'} {lang === 'en' ? 'credits' : 'crédit'}{restants !== 1 ? 's' : ''} · {lang === 'en' ? 'Buy' : 'Acheter'}</button>
             <button onClick={() => navigate('/projects/new')} style={{
               background: VERT, color: '#fff', border: 'none',
               borderRadius: 8, padding: '12px 28px', fontSize: 14,
               fontWeight: 700, cursor: 'pointer',
             }}>
-              + Créer mon premier projet
+              {lang === 'en' ? '+ Create my first project' : '+ Créer mon premier projet'}
             </button>
           </div>
         ) : (
@@ -151,7 +160,7 @@ export default function Dashboard() {
                       borderRadius: 6, padding: '7px 14px', fontSize: 12,
                       fontWeight: 600, cursor: 'pointer',
                     }}>
-                      Ouvrir
+                      {lang === 'en' ? 'Open' : 'Ouvrir'}
                     </button>
                     <button onClick={() => setConfirmDelete(projet.id)} style={{
                       background: '#FFF0F0', color: '#DC2626', border: 'none',
@@ -179,7 +188,7 @@ export default function Dashboard() {
             maxWidth: 360, width: '90%', textAlign: 'center',
           }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
-              Supprimer ce projet ?
+              {lang === 'en' ? 'Delete this project?' : 'Supprimer ce projet ?'}
             </div>
             <div style={{ fontSize: 13, color: GRIS3, marginBottom: 24 }}>
               {t('dash_supprimer_desc')}
@@ -199,6 +208,68 @@ export default function Dashboard() {
                 Supprimer
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* {lang === 'en' ? 'My Engineer Reviews' : 'Mes revues ingénieur'} */}
+      {reviews.length > 0 && (
+        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px 32px' }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
+            {lang === 'en' ? 'My Engineer Reviews' : 'Mes revues ingénieur'}
+          </h2>
+          <div style={{ display: 'grid', gap: 10 }}>
+            {reviews.map(r => {
+              const statusMap = {
+                paid: { label: lang === 'en' ? 'Pending' : 'En attente', color: ORANGE, bg: '#FFF7ED' },
+                assigned: { label: lang === 'en' ? 'Assigned' : 'Assignee', color: '#2563EB', bg: '#EFF6FF' },
+                in_progress: { label: lang === 'en' ? 'In progress' : 'En cours', color: '#7C3AED', bg: '#F5F3FF' },
+                review_complete: { label: lang === 'en' ? 'Complete' : 'Terminee', color: VERT, bg: '#F0FFF4' },
+                delivered: { label: lang === 'en' ? 'Delivered' : 'Livree', color: VERT, bg: '#F0FFF4' },
+              }
+              const st = statusMap[r.status] || statusMap.paid
+              const projet = projets.find(p => p.id === r.project_id)
+              return (
+                <div key={r.id} style={{
+                  background: '#fff', border: '1px solid ' + GRIS2, borderRadius: 10,
+                  padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: NAVY, marginBottom: 3 }}>
+                      {projet?.nom || 'Projet'} — {r.scope?.replace(/\+/g, ' + ')}
+                    </div>
+                    <div style={{ fontSize: 11, color: GRIS3 }}>
+                      {new Date(r.created_at).toLocaleDateString('fr-FR')}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, borderRadius: 10, padding: '3px 10px',
+                      background: st.bg, color: st.color,
+                    }}>
+                      {st.label}
+                    </span>
+                    {r.status === 'review_complete' || r.status === 'delivered' ? (
+                      <button onClick={() => {
+                        supabase.from('review_documents').select('*').eq('review_id', r.id)
+                          .then(({ data: docs }) => {
+                            if (docs && docs.length > 0) {
+                              docs.forEach(d => window.open(d.file_url, '_blank'))
+                            } else {
+                              alert(lang === 'en' ? 'Documents being prepared' : 'Documents en cours de preparation')
+                            }
+                          })
+                      }} style={{
+                        background: VERT, color: '#fff', border: 'none', borderRadius: 6,
+                        padding: '6px 14px', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                      }}>
+                        {lang === 'en' ? 'Download' : 'Telecharger'}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

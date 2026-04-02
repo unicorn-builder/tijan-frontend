@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import NewProject from './pages/NewProject'
 import Results from './pages/Results'
+import ReviewSuccess from './pages/ReviewSuccess'
 import Pricing from './pages/Pricing'
 import PaymentSuccess from './pages/PaymentSuccess'
 
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
           <Route path="/projects/:id/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
+          <Route path="/projects/:id/review/success" element={<ProtectedRoute><ReviewSuccess /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

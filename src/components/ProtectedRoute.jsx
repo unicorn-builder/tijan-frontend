@@ -18,7 +18,7 @@ export default function ProtectedRoute({ children }) {
             borderTop: '3px solid #43A956', borderRadius: '50%',
             animation: 'spin 0.8s linear infinite', margin: '0 auto 12px',
           }} />
-          <div style={{ fontSize: 13, color: '#9CA3AF' }}>Chargement...</div>
+          <div style={{ fontSize: 13, color: '#9CA3AF' }}>Loading...</div>
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>

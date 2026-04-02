@@ -4,13 +4,21 @@ import { useAuth } from '../context/AuthContext'
 import { useLang } from '../i18n.jsx'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE } from '../constants'
 
-const SUGGESTIONS = [
+const SUGGESTIONS_FR = [
   "Pourquoi ce choix de béton pour mon projet ?",
   "Et si je réduisais les portées, ça changerait quoi ?",
-  "Comment obtenir la certification EDGE au moindre coût ?",
-  "Explique-moi le choix des fondations en termes simples",
-  "Explique ce projet en langage simple pour mon client",
-  "Compare le coût de ce projet avec un R+3 sur la même emprise",
+  "Passe en C35/45 et montre-moi l'impact",
+  "Augmente la portée principale à 7m",
+  "Ajoute un niveau supplémentaire",
+  "Compare le coût avec un R+3 sur la même emprise",
+]
+const SUGGESTIONS_EN = [
+  "Why this concrete class for my project?",
+  "What if I increased the main span to 7m?",
+  "Switch to C35/45 and show me the impact",
+  "Add one more level to the building",
+  "How to get EDGE certification at minimum cost?",
+  "Explain the foundation choice in simple terms",
 ]
 
 function Message({ msg }) {
@@ -46,9 +54,9 @@ function Message({ msg }) {
   )
 }
 
-export default function ChatTijan({ params, resultatsStructure, resultatsMep, savedChat, onUpdateChat }) {
+export default function ChatTijan({ params, resultatsStructure, resultatsMep, savedChat, onUpdateChat, onModify, lang: langProp }) {
   const { supabase, user } = useAuth()
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const defaultMsg = [{
     role: 'assistant',
     content: `Salut ! 👋 Je suis Tijan, votre partenaire ingénierie sur **${params?.nom || 'votre projet'}**.\n\nJ'ai analysé votre projet en détail — structure, MEP, coûts, certification EDGE. N'hésitez pas à me poser toutes vos questions, même les plus pointues. Je suis là pour vous aider à prendre les meilleures décisions pour votre projet.`,
@@ -84,9 +92,27 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       })
       const data = await res.json()
       if (data.ok) {
-        const updated = [...newMessages, { role: 'assistant', content: data.reponse }]
+        let reponseText = data.reponse
+        let modifParams = null
+
+        // Detect modification request
+        const modifMatch = reponseText.match(/<MODIF>(.*?)<\/MODIF>/s)
+        if (modifMatch) {
+          try {
+            modifParams = JSON.parse(modifMatch[1])
+            reponseText = reponseText.replace(/<MODIF>.*?<\/MODIF>/s, '').trim()
+            reponseText = (lang === 'en' ? '🔄 Recalculating with new parameters...\n\n' : '🔄 Recalcul en cours avec les nouveaux paramètres...\n\n') + reponseText
+          } catch(e) { console.warn('MODIF parse error:', e) }
+        }
+
+        const updated = [...newMessages, { role: 'assistant', content: reponseText }]
         setMessages(updated)
         if (onUpdateChat) onUpdateChat(updated)
+
+        // If modification detected, recalculate
+        if (modifParams && onModify) {
+          onModify(modifParams)
+        }
         // Sauvegarder dans Supabase
         if (supabase && user && params?.nom) {
           supabase.from('projets')
@@ -127,7 +153,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
           Tijan — {t('chat_titre')} {params?.nom || 'votre projet'}
         </span>
         <span style={{ fontSize: 11, color: GRIS3, marginLeft: 'auto' }}>
-          Projet analysé ✓
+          {lang === "en" ? "Project analyzed ✓" : "Projet analysé ✓"}
         </span>
       </div>
 
@@ -156,9 +182,9 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       {/* Suggestions */}
       {messages.length <= 2 && (
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 11, color: GRIS3, marginBottom: 6 }}>Suggestions :</div>
+          <div style={{ fontSize: 11, color: GRIS3, marginBottom: 6 }}>{lang === "en" ? "Suggestions:" : "Suggestions :"}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {SUGGESTIONS.slice(0, 4).map((s, i) => (
+            {(lang === 'en' ? SUGGESTIONS_EN : SUGGESTIONS_FR).slice(0, 4).map((s, i) => (
               <button key={i} onClick={() => envoyer(s)} style={{
                 background: '#fff', border: `1px solid ${GRIS2}`,
                 borderRadius: 16, padding: '5px 12px', fontSize: 11,
@@ -175,7 +201,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="Posez une question sur votre projet... (Entrée pour envoyer)"
+          placeholder={lang === "en" ? "Ask about your project... (Enter to send)" : "Posez une question sur votre projet... (Entrée pour envoyer)"}
           rows={2}
           style={{
             flex: 1, border: `1px solid ${GRIS2}`, borderRadius: 8,
