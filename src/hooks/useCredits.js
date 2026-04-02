@@ -37,12 +37,19 @@ export function useCredits() {
 
   const consommer = async (n = 1) => {
     if (restants < n) return false
+    // Re-fetch server state to prevent race conditions (double-click, duplicate tabs)
+    const { data: fresh } = await supabase
+      .from('credits')
+      .select('total, utilises')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!fresh || (fresh.total - fresh.utilises) < n) return false
     const { error } = await supabase
       .from('credits')
-      .update({ utilises: credits.utilises + n, updated_at: new Date().toISOString() })
+      .update({ utilises: fresh.utilises + n, updated_at: new Date().toISOString() })
       .eq('user_id', user.id)
     if (!error) {
-      setCredits(prev => ({ ...prev, utilises: prev.utilises + n }))
+      setCredits(prev => ({ ...prev, utilises: fresh.utilises + n }))
       return true
     }
     return false

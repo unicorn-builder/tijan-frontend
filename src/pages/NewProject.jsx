@@ -106,16 +106,10 @@ export default function NewProject() {
       })
       const resultats = await res.json()
       if (!resultats.ok) { setStep('error'); setErrorMsg(t('np_err_calcul')); return }
-      // Consommer un crédit
-      if (consommer) {
-        const ok = await consommer()
-        if (!ok && restants <= 0) {
-          setStep('error'); setErrorMsg(t('np_err_credits')); return
-        }
-      }
-      // Sauvegarder dans Supabase
+      // Sauvegarder dans Supabase AVANT de consommer le crédit
+      let projectId = Date.now()
       if (user && supabase) {
-        supabase.from('projets').insert({
+        const { data: saved, error: saveErr } = await supabase.from('projets').insert({
           user_id: user.id,
           nom: payload.nom || nom,
           ville: payload.ville || ville,
@@ -129,9 +123,22 @@ export default function NewProject() {
           usage: payload.usage || 'residentiel',
           urn: payload.urn || null,
           resultats_structure: resultats,
-        }).then(r => { console.log('SUPABASE SAVE', r) }).catch(e => { console.error('SUPABASE ERROR', e) })
+        }).select('id').maybeSingle()
+        if (saveErr) {
+          console.error('SUPABASE SAVE ERROR', saveErr)
+          setStep('error'); setErrorMsg(t('np_err_save') || 'Erreur lors de la sauvegarde du projet. Réessayez.'); return
+        }
+        if (saved?.id) projectId = saved.id
+        // Consommer un crédit seulement après sauvegarde réussie
+        if (consommer) {
+          const ok = await consommer()
+          if (!ok && restants <= 0) {
+            // Credit failed but project is saved — user can still access it
+            console.warn('Credit deduction failed, project saved anyway')
+          }
+        }
       }
-      navigate(`/projects/${Date.now()}/results`, { state: { params: payload, resultats, dwgGeometry } })
+      navigate(`/projects/${projectId}/results`, { state: { params: payload, resultats, dwgGeometry } })
     } catch {
       setStep('error'); setErrorMsg(t('np_err_connexion'))
     }
