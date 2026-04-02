@@ -88,16 +88,10 @@ export default function Results() {
   const state = location.state
   const [dbProjet, setDbProjet] = useState(null)
 
-  const resultats = state?.resultats || dbProjet?.resultats_structure || {}
+  const [resultats, setResultats] = useState(state?.resultats || {})
   const deviseInfo = resultats?.devise_info || null
   const dwgGeometry = state?.dwgGeometry || null
-  const params = state?.params || (dbProjet ? {
-    nom: dbProjet.nom, ville: dbProjet.ville, pays: dbProjet.pays || 'Senegal',
-    nb_niveaux: dbProjet.nb_niveaux, surface_emprise_m2: dbProjet.surface_emprise_m2,
-    portee_max_m: dbProjet.portee_max_m, portee_min_m: dbProjet.portee_min_m,
-    nb_travees_x: dbProjet.nb_travees_x, nb_travees_y: dbProjet.nb_travees_y,
-    usage: dbProjet.usage || 'residentiel',
-  } : {})
+  const [params, setParams] = useState(state?.params || {})
 
   const [activeTab, setActiveTab] = useState('structure')
   const { supabase, user } = useAuth()
@@ -119,6 +113,14 @@ export default function Results() {
         .then(({ data, error }) => {
           if (data && !error) {
             setDbProjet(data)
+            if (data.resultats_structure) setResultats(data.resultats_structure)
+            setParams({
+              nom: data.nom, ville: data.ville, pays: data.pays || 'Senegal',
+              nb_niveaux: data.nb_niveaux, surface_emprise_m2: data.surface_emprise_m2,
+              portee_max_m: data.portee_max_m, portee_min_m: data.portee_min_m,
+              nb_travees_x: data.nb_travees_x, nb_travees_y: data.nb_travees_y,
+              usage: data.usage || 'residentiel',
+            })
             if (data.resultats_mep) setMepData(data.resultats_mep)
           }
         })
@@ -697,21 +699,43 @@ export default function Results() {
           </Card>
           <SectionTitle>{t('r_budget_global')}</SectionTitle>
           <Card>
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_structure_bas')}</div>
-                <div style={{ fontSize: 20, fontWeight: 700 }}>{fmtFcfa(boq.total_bas_fcfa, deviseInfo)}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_structure_haut')}</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa, deviseInfo)}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
-                <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} {deviseInfo?.symbole || 'FCFA'}/m²</div>
-                <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_structure_seule')}</div>
-              </div>
-            </div>
+            {(() => {
+              const boqm = mepData?.boq_mep || {}
+              const structBas = boq.total_bas_fcfa || 0
+              const structHaut = boq.total_haut_fcfa || 0
+              const mepBas = boqm.basic_fcfa || 0
+              const mepHaut = boqm.hend_fcfa || 0
+              const totalBas = structBas + mepBas
+              const totalHaut = structHaut + mepHaut
+              const sBatie = boq.surface_batie_m2 || (surf * niv)
+              const coutM2 = sBatie > 0 ? Math.round(totalHaut / sBatie) : 0
+              return (
+                <>
+                  <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_structure_bas')} / {t('r_structure_haut')}</div>
+                      <div style={{ fontSize: 18, fontWeight: 700 }}>{fmtFcfa(structBas, deviseInfo)} — {fmtFcfa(structHaut, deviseInfo)}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, color: GRIS3 }}>MEP & Automation</div>
+                      <div style={{ fontSize: 18, fontWeight: 700 }}>{fmtFcfa(mepBas, deviseInfo)} — {fmtFcfa(mepHaut, deviseInfo)}</div>
+                      {!mepData && <div style={{ fontSize: 10, color: ORANGE }}>Calcul MEP non chargé — consultez l'onglet MEP</div>}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${GRIS2}`, display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ fontSize: 11, color: GRIS3 }}>COÛT TOTAL ESTIMÉ</div>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(totalBas, deviseInfo)} — {fmtFcfa(totalHaut, deviseInfo)}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
+                      <div style={{ fontWeight: 600 }}>{fmt(coutM2)} {deviseInfo?.symbole || 'FCFA'}/m²</div>
+                      <div style={{ fontSize: 10, color: GRIS3 }}>Structure + MEP</div>
+                    </div>
+                  </div>
+                </>
+              )
+            })()}
             <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>{t('r_estimation_hors')}</div>
           </Card>
           {analyse.note_ingenieur && (
@@ -819,17 +843,10 @@ export default function Results() {
           {/* Chat toujours monté, caché si pas actif */}
           <div style={{ display: activeTab === 'chat' ? 'block' : 'none', height: '100%' }}>
             <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} onModify={(updatedParams, updatedResultats, updatedMep) => {
-                // Update in-place — no page reload
-                navigate(window.location.pathname, {
-                  state: {
-                    params: updatedParams,
-                    resultats: updatedResultats,
-                    mepData: updatedMep ? { ok: true, ...updatedMep } : null,
-                    chatHistorique: chatMessages,
-                    dwgGeometry: dwgGeometry,
-                  },
-                  replace: true,
-                })
+                // Update React state directly — triggers re-render of all dependent components
+                setParams(updatedParams)
+                setResultats(updatedResultats)
+                if (updatedMep) setMepData({ ok: true, ...updatedMep })
                 // Show toast notification
                 const toast = document.createElement('div')
                 toast.textContent = lang === 'en' ? 'Studies updated ✓' : 'Études mises à jour ✓'
