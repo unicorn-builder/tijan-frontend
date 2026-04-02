@@ -24,6 +24,12 @@ export default function Header() {
           onClick={() => navigate('/')}
           style={{ height: 24, cursor: 'pointer' }}
         />
+        <button onClick={() => navigate('/impact')} style={{
+          background: 'none', border: 'none', fontSize: 13, color: '#555', cursor: 'pointer', fontWeight: 500,
+        }}>{t('nav_impact')}</button>
+        <button onClick={() => navigate('/investors')} style={{
+          background: 'none', border: 'none', fontSize: 13, color: '#555', cursor: 'pointer', fontWeight: 500,
+        }}>{t('nav_investors')}</button>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')} style={{

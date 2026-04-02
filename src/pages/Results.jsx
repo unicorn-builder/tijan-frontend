@@ -933,7 +933,14 @@ export default function Results() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowReviewModal(true)}
+                  onClick={() => {
+                    if (restants < 2) {
+                      alert(t('np_credits_insufficient'))
+                      navigate('/pricing')
+                    } else {
+                      setShowReviewModal(true)
+                    }
+                  }}
                   style={{
                     background: '#1B2A4A', color: '#fff', border: 'none', borderRadius: 6,
                     padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
@@ -961,11 +968,11 @@ export default function Results() {
                   const { error } = await supabase.from('engineer_reviews').insert({
                     project_id: projectId,
                     user_id: user.id,
-                    scope: scopes.join('+'),
-                    status: 'paid',
-                    prix_fcfa: cost * 200000,
-                    commission_fcfa: cost * 50000,
-                    engineer_payout_fcfa: cost * 150000,
+                    scopes: scopes,
+                    status: 'pending',
+                    cost_credits: cost,
+                    reviewer_notes: '',
+                    created_at: new Date().toISOString(),
                   })
                   if (error) { alert('Error: ' + error.message); return }
                   setShowReviewModal(false)

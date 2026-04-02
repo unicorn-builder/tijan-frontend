@@ -26,12 +26,26 @@ export default function NewProject() {
   const [parseProgress, setParseProgress] = useState('')
   const loading = step === 'uploading' || step === 'calculating'
   const loadingText = step === 'uploading' ? (parseProgress || t('np_uploading')) : t('np_calculating')
+  const [creditWarningShown, setCreditWarningShown] = useState(false)
 
   async function lancer() {
     if (!nom.trim()) { setErrorMsg(t('np_err_nom')); return }
     if (!ville.trim()) { setErrorMsg(t('np_err_ville')); return }
     if (!mainFile) { setErrorMsg(t('np_err_plans')); return }
     if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
+
+    // Check if user has sufficient credits (2 required)
+    if (restants < 2) {
+      setErrorMsg(t('np_credits_insufficient'))
+      if (!creditWarningShown) {
+        setCreditWarningShown(true)
+        // Auto-redirect to pricing after 2 seconds
+        setTimeout(() => {
+          navigate('/pricing')
+        }, 2000)
+      }
+      return
+    }
     setErrorMsg('')
     setStep('uploading')
 
@@ -134,9 +148,9 @@ export default function NewProject() {
           setStep('error'); setErrorMsg(`${t('np_err_save')} (RLS)`); return
         }
         projectId = saved.id
-        // Consommer un crédit seulement après sauvegarde réussie
+        // Consommer 2 crédits seulement après sauvegarde réussie
         if (consommer) {
-          const ok = await consommer()
+          const ok = await consommer(2)
           if (!ok && restants <= 0) {
             // Credit failed but project is saved — user can still access it
             console.warn('Credit deduction failed, project saved anyway')

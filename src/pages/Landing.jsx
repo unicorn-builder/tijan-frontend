@@ -209,10 +209,18 @@ export default function Landing() {
       {/* ── FOOTER ── */}
       <footer style={{
         padding: '20px 32px', borderTop: '0.5px solid #E5E5E5',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16,
         fontSize: 11, color: '#aaa',
       }}>
         <div>© 2026 Tijan AI · Engineering Intelligence for Africa</div>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => navigate('/impact')} style={{
+            background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11,
+          }}>{t('nav_impact')}</button>
+          <button onClick={() => navigate('/investors')} style={{
+            background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11,
+          }}>{t('nav_investors')}</button>
+        </div>
         <div>Dakar · Abidjan · Casablanca · Lagos · Accra</div>
       </footer>
     </div>

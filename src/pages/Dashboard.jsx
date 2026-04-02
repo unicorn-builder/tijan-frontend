@@ -212,44 +212,77 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* {lang === 'en' ? 'My Engineer Reviews' : 'Mes revues ingénieur'} */}
+      {/* Engineer Reviews Section */}
       {reviews.length > 0 && (
-        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px 32px' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
-            {lang === 'en' ? 'My Engineer Reviews' : 'Mes revues ingénieur'}
-          </h2>
-          <div style={{ display: 'grid', gap: 10 }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 24px 0' }}>
+          <div style={{ marginBottom: 20 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: NAVY, margin: 0, marginBottom: 4 }}>
+              {lang === 'en' ? 'My Engineer Reviews' : 'Mes Revues Ingénieur'}
+            </h2>
+            <p style={{ fontSize: 13, color: GRIS3, margin: 0 }}>
+              {lang === 'en' ? 'Track your review requests and download documents' : 'Suivi de vos demandes et téléchargement des documents'}
+            </p>
+          </div>
+          <div style={{ display: 'grid', gap: 12 }}>
             {reviews.map(r => {
               const statusMap = {
-                paid: { label: lang === 'en' ? 'Pending' : 'En attente', color: ORANGE, bg: '#FFF7ED' },
-                assigned: { label: lang === 'en' ? 'Assigned' : 'Assignee', color: '#2563EB', bg: '#EFF6FF' },
-                in_progress: { label: lang === 'en' ? 'In progress' : 'En cours', color: '#7C3AED', bg: '#F5F3FF' },
-                review_complete: { label: lang === 'en' ? 'Complete' : 'Terminee', color: VERT, bg: '#F0FFF4' },
-                delivered: { label: lang === 'en' ? 'Delivered' : 'Livree', color: VERT, bg: '#F0FFF4' },
+                pending: { label: lang === 'en' ? 'Pending' : 'En attente', icon: '⏱️', color: ORANGE, bg: '#FFF7ED' },
+                in_review: { label: lang === 'en' ? 'In Review' : 'En cours', icon: '⚙️', color: '#2563EB', bg: '#EFF6FF' },
+                delivered: { label: lang === 'en' ? 'Delivered' : 'Livrée', icon: '✓', color: VERT, bg: '#F0FFF4' },
+                paid: { label: lang === 'en' ? 'Pending' : 'En attente', icon: '⏱️', color: ORANGE, bg: '#FFF7ED' },
+                assigned: { label: lang === 'en' ? 'In Review' : 'En cours', icon: '⚙️', color: '#2563EB', bg: '#EFF6FF' },
+                review_complete: { label: lang === 'en' ? 'Delivered' : 'Livrée', icon: '✓', color: VERT, bg: '#F0FFF4' },
               }
-              const st = statusMap[r.status] || statusMap.paid
+              const st = statusMap[r.status] || statusMap.pending
               const projet = projets.find(p => p.id === r.project_id)
+              const scopesArray = Array.isArray(r.scopes) ? r.scopes : (r.scope?.split(/\s*\+\s*/) || [])
+
+              const scopeColors = {
+                structure: VERT,
+                mep: '#2563EB',
+                edge: ORANGE
+              }
+
               return (
                 <div key={r.id} style={{
                   background: '#fff', border: '1px solid ' + GRIS2, borderRadius: 10,
-                  padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                }}>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: NAVY, marginBottom: 3 }}>
-                      {projet?.nom || 'Projet'} — {r.scope?.replace(/\+/g, ' + ')}
+                  padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  gap: 16, transition: 'all 0.15s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)'}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
+                      {projet?.nom || 'Projet'}
                     </div>
-                    <div style={{ fontSize: 11, color: GRIS3 }}>
-                      {new Date(r.created_at).toLocaleDateString('fr-FR')}
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
+                      {scopesArray.map((scope, i) => (
+                        <span key={i} style={{
+                          background: scopeColors[scope.trim()] || GRIS1,
+                          color: '#fff',
+                          borderRadius: 6, padding: '4px 10px', fontSize: 11, fontWeight: 600,
+                        }}>
+                          {scope.trim() === 'structure' && (lang === 'en' ? 'Structure' : 'Structure')}
+                          {scope.trim() === 'mep' && (lang === 'en' ? 'MEP' : 'MEP')}
+                          {scope.trim() === 'edge' && (lang === 'en' ? 'EDGE' : 'EDGE')}
+                        </span>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: 12, color: GRIS3, display: 'flex', gap: 12 }}>
+                      <span>📅 {new Date(r.created_at).toLocaleDateString(lang === 'en' ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      <span>💳 {r.cost_credits || 2} {lang === 'en' ? 'credit' : 'crédit'}{(r.cost_credits || 2) > 1 ? 's' : ''}</span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
                     <span style={{
-                      fontSize: 11, fontWeight: 600, borderRadius: 10, padding: '3px 10px',
-                      background: st.bg, color: st.color,
+                      fontSize: 12, fontWeight: 600, borderRadius: 8, padding: '6px 12px',
+                      background: st.bg, color: st.color, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap'
                     }}>
-                      {st.label}
+                      <span>{st.icon}</span>
+                      <span>{st.label}</span>
                     </span>
-                    {r.status === 'review_complete' || r.status === 'delivered' ? (
+                    {r.status === 'delivered' || r.status === 'review_complete' ? (
                       <button onClick={() => {
                         supabase.from('review_documents').select('*').eq('review_id', r.id)
                           .then(({ data: docs }) => {
@@ -261,9 +294,13 @@ export default function Dashboard() {
                           })
                       }} style={{
                         background: VERT, color: '#fff', border: 'none', borderRadius: 6,
-                        padding: '6px 14px', fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                      }}>
-                        {lang === 'en' ? 'Download' : 'Telecharger'}
+                        padding: '8px 16px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+                        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                      >
+                        ↓ {lang === 'en' ? 'Download' : 'Télécharger'}
                       </button>
                     ) : null}
                   </div>

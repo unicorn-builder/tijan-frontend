@@ -10,6 +10,8 @@ import Results from './pages/Results'
 import ReviewSuccess from './pages/ReviewSuccess'
 import Pricing from './pages/Pricing'
 import PaymentSuccess from './pages/PaymentSuccess'
+import Impact from './pages/Impact'
+import Investors from './pages/Investors'
 
 const MobileStyles = () => (
   <style>{`
@@ -31,6 +33,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Landing />} />
+          <Route path="/impact" element={<Impact />} />
+          <Route path="/investors" element={<Investors />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/landing" element={<ProtectedRoute><Landing /></ProtectedRoute>} />
           <Route path="/projects/new" element={<ProtectedRoute><NewProject /></ProtectedRoute>} />
