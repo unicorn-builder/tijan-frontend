@@ -125,10 +125,15 @@ export default function NewProject() {
           resultats_structure: resultats,
         }).select('id').maybeSingle()
         if (saveErr) {
-          console.error('SUPABASE SAVE ERROR', saveErr)
-          setStep('error'); setErrorMsg(t('np_err_save') || 'Erreur lors de la sauvegarde du projet. Réessayez.'); return
+          console.error('SUPABASE SAVE ERROR', saveErr.message, saveErr.code, saveErr.details, saveErr.hint)
+          setStep('error'); setErrorMsg(`${t('np_err_save')} (${saveErr.code || saveErr.message})`); return
         }
-        if (saved?.id) projectId = saved.id
+        if (!saved?.id) {
+          // RLS policy may silently block inserts — no error but no data returned
+          console.error('SUPABASE SAVE: no row returned — likely RLS policy blocking insert. user_id:', user.id)
+          setStep('error'); setErrorMsg(`${t('np_err_save')} (RLS)`); return
+        }
+        projectId = saved.id
         // Consommer un crédit seulement après sauvegarde réussie
         if (consommer) {
           const ok = await consommer()

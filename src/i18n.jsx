@@ -120,6 +120,7 @@ const T = {
   np_err_calcul: { fr: 'Erreur lors du calcul.', en: 'Calculation error.' },
   np_err_credits: { fr: "Vous n'avez plus de crédits. Achetez-en sur la page Pricing.", en: 'No credits left. Purchase more on the Pricing page.' },
   np_err_connexion: { fr: 'Erreur de connexion.', en: 'Connection error.' },
+  np_err_save: { fr: 'Erreur lors de la sauvegarde du projet. Veuillez réessayer.', en: 'Failed to save project. Please try again.' },
   np_reessayer: { fr: 'Réessayer', en: 'Try again' },
   np_accueil: { fr: '← Accueil', en: '← Home' },
 
