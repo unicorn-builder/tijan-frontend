@@ -110,8 +110,9 @@ export default function NewProject() {
     }
     if (sol_context) payload.sol_context = sol_context
     if (parsed.urn) payload.urn = parsed.urn
-    // Store DWG geometry for plan generation
+    // Store DWG geometry and archi PDF reference for plan generation
     const dwgGeometry = parsed.dwg_geometry || null
+    const archiPdfRef = parsed.archi_pdf_ref || null
 
     try {
       const res = await fetch(`${BACKEND}/calculate`, {
@@ -157,7 +158,7 @@ export default function NewProject() {
           }
         }
       }
-      navigate(`/projects/${projectId}/results`, { state: { params: payload, resultats, dwgGeometry } })
+      navigate(`/projects/${projectId}/results`, { state: { params: payload, resultats, dwgGeometry, archiPdfRef } })
     } catch {
       setStep('error'); setErrorMsg(t('np_err_connexion'))
     }
