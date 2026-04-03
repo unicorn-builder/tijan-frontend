@@ -122,6 +122,7 @@ export default function Results() {
               portee_max_m: data.portee_max_m, portee_min_m: data.portee_min_m,
               nb_travees_x: data.nb_travees_x, nb_travees_y: data.nb_travees_y,
               usage: data.usage || 'residentiel',
+              ...(data.urn ? { urn: data.urn } : {}),
             })
             if (data.resultats_mep) setMepData(data.resultats_mep)
           }
