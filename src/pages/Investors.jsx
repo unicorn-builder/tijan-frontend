@@ -28,7 +28,7 @@ export default function Investors() {
 
         <p style={{
           fontSize: 'clamp(13px, 2.5vw, 16px)', color: '#555', lineHeight: 1.6,
-          maxWidth: 560, margin: '0 auto 32px',
+          maxWidth: 620, margin: '0 auto 32px',
         }}>
           {t('investors_hero_desc')}
         </p>
@@ -36,22 +36,26 @@ export default function Investors() {
 
       {/* ── PROBLEM ── */}
       <section style={{ padding: '48px 24px', background: '#FAFAFA' }}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
             {t('investors_problem_title')}
           </h2>
-          <p style={{ fontSize: 14, color: '#666', maxWidth: 600, margin: '0 auto', lineHeight: 1.6 }}>
-            {t('investors_problem_desc')}
-          </p>
         </div>
+        <p style={{
+          fontSize: 14, color: '#555', maxWidth: 720, margin: '0 auto 28px',
+          lineHeight: 1.7, textAlign: 'center',
+        }}>
+          {t('investors_problem_desc')}
+        </p>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 16, maxWidth: 900, margin: '24px auto 0',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: 16, maxWidth: 900, margin: '0 auto',
         }}>
           {[
-            { label: 'investors_problem_stat_1', value: '$1.4T' },
+            { label: 'investors_problem_stat_1', value: '4.3%' },
             { label: 'investors_problem_stat_2', value: '85%' },
-            { label: 'investors_problem_stat_3', value: 'Weeks' },
+            { label: 'investors_problem_stat_3', value: '40%' },
+            { label: 'investors_problem_stat_4', value: '50M+' },
           ].map((stat, i) => (
             <div key={i} style={{
               background: '#fff', border: '0.5px solid #E5E5E5', borderRadius: 10,
@@ -68,32 +72,39 @@ export default function Investors() {
         </div>
       </section>
 
-      {/* ── SOLUTION ── */}
+      {/* ── PRODUCT ── */}
       <section style={{ padding: '48px 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>
-            {t('investors_solution_title')}
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
+            {t('investors_product_title')}
           </h2>
         </div>
+        <p style={{
+          fontSize: 14, color: '#555', maxWidth: 660, margin: '0 auto 28px',
+          lineHeight: 1.7, textAlign: 'center',
+        }}>
+          {t('investors_product_desc')}
+        </p>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
           gap: 20, maxWidth: 1000, margin: '0 auto',
         }}>
           {[
-            { icon: '⚡', title: 'investors_solution_1_title', desc: 'investors_solution_1_desc' },
-            { icon: '💰', title: 'investors_solution_2_title', desc: 'investors_solution_2_desc' },
-            { icon: '✓', title: 'investors_solution_3_title', desc: 'investors_solution_3_desc' },
-          ].map((sol, i) => (
+            { icon: '🏗️', title: 'investors_product_1_title', desc: 'investors_product_1_desc' },
+            { icon: '⚡', title: 'investors_product_2_title', desc: 'investors_product_2_desc' },
+            { icon: '🌍', title: 'investors_product_3_title', desc: 'investors_product_3_desc' },
+            { icon: '📐', title: 'investors_product_4_title', desc: 'investors_product_4_desc' },
+          ].map((prod, i) => (
             <div key={i} style={{
               background: '#f8f8f8', border: '0.5px solid #E5E5E5', borderRadius: 12,
               padding: '28px 20px', textAlign: 'center',
             }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>{sol.icon}</div>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>{prod.icon}</div>
               <h3 style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
-                {t(sol.title)}
+                {t(prod.title)}
               </h3>
               <p style={{ fontSize: 13, color: '#666', lineHeight: 1.6 }}>
-                {t(sol.desc)}
+                {t(prod.desc)}
               </p>
             </div>
           ))}
@@ -102,20 +113,26 @@ export default function Investors() {
 
       {/* ── MARKET ── */}
       <section style={{ padding: '48px 24px', background: '#FAFAFA' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
             {t('investors_market_title')}
           </h2>
         </div>
+        <p style={{
+          fontSize: 14, color: '#555', maxWidth: 720, margin: '0 auto 28px',
+          lineHeight: 1.7, textAlign: 'center',
+        }}>
+          {t('investors_market_desc')}
+        </p>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: 16, maxWidth: 900, margin: '0 auto',
         }}>
           {[
-            { label: 'investors_market_1', value: '7%' },
-            { label: 'investors_market_2', value: '5' },
-            { label: 'investors_market_3', value: '50M+' },
-            { label: 'investors_market_4', value: '2M' },
+            { label: 'investors_market_1', value: '$1.4T' },
+            { label: 'investors_market_2', value: '2M+' },
+            { label: 'investors_market_3', value: '5' },
+            { label: 'investors_market_4', value: '$8B+' },
           ].map((market, i) => (
             <div key={i} style={{
               background: '#fff', border: '0.5px solid #E5E5E5', borderRadius: 10,
@@ -132,40 +149,8 @@ export default function Investors() {
         </div>
       </section>
 
-      {/* ── TRACTION ── */}
-      <section style={{ padding: '48px 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>
-            {t('investors_traction_title')}
-          </h2>
-        </div>
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 16, maxWidth: 900, margin: '0 auto',
-        }}>
-          {[
-            { label: 'investors_traction_1', value: '500+' },
-            { label: 'investors_traction_2', value: '10k+' },
-            { label: 'investors_traction_3', value: 'Free' },
-            { label: 'investors_traction_4', value: '95%' },
-          ].map((metric, i) => (
-            <div key={i} style={{
-              background: '#fff', border: '1px solid #E5E5E5', borderRadius: 10,
-              padding: '20px', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: 32, fontWeight: 800, color: NAVY, marginBottom: 6 }}>
-                {metric.value}
-              </div>
-              <div style={{ fontSize: 12, color: '#666', lineHeight: 1.5 }}>
-                {t(metric.label)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── TEAM ── */}
-      <section style={{ padding: '48px 24px', background: '#FAFAFA' }}>
+      <section style={{ padding: '48px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>
             {t('investors_team_title')}
@@ -189,7 +174,7 @@ export default function Investors() {
       </section>
 
       {/* ── VISION ── */}
-      <section style={{ padding: '48px 24px' }}>
+      <section style={{ padding: '48px 24px', background: '#FAFAFA' }}>
         <div style={{
           maxWidth: 700, margin: '0 auto', textAlign: 'center',
           background: 'linear-gradient(135deg, #F0FFF4 0%, #FAFFFE 100%)',
@@ -216,12 +201,21 @@ export default function Investors() {
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
           {t('investors_cta_desc')}
         </p>
-        <a href="mailto:malicktall@gmail.com" style={{
-          display: 'inline-block', background: VERT, color: '#fff', textDecoration: 'none',
-          border: 'none', borderRadius: 8, padding: '14px 36px', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-        }}>
-          {t('investors_cta_button')}
-        </a>
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <a href="mailto:malick@cepic.holdings" style={{
+            display: 'inline-block', background: VERT, color: '#fff', textDecoration: 'none',
+            border: 'none', borderRadius: 8, padding: '14px 36px', fontSize: 16, fontWeight: 700, cursor: 'pointer',
+          }}>
+            {t('investors_cta_button')}
+          </a>
+          <a href="tel:+221755500000" style={{
+            display: 'inline-block', background: 'transparent', color: '#fff', textDecoration: 'none',
+            border: '1px solid rgba(255,255,255,0.4)', borderRadius: 8, padding: '14px 36px',
+            fontSize: 16, fontWeight: 600, cursor: 'pointer',
+          }}>
+            +221 75 550 00 00
+          </a>
+        </div>
       </section>
 
       {/* ── FOOTER ── */}

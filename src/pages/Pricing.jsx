@@ -10,9 +10,9 @@ import { useLang } from '../i18n.jsx'
 const NAVY = '#1B2A4A'
 
 const PACKS = [
-  { id: 1, credits: 1, prix: 200000, label: '1 crédit', desc: '½ projet technique ou 1 revue', badge: null },
-  { id: 2, credits: 3, prix: 600000, label: '3 crédits', desc: '1 projet complet + 1 revue', badge: 'Populaire', prixUnitaire: '200K/crédit' },
-  { id: 3, credits: 5, prix: 1000000, label: '5 crédits', desc: '2 projets + 1 revue', badge: 'Meilleur prix', prixUnitaire: '200K/crédit' },
+  { id: 1, credits: 1, prix: 200000, label: '1 crédit', desc: '1 projet technique complet', badge: null },
+  { id: 2, credits: 3, prix: 600000, label: '3 crédits', desc: '3 projets techniques', badge: 'Populaire', prixUnitaire: '200K/crédit' },
+  { id: 3, credits: 5, prix: 1000000, label: '5 crédits', desc: '5 projets techniques', badge: 'Meilleur prix', prixUnitaire: '200K/crédit' },
 ]
 
 function formatFCFA(n) {

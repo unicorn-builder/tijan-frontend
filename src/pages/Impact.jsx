@@ -6,9 +6,8 @@ import { VERT } from '../constants'
 import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
-const ORANGE = '#E07B00'
 
-function Counter({ target, suffix = '' }) {
+function Counter({ target, suffix = '', prefix = '' }) {
   const [count, setCount] = useState(0)
 
   useEffect(() => {
@@ -26,7 +25,7 @@ function Counter({ target, suffix = '' }) {
     return () => clearInterval(timer)
   }, [target])
 
-  return <>{count}{suffix}</>
+  return <>{prefix}{count}{suffix}</>
 }
 
 export default function Impact() {
@@ -41,7 +40,7 @@ export default function Impact() {
       {/* ── HERO ── */}
       <section style={{
         textAlign: 'center', padding: '56px 24px 40px',
-        background: 'linear-gradient(180deg, #FAFFFE 0%, #fff 100%)',
+        background: 'linear-gradient(180deg, #F0FFF4 0%, #fff 100%)',
       }}>
         <h1 style={{
           fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 800, color: NAVY, lineHeight: 1.15,
@@ -52,13 +51,13 @@ export default function Impact() {
 
         <p style={{
           fontSize: 'clamp(13px, 2.5vw, 16px)', color: '#555', lineHeight: 1.6,
-          maxWidth: 560, margin: '0 auto 32px',
+          maxWidth: 600, margin: '0 auto 32px',
         }}>
           {t('impact_hero_desc')}
         </p>
       </section>
 
-      {/* ── STATS ── */}
+      {/* ── ENVIRONMENTAL STATS ── */}
       <section style={{
         padding: '48px 24px', background: NAVY, color: '#fff',
       }}>
@@ -66,47 +65,41 @@ export default function Impact() {
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: 24, maxWidth: 1000, margin: '0 auto',
         }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 800, marginBottom: 8 }}>
-              <Counter target={500} suffix="+" />
+          {[
+            { target: 30, suffix: '%', label: 'impact_stat_1', icon: '💧' },
+            { target: 25, suffix: '%', label: 'impact_stat_2', icon: '⚡' },
+            { target: 35, suffix: '%', label: 'impact_stat_3', icon: '♻️' },
+            { target: 100, suffix: '%', label: 'impact_stat_4', icon: '🛡️' },
+          ].map((stat, i) => (
+            <div key={i} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>{stat.icon}</div>
+              <div style={{ fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 800, marginBottom: 8 }}>
+                <Counter target={stat.target} suffix={stat.suffix} />
+              </div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
+                {t(stat.label)}
+              </div>
             </div>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{t('impact_stat_1')}</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 800, marginBottom: 8 }}>
-              <Counter target={10000} suffix="+" />
-            </div>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{t('impact_stat_2')}</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 800, marginBottom: 8 }}>
-              <Counter target={5} />
-            </div>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{t('impact_stat_3')}</div>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 800, marginBottom: 8 }}>
-              <Counter target={95} suffix="%" />
-            </div>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{t('impact_stat_4')}</div>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* ── IMPACT CATEGORIES ── */}
+      {/* ── IMPACT CATEGORIES (6 cards) ── */}
       <section style={{ padding: '48px 24px', background: '#FAFAFA' }}>
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('impact_categories_title')}</h2>
         </div>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 20, maxWidth: 1000, margin: '0 auto',
         }}>
           {[
-            { icon: '🎯', title: 'impact_cat_1_title', desc: 'impact_cat_1_desc' },
-            { icon: '⚡', title: 'impact_cat_2_title', desc: 'impact_cat_2_desc' },
-            { icon: '✓', title: 'impact_cat_3_title', desc: 'impact_cat_3_desc' },
-            { icon: '🌱', title: 'impact_cat_4_title', desc: 'impact_cat_4_desc' },
+            { icon: '🏅', title: 'impact_cat_1_title', desc: 'impact_cat_1_desc' },
+            { icon: '💧', title: 'impact_cat_2_title', desc: 'impact_cat_2_desc' },
+            { icon: '♻️', title: 'impact_cat_3_title', desc: 'impact_cat_3_desc' },
+            { icon: '🌍', title: 'impact_cat_4_title', desc: 'impact_cat_4_desc' },
+            { icon: '🛡️', title: 'impact_cat_5_title', desc: 'impact_cat_5_desc' },
+            { icon: '🏗️', title: 'impact_cat_6_title', desc: 'impact_cat_6_desc' },
           ].map((cat, i) => (
             <div key={i} style={{
               background: '#fff', border: '0.5px solid #E5E5E5', borderRadius: 12,
@@ -124,37 +117,20 @@ export default function Impact() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS PLACEHOLDER ── */}
+      {/* ── VISION ── */}
       <section style={{ padding: '48px 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('impact_testimonials_title')}</h2>
-        </div>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-          gap: 20, maxWidth: 1000, margin: '0 auto',
+          maxWidth: 700, margin: '0 auto', textAlign: 'center',
+          background: 'linear-gradient(135deg, #F0FFF4 0%, #FAFFFE 100%)',
+          border: `1px solid ${VERT}`, borderRadius: 12,
+          padding: '32px 24px',
         }}>
-          {[
-            { name: 'impact_testimonial_1_name', role: 'impact_testimonial_1_role', text: 'impact_testimonial_1_text' },
-            { name: 'impact_testimonial_2_name', role: 'impact_testimonial_2_role', text: 'impact_testimonial_2_text' },
-            { name: 'impact_testimonial_3_name', role: 'impact_testimonial_3_role', text: 'impact_testimonial_3_text' },
-          ].map((testimonial, i) => (
-            <div key={i} style={{
-              background: '#fff', border: '1px solid #E5E5E5', borderRadius: 12,
-              padding: '20px', display: 'flex', flexDirection: 'column',
-            }}>
-              <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6, marginBottom: 16, flex: 1 }}>
-                "{t(testimonial.text)}"
-              </p>
-              <div style={{ borderTop: '0.5px solid #E5E5E5', paddingTop: 12 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: NAVY }}>
-                  {t(testimonial.name)}
-                </div>
-                <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
-                  {t(testimonial.role)}
-                </div>
-              </div>
-            </div>
-          ))}
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: NAVY, marginBottom: 12 }}>
+            {t('impact_vision_title')}
+          </h2>
+          <p style={{ fontSize: 14, color: '#555', lineHeight: 1.8, marginBottom: 0 }}>
+            {t('impact_vision_desc')}
+          </p>
         </div>
       </section>
 

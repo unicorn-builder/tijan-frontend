@@ -4,7 +4,6 @@ import ChatTijan from '../components/ChatTijan'
 import { useAuth } from '../context/AuthContext'
 import { useCredits } from '../hooks/useCredits'
 import { useLang, TAB_KEYS } from '../i18n.jsx'
-import ReviewModal from '../components/ReviewModal'
 import { BACKEND, VERT, VERT_LIGHT, GRIS1, GRIS2, GRIS3, ORANGE, ORANGE_LT, TABS, fmt, fmtFcfa } from '../constants'
 
 const Card = ({ children, style = {} }) => (
@@ -105,7 +104,6 @@ export default function Results() {
   const [mepError, setMepError] = useState(false)
   const [edgeOptimise, setEdgeOptimise] = useState(null)
   const [edgeLoading, setEdgeLoading] = useState(false)
-  const [showReviewModal, setShowReviewModal] = useState(false)
   const { download, loading: dlLoading } = usePdfDownload(params, lang)
 
   // Load project from Supabase if opened by URL (no location.state)
@@ -918,72 +916,6 @@ export default function Results() {
             </div>
           )}
 
-          {/* Engineer Review CTA */}
-          {resultats?.ok && activeTab !== 'chat' && (
-            <div style={{
-              marginTop: 24, padding: 20, borderRadius: 10,
-              border: '1.5px solid #E5E5E5', background: '#FAFFFE',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: '#1B2A4A', marginBottom: 4 }}>
-                    {lang === 'en' ? 'Get your project reviewed by a licensed engineer' : 'Faites valider votre projet par un ingénieur agréé'}
-                  </div>
-                  <div style={{ fontSize: 12, color: '#888' }}>
-                    {lang === 'en'
-                      ? 'Annotated PDF + signed validation letter — 48-72h turnaround'
-                      : 'PDF annoté + lettre de validation signée — délai 48-72h'}
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    if (restants < 2) {
-                      alert(t('np_credits_insufficient'))
-                      navigate('/pricing')
-                    } else {
-                      setShowReviewModal(true)
-                    }
-                  }}
-                  style={{
-                    background: '#1B2A4A', color: '#fff', border: 'none', borderRadius: 6,
-                    padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {lang === 'en' ? 'Request Engineer Review' : 'Demander une revue ingénieur'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Review Modal */}
-          {showReviewModal && (
-            <ReviewModal
-              lang={lang}
-              restants={restants}
-              onClose={() => setShowReviewModal(false)}
-              onConfirm={async (scopes, cost) => {
-                const projectId = window.location.pathname.split('/projects/')[1]?.split('/')[0]
-                if (!user || !projectId) return
-                try {
-                  const ok = await consommer(cost)
-                  if (!ok) { alert(lang === 'en' ? 'Not enough credits' : 'Crédits insuffisants'); return }
-                  const { error } = await supabase.from('engineer_reviews').insert({
-                    project_id: projectId,
-                    user_id: user.id,
-                    scopes: scopes,
-                    status: 'pending',
-                    cost_credits: cost,
-                    reviewer_notes: '',
-                    created_at: new Date().toISOString(),
-                  })
-                  if (error) { alert('Error: ' + error.message); return }
-                  setShowReviewModal(false)
-                  navigate('/projects/' + projectId + '/review/success')
-                } catch (e) { alert('Error: ' + e.message) }
-              }}
-            />
-          )}
         </div>
       </div>
     </div>
