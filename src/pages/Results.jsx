@@ -133,6 +133,22 @@ export default function Results() {
     }
   }, [projectId, supabase])
 
+  // Auto-persist geometry to Supabase if we have it in state but DB doesn't
+  // This backfills old projects that were created before persistence was added
+  useEffect(() => {
+    if (!projectId || !supabase || !user) return
+    const geom = state?.dwgGeometry
+    if (!geom || typeof geom !== 'object') return
+    // Only persist if project doesn't already have geometry stored
+    supabase.from('projets').select('dwg_geometry').eq('id', projectId).single()
+      .then(({ data }) => {
+        if (data && !data.dwg_geometry) {
+          supabase.from('projets').update({ dwg_geometry: geom }).eq('id', projectId)
+            .then(() => console.log('Backfilled dwg_geometry for project', projectId))
+        }
+      })
+  }, [projectId, supabase, user])
+
   const optimiserEDGE = async () => {
     if (!params?.nom || edgeLoading) return
     setEdgeLoading(true)
