@@ -89,7 +89,8 @@ export default function Results() {
 
   const [resultats, setResultats] = useState(state?.resultats || {})
   const deviseInfo = resultats?.devise_info || null
-  const dwgGeometry = state?.dwgGeometry || null
+  const [dwgGeometry, setDwgGeometry] = useState(state?.dwgGeometry || null)
+  const [archiPdfUrl, setArchiPdfUrl] = useState(null)
   const archiPdfRef = state?.archiPdfRef || null
   const geomRef = state?.geomRef || null
   const [params, setParams] = useState(state?.params || {})
@@ -121,7 +122,11 @@ export default function Results() {
               nb_travees_x: data.nb_travees_x, nb_travees_y: data.nb_travees_y,
               usage: data.usage || 'residentiel',
               ...(data.urn ? { urn: data.urn } : {}),
+              ...(data.archi_pdf_url ? { archi_pdf_url: data.archi_pdf_url } : {}),
             })
+            // Restore persisted geometry and archi PDF URL for plan generation
+            if (data.dwg_geometry) setDwgGeometry(data.dwg_geometry)
+            if (data.archi_pdf_url) setArchiPdfUrl(data.archi_pdf_url)
             if (data.resultats_mep) setMepData(data.resultats_mep)
           }
         })
@@ -211,10 +216,10 @@ export default function Results() {
               <div style={{ fontSize: 11, color: GRIS3 }}>{nbPages} {lang === 'en' ? 'pages' : 'planches'} A3</div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}) }; download('/generate-plans-structure', `TijanAI_PlansStructure_${slug}_${today}.pdf`, extra) }} disabled={!!dlLoading} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
+              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}), ...(archiPdfUrl ? { archi_pdf_url: archiPdfUrl } : {}) }; download('/generate-plans-structure', `TijanAI_PlansStructure_${slug}_${today}.pdf`, extra) }} disabled={!!dlLoading} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
                 {dlLoading === '/generate-plans-structure' ? '...' : 'PDF'}
               </button>
-              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}) }; download('/generate-plans-structure-dwg', `TijanAI_PlansStructure_${slug}_${today}.dxf`, extra) }} disabled={!!dlLoading} style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
+              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}), ...(archiPdfUrl ? { archi_pdf_url: archiPdfUrl } : {}) }; download('/generate-plans-structure-dwg', `TijanAI_PlansStructure_${slug}_${today}.dxf`, extra) }} disabled={!!dlLoading} style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
                 {dlLoading === '/generate-plans-structure-dwg' ? '...' : 'DWG'}
               </button>
             </div>
@@ -243,10 +248,10 @@ export default function Results() {
               <div style={{ fontSize: 11, color: GRIS3 }}>{nbPages} {lang === 'en' ? 'pages' : 'planches'} A3 ({nbLots} lots x {nbLevels} {lang === 'en' ? 'levels' : 'niveaux'})</div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}) }; download('/generate-plans-mep', `TijanAI_PlansMEP_${slug}_${today}.pdf`, extra) }} disabled={!!dlLoading} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
+              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}), ...(archiPdfUrl ? { archi_pdf_url: archiPdfUrl } : {}) }; download('/generate-plans-mep', `TijanAI_PlansMEP_${slug}_${today}.pdf`, extra) }} disabled={!!dlLoading} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
                 {dlLoading === '/generate-plans-mep' ? '...' : 'PDF'}
               </button>
-              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}) }; download('/generate-plans-mep-dwg', `TijanAI_PlansMEP_${slug}_${today}.dxf`, extra) }} disabled={!!dlLoading} style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
+              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}), ...(archiPdfUrl ? { archi_pdf_url: archiPdfUrl } : {}) }; download('/generate-plans-mep-dwg', `TijanAI_PlansMEP_${slug}_${today}.dxf`, extra) }} disabled={!!dlLoading} style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
                 {dlLoading === '/generate-plans-mep-dwg' ? '...' : 'DWG'}
               </button>
             </div>

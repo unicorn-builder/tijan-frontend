@@ -158,6 +158,29 @@ export default function NewProject() {
             console.warn('Credit deduction failed, project saved anyway')
           }
         }
+        // Persist archi PDF to Supabase Storage + geometry to projets row
+        // so plan generation works even after server redeploys wipe /tmp
+        try {
+          const extras = {}
+          // Upload the original archi PDF to Supabase Storage
+          if (mainFile && mainFile.name.toLowerCase().endsWith('.pdf')) {
+            const storagePath = `archi_pdfs/${projectId}/${mainFile.name}`
+            const { error: upErr } = await supabase.storage.from('project-files').upload(storagePath, mainFile, { upsert: true })
+            if (!upErr) {
+              const { data: urlData } = supabase.storage.from('project-files').getPublicUrl(storagePath)
+              if (urlData?.publicUrl) extras.archi_pdf_url = urlData.publicUrl
+            }
+          }
+          // Save extracted geometry (compact: only walls + rooms + axes per level)
+          if (dwgGeometry && typeof dwgGeometry === 'object') {
+            extras.dwg_geometry = dwgGeometry
+          }
+          if (Object.keys(extras).length > 0) {
+            await supabase.from('projets').update(extras).eq('id', projectId)
+          }
+        } catch (e) {
+          console.warn('Non-critical: failed to persist geometry/PDF', e)
+        }
       }
       navigate(`/projects/${projectId}/results`, { state: { params: payload, resultats, dwgGeometry, archiPdfRef, geomRef } })
     } catch {
