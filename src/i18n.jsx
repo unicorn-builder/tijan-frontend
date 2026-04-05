@@ -13,11 +13,11 @@ const T = {
   commencer_gratuit: { fr: 'Commencer gratuitement', en: 'Start for free' },
 
   // LANDING
-  badge_world_first: { fr: "Premier agent bureau d'études IA au monde", en: "World's first AI engineering bureau agent" },
-  badge_eurocodes: { fr: 'Moteur Eurocodes EC2/EC8 · Certifié', en: 'Eurocodes EC2/EC8 Engine · Certified' },
+  badge_world_first: { fr: "1er bureau d'études IA au monde", en: "World's 1st AI engineering bureau" },
+  badge_eurocodes: { fr: 'Eurocodes EC2/EC8', en: 'Eurocodes EC2/EC8' },
   hero_title_1: { fr: 'Études structurelles et techniques complètes', en: 'Complete structural & technical studies' },
   hero_title_2: { fr: 'en moins de 5 minutes', en: 'in under 5 minutes' },
-  hero_subtitle: { fr: "Tijan est le seul agent IA au monde capable de produire un dossier d'études complet — notes de calcul, plans BA, BOQ, MEP et certification EDGE — directement depuis vos plans architecte.", en: "Tijan is the only AI agent in the world capable of producing a complete engineering dossier — design calculations, structural plans, BOQ, MEP and EDGE certification — directly from your architectural drawings." },
+  hero_subtitle: { fr: "Uploadez vos plans architecte. Tijan produit le dossier d'études complet : structure, MEP, plans BA, BOQ et certification EDGE.", en: "Upload your architectural drawings. Tijan produces the complete engineering dossier: structure, MEP, structural plans, BOQ and EDGE certification." },
   cta_analyser: { fr: 'Analyser mon projet →', en: 'Analyze my project →' },
   cta_livrables: { fr: 'Voir les livrables', en: 'View deliverables' },
   chiffre_dossier: { fr: '2 crédits pour un dossier complet', en: '2 credits for a complete report' },

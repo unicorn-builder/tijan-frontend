@@ -48,21 +48,17 @@ export default function Landing() {
         background: 'linear-gradient(180deg, #FAFFFE 0%, #fff 100%)',
       }}>
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
+          display: 'inline-flex', alignItems: 'center', gap: 8,
           background: NAVY, borderRadius: 20,
-          padding: '5px 16px', fontSize: 11, color: '#fff', fontWeight: 700,
-          marginBottom: 10, letterSpacing: 0.3,
+          padding: '6px 18px', fontSize: 12, color: '#fff', fontWeight: 600,
+          marginBottom: 18, letterSpacing: 0.2,
         }}>
-          <span style={{ fontSize: 13 }}>🌍</span>
+          <span style={{
+            width: 7, height: 7, borderRadius: '50%', background: VERT,
+            display: 'inline-block', boxShadow: `0 0 6px ${VERT}`,
+          }} />
           {t('badge_world_first')}
-        </div>
-        <br />
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          border: '0.5px solid #E5E5E5', borderRadius: 20,
-          padding: '4px 14px', fontSize: 11, color: '#555', marginBottom: 16,
-        }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: VERT, display: 'inline-block' }} />
+          <span style={{ opacity: 0.4, margin: '0 2px' }}>·</span>
           {t('badge_eurocodes')}
         </div>
 
