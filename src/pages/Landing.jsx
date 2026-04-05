@@ -136,11 +136,11 @@ function ScenePlan() {
 /* ── Scene 2: Le Cerveau-Ingenieur ── */
 function SceneBrain() {
   const outputs = [
-    { x: 80, y: 45, label: 'Note EC2', color: NAVY, ly: -12 },
-    { x: 320, y: 45, label: 'Plan BA', color: NAVY, ly: -12 },
-    { x: 45, y: 200, label: 'BOQ', color: '#F59E0B', ly: 22 },
-    { x: 355, y: 200, label: 'MEP', color: '#2563EB', ly: 22 },
-    { x: 200, y: 270, label: 'EDGE', color: VERT, ly: 20 },
+    { x: 65, y: 35, label: 'Note EC2', color: NAVY, lx: -2, ly: -18 },
+    { x: 335, y: 35, label: 'Plan BA', color: NAVY, lx: 2, ly: -18 },
+    { x: 30, y: 210, label: 'BOQ', color: '#F59E0B', lx: 0, ly: 28 },
+    { x: 370, y: 210, label: 'MEP', color: '#2563EB', lx: 0, ly: 28 },
+    { x: 200, y: 275, label: 'EDGE', color: VERT, lx: 0, ly: 26 },
   ]
   return (
     <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%' }}>
@@ -171,12 +171,15 @@ function SceneBrain() {
           {/* Inner solid node */}
           <circle cx={o.x} cy={o.y} r="5" fill={o.color}
             className="s2-node" style={{ animationDelay: `${2.7 + i * 0.3}s` }} />
-          {/* Label */}
-          <text x={o.x} y={o.y + o.ly} textAnchor="middle" fill={o.color} fontSize="9" fontWeight="700"
-            fontFamily="DM Sans, sans-serif"
-            className="s2-label" style={{ animationDelay: `${3.5 + i * 0.3}s` }}>
-            {o.label}
-          </text>
+          {/* Label with background pill */}
+          <g className="s2-label" style={{ animationDelay: `${3.5 + i * 0.3}s` }}>
+            <rect x={o.x + o.lx - 28} y={o.y + o.ly - 10} width="56" height="16" rx="8"
+              fill={o.color} opacity="0.9" />
+            <text x={o.x + o.lx} y={o.y + o.ly + 1} textAnchor="middle" fill="#fff" fontSize="8" fontWeight="700"
+              fontFamily="DM Sans, sans-serif">
+              {o.label}
+            </text>
+          </g>
         </g>
       ))}
     </svg>
