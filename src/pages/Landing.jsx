@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Header from '../components/Header'
 import { useAuth } from '../context/AuthContext'
 import { VERT } from '../constants'
@@ -33,52 +33,154 @@ const CHIFFRES_KEYS = [
   { val: '±15%', label: 'chiffre_precision' },
 ]
 
-/* Floating output card for hero */
-function FloatingCard({ label, delay, x, y }) {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const timer = setTimeout(() => setVisible(true), delay)
-    return () => clearTimeout(timer)
-  }, [delay])
+/* ── Animated Building + DNA pipes/cables illustration ── */
+function BuildingAnimation() {
   return (
-    <div style={{
-      position: 'absolute', left: x, top: y,
-      background: '#fff', borderRadius: 10, padding: '10px 14px',
-      boxShadow: '0 4px 24px rgba(27,42,74,0.10), 0 1px 4px rgba(67,169,86,0.12)',
-      border: `1px solid rgba(67,169,86,0.15)`,
-      fontSize: 11, fontWeight: 600, color: NAVY,
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : 'translateY(12px)',
-      transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-      whiteSpace: 'nowrap', zIndex: 2,
-      display: 'flex', alignItems: 'center', gap: 6,
-    }}>
-      <span style={{
-        width: 6, height: 6, borderRadius: '50%', background: VERT,
-        boxShadow: `0 0 6px ${VERT}`,
-      }} />
-      {label}
+    <div style={{ width: '100%', maxWidth: 420, margin: '0 auto', position: 'relative' }}>
+      <style>{`
+        @keyframes riseUp {
+          from { transform: scaleY(0); opacity: 0; }
+          to { transform: scaleY(1); opacity: 1; }
+        }
+        @keyframes drawLine {
+          from { stroke-dashoffset: 1000; }
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes helixRotate {
+          from { stroke-dashoffset: 800; }
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes pulseNode {
+          0%, 100% { r: 2.5; opacity: 0.7; }
+          50% { r: 4; opacity: 1; }
+        }
+        @keyframes glowPulse {
+          0%, 100% { opacity: 0.15; }
+          50% { opacity: 0.35; }
+        }
+        .floor-slab { transform-origin: bottom; }
+        .floor-0 { animation: riseUp 0.5s ease-out 0.3s both; }
+        .floor-1 { animation: riseUp 0.5s ease-out 0.55s both; }
+        .floor-2 { animation: riseUp 0.5s ease-out 0.8s both; }
+        .floor-3 { animation: riseUp 0.5s ease-out 1.05s both; }
+        .floor-4 { animation: riseUp 0.5s ease-out 1.3s both; }
+        .floor-5 { animation: riseUp 0.5s ease-out 1.55s both; }
+        .floor-6 { animation: riseUp 0.5s ease-out 1.8s both; }
+        .helix-elec {
+          stroke-dasharray: 800;
+          animation: helixRotate 2s ease-in-out 1.2s both;
+        }
+        .helix-plumb {
+          stroke-dasharray: 800;
+          animation: helixRotate 2s ease-in-out 1.5s both;
+        }
+        .helix-node-elec {
+          animation: pulseNode 2s ease-in-out infinite;
+        }
+        .helix-node-plumb {
+          animation: pulseNode 2s ease-in-out 0.5s infinite;
+        }
+        .label-structure { animation: fadeSlideUp 0.4s ease-out 2.2s both; }
+        .label-elec { animation: fadeSlideUp 0.4s ease-out 2.5s both; }
+        .label-plumb { animation: fadeSlideUp 0.4s ease-out 2.8s both; }
+      `}</style>
+      <svg viewBox="0 0 420 320" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 'auto' }}>
+
+        {/* Glow behind building */}
+        <ellipse cx="210" cy="290" rx="140" ry="30" fill={VERT} opacity="0.06" style={{ animation: 'glowPulse 3s ease-in-out infinite' }} />
+
+        {/* ── Foundation ── */}
+        <rect x="80" y="285" width="260" height="6" rx="2" fill={NAVY} opacity="0.15" className="floor-0" style={{ transformOrigin: 'center bottom' }} />
+
+        {/* ── Building frame — columns + floor slabs ── */}
+        {/* Columns (4 vertical) */}
+        {[110, 170, 240, 310].map((x, i) => (
+          <rect key={`col-${i}`} x={x} y="45" width="5" height="240" rx="1" fill={NAVY} opacity="0.12"
+            className={`floor-${Math.min(i, 6)}`} style={{ transformOrigin: `${x}px 285px` }} />
+        ))}
+
+        {/* Floor slabs (7 floors) */}
+        {[0, 1, 2, 3, 4, 5, 6].map(i => {
+          const y = 280 - i * 38
+          return (
+            <g key={`floor-${i}`} className={`floor-slab floor-${i}`} style={{ transformOrigin: `210px ${y + 4}px` }}>
+              <rect x="105" y={y} width="215" height="4" rx="1" fill={NAVY} opacity={0.2 + i * 0.04} />
+              {/* Small window rectangles */}
+              {i > 0 && [0, 1, 2].map(j => (
+                <rect key={`win-${i}-${j}`} x={120 + j * 70} y={y + 8} width="28" height="18" rx="2"
+                  fill={VERT} opacity={0.06 + i * 0.015} />
+              ))}
+            </g>
+          )
+        })}
+
+        {/* ── DNA Helix — Electrical (orange/gold) ── */}
+        <path
+          d="M90,280 C90,265 140,255 140,240 C140,225 90,215 90,200 C90,185 140,175 140,160 C140,145 90,135 90,120 C90,105 140,95 140,80 C140,65 90,55 90,45"
+          stroke="#F59E0B" strokeWidth="2.5" fill="none" strokeLinecap="round"
+          className="helix-elec" opacity="0.7"
+        />
+        {/* Electrical nodes */}
+        {[280, 240, 200, 160, 120, 80].map((y, i) => (
+          <circle key={`en-${i}`} cx={i % 2 === 0 ? 90 : 140} cy={y} r="3" fill="#F59E0B"
+            className="helix-node-elec" style={{ animationDelay: `${1.5 + i * 0.2}s` }} />
+        ))}
+
+        {/* ── DNA Helix — Plumbing (blue) ── */}
+        <path
+          d="M340,280 C340,265 290,255 290,240 C290,225 340,215 340,200 C340,185 290,175 290,160 C290,145 340,135 340,120 C340,105 290,95 290,80 C290,65 340,55 340,45"
+          stroke="#3B82F6" strokeWidth="2.5" fill="none" strokeLinecap="round"
+          className="helix-plumb" opacity="0.7"
+        />
+        {/* Plumbing nodes */}
+        {[280, 240, 200, 160, 120, 80].map((y, i) => (
+          <circle key={`pn-${i}`} cx={i % 2 === 0 ? 340 : 290} cy={y} r="3" fill="#3B82F6"
+            className="helix-node-plumb" style={{ animationDelay: `${1.8 + i * 0.2}s` }} />
+        ))}
+
+        {/* Cross-connections (DNA rungs) between the two helices through the building */}
+        {[240, 170, 100].map((y, i) => (
+          <line key={`rung-${i}`} x1={i % 2 === 0 ? 140 : 90} y1={y} x2={i % 2 === 0 ? 290 : 340} y2={y}
+            stroke={VERT} strokeWidth="1" opacity="0.15" strokeDasharray="4 3"
+            className={`floor-${Math.min(i + 3, 6)}`} style={{ transformOrigin: `210px ${y}px` }}
+          />
+        ))}
+
+        {/* ── Labels ── */}
+        <g className="label-structure">
+          <rect x="155" y="30" width="110" height="18" rx="9" fill={NAVY} opacity="0.9" />
+          <text x="210" y="42" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="700" fontFamily="DM Sans, sans-serif">STRUCTURE EC2</text>
+        </g>
+        <g className="label-elec">
+          <rect x="30" y="145" width="58" height="16" rx="8" fill="#F59E0B" opacity="0.9" />
+          <text x="59" y="156" textAnchor="middle" fill="#fff" fontSize="7" fontWeight="700" fontFamily="DM Sans, sans-serif">ELEC</text>
+        </g>
+        <g className="label-plumb">
+          <rect x="345" y="145" width="58" height="16" rx="8" fill="#3B82F6" opacity="0.9" />
+          <text x="374" y="156" textAnchor="middle" fill="#fff" fontSize="7" fontWeight="700" fontFamily="DM Sans, sans-serif">PLOMB</text>
+        </g>
+
+        {/* Green glow at base */}
+        <ellipse cx="210" cy="290" rx="100" ry="15" fill={VERT} opacity="0.08" />
+
+      </svg>
     </div>
   )
 }
 
-/* Pulsing glow orb */
-const glowKeyframes = `
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.25; transform: scale(1); }
-  50% { opacity: 0.45; transform: scale(1.08); }
+/* ── Keyframes ── */
+const heroKeyframes = `
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 @keyframes gridFade {
-  0%, 100% { opacity: 0.04; }
-  50% { opacity: 0.09; }
-}
-@keyframes floatY {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  0%, 100% { opacity: 0.03; }
+  50% { opacity: 0.07; }
 }
 `
 
@@ -89,139 +191,126 @@ export default function Landing() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#fff', fontFamily: "'DM Sans', sans-serif" }}>
-      <style>{glowKeyframes}</style>
+      <style>{heroKeyframes}</style>
 
       <Header />
 
       {/* ── HERO ── */}
       <section style={{
-        textAlign: 'center', padding: '60px 24px 48px',
-        background: 'linear-gradient(180deg, #F4FFF6 0%, #F8FFFE 40%, #fff 100%)',
+        padding: '48px 24px 40px',
+        background: 'linear-gradient(180deg, #F6FFF8 0%, #FAFFFE 50%, #fff 100%)',
         position: 'relative', overflow: 'hidden',
       }}>
-        {/* Animated grid background */}
+        {/* Subtle grid background */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 0,
-          backgroundImage: `linear-gradient(${VERT}22 1px, transparent 1px), linear-gradient(90deg, ${VERT}22 1px, transparent 1px)`,
-          backgroundSize: '48px 48px',
-          animation: 'gridFade 4s ease-in-out infinite',
-          maskImage: 'radial-gradient(ellipse 60% 60% at 50% 40%, black 20%, transparent 70%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 60% 60% at 50% 40%, black 20%, transparent 70%)',
+          backgroundImage: `linear-gradient(${VERT}18 1px, transparent 1px), linear-gradient(90deg, ${VERT}18 1px, transparent 1px)`,
+          backgroundSize: '52px 52px',
+          animation: 'gridFade 5s ease-in-out infinite',
+          maskImage: 'radial-gradient(ellipse 70% 70% at 50% 50%, black 10%, transparent 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at 50% 50%, black 10%, transparent 70%)',
         }} />
 
-        {/* Green glow orbs */}
-        <div style={{
-          position: 'absolute', top: '15%', left: '20%', width: 200, height: 200,
-          borderRadius: '50%', background: `radial-gradient(circle, ${VERT}30 0%, transparent 70%)`,
-          animation: 'pulseGlow 4s ease-in-out infinite', zIndex: 0, filter: 'blur(40px)',
-        }} />
-        <div style={{
-          position: 'absolute', top: '25%', right: '15%', width: 160, height: 160,
-          borderRadius: '50%', background: `radial-gradient(circle, ${VERT}20 0%, transparent 70%)`,
-          animation: 'pulseGlow 4s ease-in-out infinite 1.5s', zIndex: 0, filter: 'blur(40px)',
-        }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 960, margin: '0 auto' }}>
 
-        {/* Floating output cards */}
-        <div style={{ position: 'relative', maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ display: 'none' }} className="hero-cards-desktop">
-            {/* These show on wider screens via CSS below */}
-          </div>
-          <FloatingCard label="Note de calcul EC2" delay={600} x="2%" y="60px" />
-          <FloatingCard label="BOQ Structure — 7 lots" delay={900} x="0%" y="180px" />
-          <FloatingCard label="Plans BA A3" delay={1200} x="75%" y="50px" />
-          <FloatingCard label="Certification EDGE" delay={1500} x="78%" y="170px" />
+          {/* Two columns: text left, animation right */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 32,
+            flexWrap: 'wrap', justifyContent: 'center',
+          }}>
 
-          {/* Content */}
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            {/* Badge */}
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: NAVY, borderRadius: 20,
-              padding: '7px 20px', fontSize: 12, color: '#fff', fontWeight: 600,
-              marginBottom: 22, letterSpacing: 0.2,
-              boxShadow: `0 2px 16px ${NAVY}33`,
-              animation: 'slideUp 0.6s ease-out both',
-            }}>
-              <span style={{
-                width: 7, height: 7, borderRadius: '50%', background: VERT,
-                display: 'inline-block', boxShadow: `0 0 8px ${VERT}`,
-                animation: 'pulseGlow 2s ease-in-out infinite',
-              }} />
-              {t('badge_world_first')}
-              <span style={{ opacity: 0.35, margin: '0 2px' }}>·</span>
-              {t('badge_eurocodes')}
-            </div>
-
-            {/* Title */}
-            <h1 style={{
-              fontSize: 'clamp(28px, 5.5vw, 48px)', fontWeight: 800, color: NAVY, lineHeight: 1.1,
-              maxWidth: 700, margin: '0 auto 18px',
-              animation: 'slideUp 0.6s ease-out 0.15s both',
-            }}>
-              {t('hero_title_1')}<br />
-              <span style={{
-                color: VERT,
-                textShadow: `0 0 40px ${VERT}33`,
-              }}>{t('hero_title_2')}</span>
-            </h1>
-
-            {/* Subtitle */}
-            <p style={{
-              fontSize: 'clamp(14px, 2.5vw, 17px)', color: '#555', lineHeight: 1.65,
-              maxWidth: 540, margin: '0 auto 32px',
-              animation: 'slideUp 0.6s ease-out 0.3s both',
-            }}>
-              {t('hero_subtitle')}
-            </p>
-
-            {/* CTAs */}
-            <div style={{
-              display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap',
-              animation: 'slideUp 0.6s ease-out 0.45s both',
-            }}>
-              <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
-                background: VERT, color: '#fff', border: 'none', borderRadius: 10,
-                padding: '14px 36px', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-                boxShadow: `0 4px 20px ${VERT}44`,
-                transition: 'transform 0.15s, box-shadow 0.15s',
-              }}
-              onMouseEnter={e => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = `0 6px 28px ${VERT}55` }}
-              onMouseLeave={e => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = `0 4px 20px ${VERT}44` }}
-              >
-                {t('cta_analyser')}
-              </button>
-              <button onClick={() => document.getElementById('livrables')?.scrollIntoView({ behavior: 'smooth' })} style={{
-                background: '#fff', color: NAVY, border: `1.5px solid ${NAVY}20`, borderRadius: 10,
-                padding: '13px 30px', fontSize: 15, fontWeight: 600, cursor: 'pointer',
-                boxShadow: '0 2px 12px rgba(27,42,74,0.06)',
-                transition: 'transform 0.15s',
-              }}
-              onMouseEnter={e => { e.target.style.transform = 'translateY(-1px)' }}
-              onMouseLeave={e => { e.target.style.transform = 'translateY(0)' }}
-              >
-                {t('cta_livrables')}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Chiffres */}
-        <div style={{
-          display: 'flex', gap: 32, justifyContent: 'center', marginTop: 44, flexWrap: 'wrap',
-          position: 'relative', zIndex: 1,
-        }}>
-          {CHIFFRES_KEYS.map((c, i) => (
-            <div key={i} style={{
-              textAlign: 'center',
-              animation: `slideUp 0.5s ease-out ${0.6 + i * 0.1}s both`,
-            }}>
+            {/* Left: Text content */}
+            <div style={{ flex: '1 1 380px', maxWidth: 500, textAlign: 'left' }}>
+              {/* Badge */}
               <div style={{
-                fontSize: 32, fontWeight: 800, color: NAVY,
-                letterSpacing: '-0.02em',
-              }}>{c.val}</div>
-              <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>{t(c.label)}</div>
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: NAVY, borderRadius: 20,
+                padding: '7px 18px', fontSize: 11, color: '#fff', fontWeight: 600,
+                marginBottom: 20, letterSpacing: 0.2,
+                boxShadow: `0 2px 16px ${NAVY}33`,
+                animation: 'slideUp 0.6s ease-out both',
+              }}>
+                <span style={{
+                  width: 7, height: 7, borderRadius: '50%', background: VERT,
+                  display: 'inline-block', boxShadow: `0 0 8px ${VERT}`,
+                }} />
+                {t('badge_world_first')}
+                <span style={{ opacity: 0.35 }}>·</span>
+                {t('badge_eurocodes')}
+              </div>
+
+              {/* Title */}
+              <h1 style={{
+                fontSize: 'clamp(26px, 4.5vw, 44px)', fontWeight: 800, color: NAVY, lineHeight: 1.1,
+                marginBottom: 16,
+                animation: 'slideUp 0.6s ease-out 0.15s both',
+              }}>
+                {t('hero_title_1')}<br />
+                <span style={{ color: VERT }}>{t('hero_title_2')}</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p style={{
+                fontSize: 'clamp(14px, 2vw, 16px)', color: '#555', lineHeight: 1.65,
+                marginBottom: 28,
+                animation: 'slideUp 0.6s ease-out 0.3s both',
+              }}>
+                {t('hero_subtitle')}
+              </p>
+
+              {/* CTAs */}
+              <div style={{
+                display: 'flex', gap: 12, flexWrap: 'wrap',
+                animation: 'slideUp 0.6s ease-out 0.45s both',
+              }}>
+                <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
+                  background: VERT, color: '#fff', border: 'none', borderRadius: 10,
+                  padding: '14px 34px', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                  boxShadow: `0 4px 20px ${VERT}44`,
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                }}
+                onMouseEnter={e => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = `0 6px 28px ${VERT}55` }}
+                onMouseLeave={e => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = `0 4px 20px ${VERT}44` }}
+                >
+                  {t('cta_analyser')}
+                </button>
+                <button onClick={() => document.getElementById('livrables')?.scrollIntoView({ behavior: 'smooth' })} style={{
+                  background: '#fff', color: NAVY, border: `1.5px solid ${NAVY}18`, borderRadius: 10,
+                  padding: '13px 28px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  boxShadow: '0 2px 10px rgba(27,42,74,0.05)',
+                  transition: 'transform 0.15s',
+                }}
+                onMouseEnter={e => { e.target.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={e => { e.target.style.transform = 'translateY(0)' }}
+                >
+                  {t('cta_livrables')}
+                </button>
+              </div>
             </div>
-          ))}
+
+            {/* Right: Animation */}
+            <div style={{
+              flex: '1 1 320px', maxWidth: 420,
+              animation: 'slideUp 0.8s ease-out 0.3s both',
+            }}>
+              <BuildingAnimation />
+            </div>
+          </div>
+
+          {/* Chiffres */}
+          <div style={{
+            display: 'flex', gap: 32, justifyContent: 'center', marginTop: 44, flexWrap: 'wrap',
+          }}>
+            {CHIFFRES_KEYS.map((c, i) => (
+              <div key={i} style={{
+                textAlign: 'center',
+                animation: `slideUp 0.5s ease-out ${0.7 + i * 0.1}s both`,
+              }}>
+                <div style={{ fontSize: 30, fontWeight: 800, color: NAVY, letterSpacing: '-0.02em' }}>{c.val}</div>
+                <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>{t(c.label)}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -329,10 +418,9 @@ export default function Landing() {
         background: `linear-gradient(135deg, ${NAVY} 0%, #243656 100%)`,
         position: 'relative', overflow: 'hidden',
       }}>
-        {/* Subtle grid overlay on CTA */}
         <div style={{
           position: 'absolute', inset: 0,
-          backgroundImage: `linear-gradient(${VERT}12 1px, transparent 1px), linear-gradient(90deg, ${VERT}12 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(${VERT}10 1px, transparent 1px), linear-gradient(90deg, ${VERT}10 1px, transparent 1px)`,
           backgroundSize: '40px 40px', opacity: 0.3,
         }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
