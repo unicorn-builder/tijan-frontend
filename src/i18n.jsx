@@ -13,10 +13,11 @@ const T = {
   commencer_gratuit: { fr: 'Commencer gratuitement', en: 'Start for free' },
 
   // LANDING
+  badge_world_first: { fr: "Premier agent bureau d'études IA au monde", en: "World's first AI engineering bureau agent" },
   badge_eurocodes: { fr: 'Moteur Eurocodes EC2/EC8 · Certifié', en: 'Eurocodes EC2/EC8 Engine · Certified' },
   hero_title_1: { fr: 'Études structurelles et techniques complètes', en: 'Complete structural & technical studies' },
   hero_title_2: { fr: 'en moins de 5 minutes', en: 'in under 5 minutes' },
-  hero_subtitle: { fr: 'Tijan AI génère automatiquement notes de calcul, BOQ, rapport MEP et certification EDGE pour vos projets de construction en Afrique.', en: 'Tijan AI automatically generates design calculations, BOQ, MEP reports and EDGE certification for your construction projects in Africa.' },
+  hero_subtitle: { fr: "Tijan est le seul agent IA au monde capable de produire un dossier d'études complet — notes de calcul, plans BA, BOQ, MEP et certification EDGE — directement depuis vos plans architecte.", en: "Tijan is the only AI agent in the world capable of producing a complete engineering dossier — design calculations, structural plans, BOQ, MEP and EDGE certification — directly from your architectural drawings." },
   cta_analyser: { fr: 'Analyser mon projet →', en: 'Analyze my project →' },
   cta_livrables: { fr: 'Voir les livrables', en: 'View deliverables' },
   chiffre_dossier: { fr: '2 crédits pour un dossier complet', en: '2 credits for a complete report' },

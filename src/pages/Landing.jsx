@@ -49,6 +49,16 @@ export default function Landing() {
       }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
+          background: NAVY, borderRadius: 20,
+          padding: '5px 16px', fontSize: 11, color: '#fff', fontWeight: 700,
+          marginBottom: 10, letterSpacing: 0.3,
+        }}>
+          <span style={{ fontSize: 13 }}>🌍</span>
+          {t('badge_world_first')}
+        </div>
+        <br />
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
           border: '0.5px solid #E5E5E5', borderRadius: 20,
           padding: '4px 14px', fontSize: 11, color: '#555', marginBottom: 16,
         }}>
