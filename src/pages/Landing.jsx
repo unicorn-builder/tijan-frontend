@@ -42,25 +42,35 @@ function BuildingAnimation() {
           from { transform: scaleY(0); opacity: 0; }
           to { transform: scaleY(1); opacity: 1; }
         }
-        @keyframes drawLine {
-          from { stroke-dashoffset: 1000; }
-          to { stroke-dashoffset: 0; }
-        }
         @keyframes fadeSlideUp {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes helixRotate {
+        @keyframes helixDraw {
           from { stroke-dashoffset: 800; }
           to { stroke-dashoffset: 0; }
         }
+        @keyframes helixFlow {
+          0% { stroke-dashoffset: 0; }
+          100% { stroke-dashoffset: -80; }
+        }
         @keyframes pulseNode {
-          0%, 100% { r: 2.5; opacity: 0.7; }
-          50% { r: 4; opacity: 1; }
+          0%, 100% { r: 3; opacity: 0.8; }
+          50% { r: 5; opacity: 1; }
         }
         @keyframes glowPulse {
+          0%, 100% { opacity: 0.2; }
+          50% { opacity: 0.5; }
+        }
+        @keyframes windowFlicker {
           0%, 100% { opacity: 0.15; }
-          50% { opacity: 0.35; }
+          30% { opacity: 0.35; }
+          60% { opacity: 0.1; }
+          80% { opacity: 0.3; }
+        }
+        @keyframes labelPulse {
+          0%, 100% { opacity: 0.9; }
+          50% { opacity: 1; filter: brightness(1.2); }
         }
         .floor-slab { transform-origin: bottom; }
         .floor-0 { animation: riseUp 0.5s ease-out 0.3s both; }
@@ -72,34 +82,43 @@ function BuildingAnimation() {
         .floor-6 { animation: riseUp 0.5s ease-out 1.8s both; }
         .helix-elec {
           stroke-dasharray: 800;
-          animation: helixRotate 2s ease-in-out 1.2s both;
+          animation: helixDraw 1.8s ease-in-out 1.2s both, helixFlow 2s linear 3s infinite;
         }
         .helix-plumb {
           stroke-dasharray: 800;
-          animation: helixRotate 2s ease-in-out 1.5s both;
+          animation: helixDraw 1.8s ease-in-out 1.5s both, helixFlow 2.5s linear 3.3s infinite;
+        }
+        .helix-elec-flow {
+          stroke-dasharray: 12 28;
+          animation: helixFlow 1.5s linear infinite;
+        }
+        .helix-plumb-flow {
+          stroke-dasharray: 12 28;
+          animation: helixFlow 1.8s linear 0.4s infinite;
         }
         .helix-node-elec {
-          animation: pulseNode 2s ease-in-out infinite;
+          animation: pulseNode 1.5s ease-in-out infinite;
         }
         .helix-node-plumb {
-          animation: pulseNode 2s ease-in-out 0.5s infinite;
+          animation: pulseNode 1.5s ease-in-out 0.4s infinite;
         }
-        .label-structure { animation: fadeSlideUp 0.4s ease-out 2.2s both; }
-        .label-elec { animation: fadeSlideUp 0.4s ease-out 2.5s both; }
-        .label-plumb { animation: fadeSlideUp 0.4s ease-out 2.8s both; }
+        .label-structure { animation: fadeSlideUp 0.4s ease-out 2.2s both, labelPulse 3s ease-in-out 3s infinite; }
+        .label-elec { animation: fadeSlideUp 0.4s ease-out 2.5s both, labelPulse 3s ease-in-out 3.5s infinite; }
+        .label-plumb { animation: fadeSlideUp 0.4s ease-out 2.8s both, labelPulse 3s ease-in-out 4s infinite; }
       `}</style>
       <svg viewBox="0 0 420 320" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 'auto' }}>
 
         {/* Glow behind building */}
-        <ellipse cx="210" cy="290" rx="140" ry="30" fill={VERT} opacity="0.06" style={{ animation: 'glowPulse 3s ease-in-out infinite' }} />
+        <ellipse cx="210" cy="290" rx="160" ry="35" fill={VERT} opacity="0.12" style={{ animation: 'glowPulse 3s ease-in-out infinite' }} />
+        <ellipse cx="210" cy="288" rx="80" ry="18" fill={VERT} opacity="0.18" style={{ animation: 'glowPulse 3s ease-in-out 0.5s infinite' }} />
 
         {/* ── Foundation ── */}
-        <rect x="80" y="285" width="260" height="6" rx="2" fill={NAVY} opacity="0.15" className="floor-0" style={{ transformOrigin: 'center bottom' }} />
+        <rect x="80" y="285" width="260" height="6" rx="2" fill={NAVY} opacity="0.35" className="floor-0" style={{ transformOrigin: 'center bottom' }} />
 
         {/* ── Building frame — columns + floor slabs ── */}
         {/* Columns (4 vertical) */}
         {[110, 170, 240, 310].map((x, i) => (
-          <rect key={`col-${i}`} x={x} y="45" width="5" height="240" rx="1" fill={NAVY} opacity="0.12"
+          <rect key={`col-${i}`} x={x} y="45" width="5" height="240" rx="1" fill={NAVY} opacity="0.25"
             className={`floor-${Math.min(i, 6)}`} style={{ transformOrigin: `${x}px 285px` }} />
         ))}
 
@@ -108,44 +127,66 @@ function BuildingAnimation() {
           const y = 280 - i * 38
           return (
             <g key={`floor-${i}`} className={`floor-slab floor-${i}`} style={{ transformOrigin: `210px ${y + 4}px` }}>
-              <rect x="105" y={y} width="215" height="4" rx="1" fill={NAVY} opacity={0.2 + i * 0.04} />
-              {/* Small window rectangles */}
+              <rect x="105" y={y} width="215" height="5" rx="1" fill={NAVY} opacity={0.3 + i * 0.05} />
+              {/* Window rectangles with flickering animation */}
               {i > 0 && [0, 1, 2].map(j => (
-                <rect key={`win-${i}-${j}`} x={120 + j * 70} y={y + 8} width="28" height="18" rx="2"
-                  fill={VERT} opacity={0.06 + i * 0.015} />
+                <rect key={`win-${i}-${j}`} x={120 + j * 70} y={y + 9} width="28" height="17" rx="2"
+                  fill={VERT} opacity={0.12 + i * 0.03}
+                  style={{ animation: `windowFlicker ${2 + j * 0.7}s ease-in-out ${i * 0.3 + j * 0.5}s infinite` }} />
               ))}
             </g>
           )
         })}
 
         {/* ── DNA Helix — Electrical (orange/gold) ── */}
+        {/* Base helix stroke */}
         <path
           d="M90,280 C90,265 140,255 140,240 C140,225 90,215 90,200 C90,185 140,175 140,160 C140,145 90,135 90,120 C90,105 140,95 140,80 C140,65 90,55 90,45"
-          stroke="#F59E0B" strokeWidth="2.5" fill="none" strokeLinecap="round"
-          className="helix-elec" opacity="0.7"
+          stroke="#F59E0B" strokeWidth="3" fill="none" strokeLinecap="round"
+          className="helix-elec" opacity="0.9"
         />
-        {/* Electrical nodes */}
+        {/* Animated energy flow overlay */}
+        <path
+          d="M90,280 C90,265 140,255 140,240 C140,225 90,215 90,200 C90,185 140,175 140,160 C140,145 90,135 90,120 C90,105 140,95 140,80 C140,65 90,55 90,45"
+          stroke="#FCD34D" strokeWidth="2" fill="none" strokeLinecap="round"
+          className="helix-elec-flow" opacity="0.7"
+        />
+        {/* Electrical nodes — bigger, brighter */}
         {[280, 240, 200, 160, 120, 80].map((y, i) => (
-          <circle key={`en-${i}`} cx={i % 2 === 0 ? 90 : 140} cy={y} r="3" fill="#F59E0B"
-            className="helix-node-elec" style={{ animationDelay: `${1.5 + i * 0.2}s` }} />
+          <g key={`en-${i}`}>
+            <circle cx={i % 2 === 0 ? 90 : 140} cy={y} r="6" fill="#F59E0B" opacity="0.15"
+              className="helix-node-elec" style={{ animationDelay: `${i * 0.25}s` }} />
+            <circle cx={i % 2 === 0 ? 90 : 140} cy={y} r="3.5" fill="#F59E0B"
+              className="helix-node-elec" style={{ animationDelay: `${i * 0.25}s` }} />
+          </g>
         ))}
 
         {/* ── DNA Helix — Plumbing (blue) ── */}
         <path
           d="M340,280 C340,265 290,255 290,240 C290,225 340,215 340,200 C340,185 290,175 290,160 C290,145 340,135 340,120 C340,105 290,95 290,80 C290,65 340,55 340,45"
-          stroke="#3B82F6" strokeWidth="2.5" fill="none" strokeLinecap="round"
-          className="helix-plumb" opacity="0.7"
+          stroke="#2563EB" strokeWidth="3" fill="none" strokeLinecap="round"
+          className="helix-plumb" opacity="0.9"
         />
-        {/* Plumbing nodes */}
+        {/* Animated water flow overlay */}
+        <path
+          d="M340,280 C340,265 290,255 290,240 C290,225 340,215 340,200 C340,185 290,175 290,160 C290,145 340,135 340,120 C340,105 290,95 290,80 C290,65 340,55 340,45"
+          stroke="#93C5FD" strokeWidth="2" fill="none" strokeLinecap="round"
+          className="helix-plumb-flow" opacity="0.6"
+        />
+        {/* Plumbing nodes — bigger, brighter */}
         {[280, 240, 200, 160, 120, 80].map((y, i) => (
-          <circle key={`pn-${i}`} cx={i % 2 === 0 ? 340 : 290} cy={y} r="3" fill="#3B82F6"
-            className="helix-node-plumb" style={{ animationDelay: `${1.8 + i * 0.2}s` }} />
+          <g key={`pn-${i}`}>
+            <circle cx={i % 2 === 0 ? 340 : 290} cy={y} r="6" fill="#2563EB" opacity="0.15"
+              className="helix-node-plumb" style={{ animationDelay: `${i * 0.25}s` }} />
+            <circle cx={i % 2 === 0 ? 340 : 290} cy={y} r="3.5" fill="#2563EB"
+              className="helix-node-plumb" style={{ animationDelay: `${i * 0.25}s` }} />
+          </g>
         ))}
 
-        {/* Cross-connections (DNA rungs) between the two helices through the building */}
+        {/* Cross-connections (DNA rungs) — brighter, animated */}
         {[240, 170, 100].map((y, i) => (
           <line key={`rung-${i}`} x1={i % 2 === 0 ? 140 : 90} y1={y} x2={i % 2 === 0 ? 290 : 340} y2={y}
-            stroke={VERT} strokeWidth="1" opacity="0.15" strokeDasharray="4 3"
+            stroke={VERT} strokeWidth="1.5" opacity="0.3" strokeDasharray="5 4"
             className={`floor-${Math.min(i + 3, 6)}`} style={{ transformOrigin: `210px ${y}px` }}
           />
         ))}
