@@ -201,7 +201,7 @@ export default function Landing() {
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 24, maxWidth: 480, margin: '0 auto 24px' }}>
           {t('cta_final_desc')}
         </p>
-        <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
+        <button onClick={() => navigate('/pricing')} style={{
           background: VERT, color: '#fff', border: 'none', borderRadius: 8,
           padding: '14px 36px', fontSize: 16, fontWeight: 700, cursor: 'pointer',
         }}>
