@@ -17,6 +17,7 @@ export default function NewProject() {
   const [mainFile, setMainFile] = useState(null)
   const [mainFiles, setMainFiles] = useState([])
   const [nbNiveaux, setNbNiveaux] = useState('')
+  const [nbLogements, setNbLogements] = useState('')
   const [solFile, setSolFile] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
   const [dragging, setDragging] = useState(false)
@@ -33,6 +34,7 @@ export default function NewProject() {
     if (!ville.trim()) { setErrorMsg(t('np_err_ville')); return }
     if (!mainFile) { setErrorMsg(t('np_err_plans')); return }
     if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
+    if (!nbLogements || parseInt(nbLogements) < 1) { setErrorMsg(t('np_err_logements')); return }
 
     // Check if user has sufficient credits (2 required)
     if (restants < 2) {
@@ -107,6 +109,7 @@ export default function NewProject() {
       nb_travees_x: parseInt(parsed.nb_travees_x) || 4,
       nb_travees_y: parseInt(parsed.nb_travees_y) || 3,
       surface_terrain_m2: parseFloat(surfaceTerrain),
+      nb_logements: parseInt(nbLogements),
     }
     if (sol_context) payload.sol_context = sol_context
     if (parsed.urn) payload.urn = parsed.urn
@@ -131,6 +134,7 @@ export default function NewProject() {
           ville: payload.ville || ville,
           pays: payload.pays || 'Senegal',
           nb_niveaux: payload.nb_niveaux,
+          nb_logements: payload.nb_logements,
           surface_emprise_m2: payload.surface_emprise_m2,
           portee_max_m: payload.portee_max_m,
           portee_min_m: payload.portee_min_m,
@@ -223,10 +227,17 @@ export default function NewProject() {
               <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>{t('np_emprise_note')}</div>
             </div>
 
-            <div>
-              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>Nombre de niveaux (R+?)</label>
-              <input type="number" value={nbNiveaux} onChange={e => setNbNiveaux(e.target.value)} placeholder={mainFiles.length > 1 ? `${mainFiles.length} fichiers détectés` : "ex: 10 pour R+8 avec SS"} style={inp} min="2" max="40" />
-              <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>SS + RDC + étages + terrasse. Laissez vide pour détection automatique.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>Nombre de niveaux (R+?)</label>
+                <input type="number" value={nbNiveaux} onChange={e => setNbNiveaux(e.target.value)} placeholder={mainFiles.length > 1 ? `${mainFiles.length} fichiers` : "ex: 10"} style={inp} min="2" max="40" />
+                <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>SS + RDC + étages + terrasse</div>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_logements')} *</label>
+                <input type="number" value={nbLogements} onChange={e => setNbLogements(e.target.value)} placeholder="ex: 33" style={inp} min="1" max="500" />
+                <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>{t('np_logements_note')}</div>
+              </div>
             </div>
 
             <div>
