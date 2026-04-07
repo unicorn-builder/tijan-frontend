@@ -163,7 +163,7 @@ export default function Results() {
     finally { setEdgeLoading(false) }
   }
 
-  const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'edge-assessment', 'fiches-mep', 'schemas-mep', 'plan-mep']
+  const MEP_TABS = ['note-mep', 'boq-mep', 'edge-assessment', 'fiches-mep', 'schemas-mep', 'plan-mep']
 
   useEffect(() => {
     if (MEP_TABS.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom && params?.portee_max_m) {
@@ -507,8 +507,8 @@ export default function Results() {
       )
     }
 
-    // ── EDGE ──
-    if (activeTab === 'edge' && mepData) {
+    // ── CONFORMITÉ EDGE (ex EDGE Assessment v3.0.0) ──
+    if (activeTab === 'edge-assessment' && mepData) {
       const edge = mepData.edge || {}
       const piliers = [
         { key: 'economie_energie_pct', label: t('r_eco_energie') },
@@ -714,17 +714,6 @@ export default function Results() {
       )
     }
 
-    // ── EDGE ASSESSMENT v3.0.0 ──
-    if (activeTab === 'edge-assessment' && mepData) {
-      return (
-        <Card>
-          <SectionTitle>{t('tab_edge_assessment')}</SectionTitle>
-          <div style={{ fontSize: 12, color: '#444', lineHeight: 1.6 }}>{t('r_edge_assessment_desc')}</div>
-          <div style={{ fontSize: 11, color: GRIS3, marginTop: 10 }}>{t('r_telecharger_complet')}</div>
-        </Card>
-      )
-    }
-
     // ── RAPPORT EXÉCUTIF ──
     if (activeTab === 'rapport-executif') {
       const boq = resultats.boq || {}
@@ -832,7 +821,6 @@ export default function Results() {
     'boq-structure':      '/generate-boq',
     'note-mep':           '/generate-note-mep',
     'boq-mep':            '/generate-boq-mep',
-    'edge':               '/generate-edge',
     'rapport-executif':   '/generate-rapport-executif',
     'fiches-structure':   '/generate-fiches-structure',
     'fiches-mep':         '/generate-fiches-mep',
@@ -847,7 +835,6 @@ export default function Results() {
     'boq-structure':      `TijanAI_BOQStructure_${slug}_${today}.pdf`,
     'note-mep':           `TijanAI_NoteMEP_${slug}_${today}.pdf`,
     'boq-mep':            `TijanAI_BOQMEP_${slug}_${today}.pdf`,
-    'edge':               `TijanAI_EDGE_${slug}_${today}.pdf`,
     'rapport-executif':   `TijanAI_RapportExecutif_${slug}_${today}.pdf`,
     'fiches-structure':   `TijanAI_FichesStructure_${slug}_${today}.pdf`,
     'fiches-mep':         `TijanAI_FichesMEP_${slug}_${today}.pdf`,
