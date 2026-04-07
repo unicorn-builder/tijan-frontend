@@ -252,23 +252,33 @@ export default function Pricing() {
               <div key={i} style={{
                 background: 'rgba(255,255,255,0.08)', borderRadius: 10,
                 padding: '18px 16px', border: '1px solid rgba(255,255,255,0.12)',
+                position: 'relative',
               }}>
+                <div style={{
+                  display: 'inline-block',
+                  background: VERT, color: NAVY,
+                  fontSize: 10, fontWeight: 800, letterSpacing: 0.6,
+                  padding: '3px 8px', borderRadius: 999, marginBottom: 8,
+                  textTransform: 'uppercase',
+                }}>
+                  {t('bientot_dispo')}
+                </div>
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>
                   {t(`pr_extra_${extra.id}`)}
                 </div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 10, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
                   {t(`pr_extra_${extra.id}_desc`)}
-                </div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: VERT }}>
-                  {formatFCFA(extra.prix)}
-                </div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
-                  {t('pr_extra_par_projet')}
                 </div>
               </div>
             ))}
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 16 }}>
+          <div style={{
+            fontSize: 12, color: VERT, marginTop: 18, fontWeight: 600,
+            textAlign: 'center',
+            background: 'rgba(46,139,87,0.12)',
+            border: '1px solid rgba(46,139,87,0.35)',
+            borderRadius: 8, padding: '10px 14px',
+          }}>
             {t('pr_extras_note')}
           </div>
         </div>
