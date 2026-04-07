@@ -19,6 +19,17 @@ export default function NewProject() {
   const [nbNiveaux, setNbNiveaux] = useState('')
   const [nbLogements, setNbLogements] = useState('')
   const [solFile, setSolFile] = useState(null)
+  // EDGE Assessment optional inputs
+  const [edgeOpen, setEdgeOpen] = useState(false)
+  const [costConstr, setCostConstr] = useState('')
+  const [saleValue, setSaleValue] = useState('')
+  const [poolM2, setPoolM2] = useState('')
+  const [irrigM2, setIrrigM2] = useState('')
+  const [carWash, setCarWash] = useState(false)
+  const [washClothes, setWashClothes] = useState(true)
+  const [dishwasher, setDishwasher] = useState(false)
+  const [nbSousSols, setNbSousSols] = useState('')
+  const [typosText, setTyposText] = useState('') // CSV: "name,bedrooms,area,units,occupancy" per line
   const [errorMsg, setErrorMsg] = useState('')
   const [dragging, setDragging] = useState(false)
   const mainRef = useRef(null)
@@ -111,6 +122,37 @@ export default function NewProject() {
       surface_terrain_m2: parseFloat(surfaceTerrain),
       nb_logements: parseInt(nbLogements),
     }
+    // EDGE optional inputs (only include if user provided)
+    if (costConstr) payload.cost_construction_xof_m2 = parseFloat(costConstr)
+    if (saleValue) payload.sale_value_xof_m2 = parseFloat(saleValue)
+    if (poolM2) payload.pool_m2 = parseFloat(poolM2)
+    if (irrigM2) payload.irrigated_area_m2 = parseFloat(irrigM2)
+    if (nbSousSols) payload.nb_sous_sols = parseInt(nbSousSols)
+    payload.car_wash = carWash
+    payload.washing_clothes = washClothes
+    payload.dishwasher = dishwasher
+    // Parse typologies (one per line: "name,bedrooms,area,units,occupancy")
+    if (typosText.trim()) {
+      const typos = typosText.trim().split('\n').map(line => {
+        const parts = line.split(',').map(s => s.trim())
+        if (parts.length < 5) return null
+        const area = parseFloat(parts[2]) || 0
+        return {
+          name: parts[0], bedrooms: parseInt(parts[1]) || 0,
+          area, units: parseInt(parts[3]) || 1, occupancy: parseInt(parts[4]) || 2,
+          bedroom_m2: Math.round(area * 0.35 * 10) / 10,
+          kitchen_m2: Math.round(area * 0.10 * 10) / 10,
+          dining_m2: Math.round(area * 0.08 * 10) / 10,
+          living_m2: Math.round(area * 0.15 * 10) / 10,
+          toilet_m2: Math.round(area * 0.08 * 10) / 10,
+          utility_m2: Math.round(area * 0.04 * 10) / 10,
+          balcony_m2: Math.round(area * 0.08 * 10) / 10,
+          parking_m2: 12.5,
+          corridor_m2: Math.round(area * 0.12 * 10) / 10,
+        }
+      }).filter(Boolean)
+      if (typos.length) payload.typologies = typos
+    }
     if (sol_context) payload.sol_context = sol_context
     if (parsed.urn) payload.urn = parsed.urn
     // Store DWG geometry and references for plan generation
@@ -179,8 +221,21 @@ export default function NewProject() {
           if (dwgGeometry && typeof dwgGeometry === 'object') {
             extras.dwg_geometry = dwgGeometry
           }
+          // Save EDGE optional inputs as jsonb blob
+          const edgeExtras = {}
+          if (payload.cost_construction_xof_m2) edgeExtras.cost_construction_xof_m2 = payload.cost_construction_xof_m2
+          if (payload.sale_value_xof_m2) edgeExtras.sale_value_xof_m2 = payload.sale_value_xof_m2
+          if (payload.pool_m2) edgeExtras.pool_m2 = payload.pool_m2
+          if (payload.irrigated_area_m2) edgeExtras.irrigated_area_m2 = payload.irrigated_area_m2
+          if (payload.nb_sous_sols) edgeExtras.nb_sous_sols = payload.nb_sous_sols
+          edgeExtras.car_wash = payload.car_wash
+          edgeExtras.washing_clothes = payload.washing_clothes
+          edgeExtras.dishwasher = payload.dishwasher
+          if (payload.typologies) edgeExtras.typologies = payload.typologies
+          if (Object.keys(edgeExtras).length > 0) extras.edge_extras = edgeExtras
           if (Object.keys(extras).length > 0) {
-            await supabase.from('projets').update(extras).eq('id', projectId)
+            const { error: updErr } = await supabase.from('projets').update(extras).eq('id', projectId)
+            if (updErr) console.warn('Update extras failed:', updErr.message, updErr.code)
           }
         } catch (e) {
           console.warn('Non-critical: failed to persist geometry/PDF', e)
@@ -274,6 +329,33 @@ export default function NewProject() {
                 {solFile ? <div style={{ fontSize: 12, color: VERT }}>✓ {solFile.name}</div> : <div style={{ fontSize: 12, color: '#aaa' }}>{t('np_sol_add')}</div>}
                 <input ref={solRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) setSolFile(f) }} />
               </div>
+            </div>
+
+            <div style={{ border: `1px solid ${GRIS2}`, borderRadius: 8, background: '#FAFAFA' }}>
+              <div onClick={() => setEdgeOpen(!edgeOpen)} style={{ padding: '12px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#444', display: 'flex', justifyContent: 'space-between' }}>
+                <span>EDGE Assessment — détails optionnels</span>
+                <span style={{ color: '#888' }}>{edgeOpen ? '−' : '+'}</span>
+              </div>
+              {edgeOpen && (
+                <div style={{ padding: '0 14px 14px', display: 'grid', gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 11, color: '#666' }}>Typologies (1 par ligne — nom,chambres,m²,unités,occupants)</label>
+                    <textarea value={typosText} onChange={e => setTyposText(e.target.value)} rows={3} placeholder="T3,2,75,12,4" style={{ width: '100%', padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12, fontFamily: 'monospace' }} />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <input type="number" value={costConstr} onChange={e => setCostConstr(e.target.value)} placeholder="Coût construction (XOF/m²)" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                    <input type="number" value={saleValue} onChange={e => setSaleValue(e.target.value)} placeholder="Valeur vente (XOF/m²)" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                    <input type="number" value={poolM2} onChange={e => setPoolM2(e.target.value)} placeholder="Piscine (m²)" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                    <input type="number" value={irrigM2} onChange={e => setIrrigM2(e.target.value)} placeholder="Surface irriguée (m²)" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                    <input type="number" value={nbSousSols} onChange={e => setNbSousSols(e.target.value)} placeholder="Nb sous-sols" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 14, fontSize: 12, color: '#555', flexWrap: 'wrap' }}>
+                    <label><input type="checkbox" checked={washClothes} onChange={e => setWashClothes(e.target.checked)} /> Lave-linge</label>
+                    <label><input type="checkbox" checked={dishwasher} onChange={e => setDishwasher(e.target.checked)} /> Lave-vaisselle</label>
+                    <label><input type="checkbox" checked={carWash} onChange={e => setCarWash(e.target.checked)} /> Lavage voiture</label>
+                  </div>
+                </div>
+              )}
             </div>
 
             {errorMsg && <div style={{ fontSize: 12, color: '#888', textAlign: 'center' }}>{errorMsg}</div>}

@@ -163,7 +163,7 @@ export default function Results() {
     finally { setEdgeLoading(false) }
   }
 
-  const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'fiches-mep', 'plan-mep']
+  const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'edge-assessment', 'fiches-mep', 'plan-mep']
 
   useEffect(() => {
     if (MEP_TABS.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom && params?.portee_max_m) {
@@ -885,7 +885,13 @@ export default function Results() {
               <button
                 onClick={() => {
                   const nomFichier = `TijanAI_${activeTab.replace(/-/g,'')}_${slug}_${today}.pdf`
-                  download(endpoint, nomFichier)
+                  const extra = {}
+                  if (activeTab === 'edge-assessment') {
+                    if (dwgGeometry) extra.dwg_geometry = dwgGeometry
+                    const ee = dbProjet?.edge_extras || {}
+                    Object.assign(extra, ee)
+                  }
+                  download(endpoint, nomFichier, extra)
                 }}
                 disabled={!!dlLoading || (MEP_TABS.includes(activeTab) && activeTab !== 'plan-mep' && !mepData?.ok)}
                 style={{
