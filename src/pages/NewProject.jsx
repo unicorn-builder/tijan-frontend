@@ -268,7 +268,7 @@ export default function NewProject() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
                 <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_nom')} *</label>
-                <input value={nom} onChange={e => setNom(e.target.value)} placeholder="ex: Résidence Sakho" style={inp} />
+                <input value={nom} onChange={e => setNom(e.target.value)} placeholder={t('np_placeholder_nom')} style={inp} />
               </div>
               <div>
                 <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_ville')} *</label>
@@ -284,9 +284,9 @@ export default function NewProject() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
-                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>Nombre de niveaux (R+?)</label>
-                <input type="number" value={nbNiveaux} onChange={e => setNbNiveaux(e.target.value)} placeholder={mainFiles.length > 1 ? `${mainFiles.length} fichiers` : "ex: 10"} style={inp} min="2" max="40" />
-                <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>SS + RDC + étages + terrasse</div>
+                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_niveaux')}</label>
+                <input type="number" value={nbNiveaux} onChange={e => setNbNiveaux(e.target.value)} placeholder={mainFiles.length > 1 ? `${mainFiles.length} ${t('np_fichiers')}` : t('np_niveaux_ph')} style={inp} min="2" max="40" />
+                <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>{t('np_niveaux_note')}</div>
               </div>
               <div>
                 <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_logements')} *</label>
@@ -313,7 +313,7 @@ export default function NewProject() {
                   ? <div><div style={{ fontSize: 13, fontWeight: 500, color: VERT, marginBottom: 4 }}>✓ {mainFiles.length} fichiers DWG</div>{mainFiles.map((f,i) => <div key={i} style={{ fontSize: 10, color: '#888' }}>{f.name}</div>)}<div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>Cliquez pour changer</div></div>
                   : mainFile
                     ? <div><div style={{ fontSize: 13, fontWeight: 500, color: VERT, marginBottom: 4 }}>✓ {mainFile.name}</div><div style={{ fontSize: 11, color: '#888' }}>Cliquez pour changer</div></div>
-                    : <div><div style={{ fontSize: 13, color: '#555', marginBottom: 6 }}>{t('np_drop')}</div><div style={{ fontSize: 11, color: '#888' }}>PDF, DWG, DXF — un ou plusieurs fichiers</div></div>
+                    : <div><div style={{ fontSize: 13, color: '#555', marginBottom: 6 }}>{t('np_drop')}</div><div style={{ fontSize: 11, color: '#888' }}>{t('np_drop_hint')}</div></div>
                 }
                 <input ref={mainRef} type="file" accept=".pdf,.dwg,.dxf" multiple style={{ display: 'none' }} onChange={e => {
                   const files = Array.from(e.target.files || [])
@@ -333,26 +333,26 @@ export default function NewProject() {
 
             <div style={{ border: `1px solid ${GRIS2}`, borderRadius: 8, background: '#FAFAFA' }}>
               <div onClick={() => setEdgeOpen(!edgeOpen)} style={{ padding: '12px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#444', display: 'flex', justifyContent: 'space-between' }}>
-                <span>EDGE Assessment — détails optionnels</span>
+                <span>{t('np_edge_titre')}</span>
                 <span style={{ color: '#888' }}>{edgeOpen ? '−' : '+'}</span>
               </div>
               {edgeOpen && (
                 <div style={{ padding: '0 14px 14px', display: 'grid', gap: 10 }}>
                   <div>
-                    <label style={{ fontSize: 11, color: '#666' }}>Typologies (1 par ligne — nom,chambres,m²,unités,occupants)</label>
+                    <label style={{ fontSize: 11, color: '#666' }}>{t('np_edge_typo')}</label>
                     <textarea value={typosText} onChange={e => setTyposText(e.target.value)} rows={3} placeholder="T3,2,75,12,4" style={{ width: '100%', padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12, fontFamily: 'monospace' }} />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    <input type="number" value={costConstr} onChange={e => setCostConstr(e.target.value)} placeholder="Coût construction (XOF/m²)" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
-                    <input type="number" value={saleValue} onChange={e => setSaleValue(e.target.value)} placeholder="Valeur vente (XOF/m²)" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
-                    <input type="number" value={poolM2} onChange={e => setPoolM2(e.target.value)} placeholder="Piscine (m²)" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
-                    <input type="number" value={irrigM2} onChange={e => setIrrigM2(e.target.value)} placeholder="Surface irriguée (m²)" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
-                    <input type="number" value={nbSousSols} onChange={e => setNbSousSols(e.target.value)} placeholder="Nb sous-sols" style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                    <input type="number" value={costConstr} onChange={e => setCostConstr(e.target.value)} placeholder={t('np_edge_cost')} style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                    <input type="number" value={saleValue} onChange={e => setSaleValue(e.target.value)} placeholder={t('np_edge_sale')} style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                    <input type="number" value={poolM2} onChange={e => setPoolM2(e.target.value)} placeholder={t('np_edge_pool')} style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                    <input type="number" value={irrigM2} onChange={e => setIrrigM2(e.target.value)} placeholder={t('np_edge_irrig')} style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
+                    <input type="number" value={nbSousSols} onChange={e => setNbSousSols(e.target.value)} placeholder={t('np_edge_basements')} style={{ padding: 8, border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12 }} />
                   </div>
                   <div style={{ display: 'flex', gap: 14, fontSize: 12, color: '#555', flexWrap: 'wrap' }}>
-                    <label><input type="checkbox" checked={washClothes} onChange={e => setWashClothes(e.target.checked)} /> Lave-linge</label>
-                    <label><input type="checkbox" checked={dishwasher} onChange={e => setDishwasher(e.target.checked)} /> Lave-vaisselle</label>
-                    <label><input type="checkbox" checked={carWash} onChange={e => setCarWash(e.target.checked)} /> Lavage voiture</label>
+                    <label><input type="checkbox" checked={washClothes} onChange={e => setWashClothes(e.target.checked)} /> {t('np_edge_washer')}</label>
+                    <label><input type="checkbox" checked={dishwasher} onChange={e => setDishwasher(e.target.checked)} /> {t('np_edge_dishw')}</label>
+                    <label><input type="checkbox" checked={carWash} onChange={e => setCarWash(e.target.checked)} /> {t('np_edge_carwash')}</label>
                   </div>
                 </div>
               )}
@@ -361,7 +361,7 @@ export default function NewProject() {
             {errorMsg && <div style={{ fontSize: 12, color: '#888', textAlign: 'center' }}>{errorMsg}</div>}
 
             <button onClick={lancer} style={{ width: '100%', padding: 13, background: VERT, color: '#fff', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-              Lancer l'analyse
+              {t('np_lancer')}
             </button>
             <div style={{ fontSize: 11, color: '#aaa', textAlign: 'center' }}>{t('np_disclaimer')}</div>
           </div>

@@ -22,7 +22,7 @@ const Badge = ({ ok, label }) => (
   <span style={{
     background: ok ? VERT_LIGHT : ORANGE_LT, color: ok ? VERT : ORANGE,
     border: `1px solid ${ok ? VERT : ORANGE}`, borderRadius: 4, padding: '2px 8px', fontSize: 11, fontWeight: 700,
-  }}>{label || (ok ? t('r_conforme') : 'À vérifier')}</span>
+  }}>{label || (ok ? t('r_conforme') : t('r_a_verifier'))}</span>
 )
 
 const DataTable = ({ headers, rows, colWidths }) => (
@@ -74,7 +74,7 @@ function usePdfDownload(params, lang = 'fr') {
       const a = document.createElement('a')
       a.href = url; a.download = filename; a.click()
       URL.revokeObjectURL(url)
-    } catch (e) { console.warn('PDF generation failed:', e); alert('Erreur téléchargement: ' + e.message) }
+    } catch (e) { console.warn('PDF generation failed:', e); alert((lang === 'en' ? 'Download error: ' : 'Erreur téléchargement: ') + e.message) }
     finally { setLoading(null) }
   }
   return { download, loading }
@@ -163,7 +163,7 @@ export default function Results() {
     finally { setEdgeLoading(false) }
   }
 
-  const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'edge-assessment', 'fiches-mep', 'plan-mep']
+  const MEP_TABS = ['note-mep', 'boq-mep', 'edge', 'edge-assessment', 'fiches-mep', 'schemas-mep', 'plan-mep']
 
   useEffect(() => {
     if (MEP_TABS.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom && params?.portee_max_m) {
@@ -241,7 +241,7 @@ export default function Results() {
             </div>
           </div>
           <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {['Coffrage', 'Ferraillage poteaux', 'Ferraillage poutres', 'Ferraillage dalles', 'Fondations', 'Voiles', 'Escaliers', 'Coupes', 'Nomenclature', 'Détails'].map(s => (
+            {[t('r_lot_coffrage'), t('r_lot_ferr_pot'), t('r_lot_ferr_pou'), t('r_lot_ferr_dal'), t('r_lot_fond'), t('r_lot_voiles'), t('r_lot_escaliers'), t('r_lot_coupes'), t('r_lot_nomenclature'), t('r_lot_details')].map(s => (
               <span key={s} style={{ fontSize: 10, background: VERT_LIGHT, color: VERT, padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
             ))}
           </div>
@@ -273,7 +273,7 @@ export default function Results() {
             </div>
           </div>
           <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {['Plomberie', 'Électricité', 'CVC', 'Séc. Incendie', 'Courants faibles', 'Ascenseurs', 'GTB'].map(s => (
+            {[t('r_lot_plomberie'), t('r_lot_electricite'), t('r_lot_cvc'), t('r_lot_secu'), t('r_lot_courants_faibles'), t('r_lot_ascenseurs'), t('r_lot_gtb')].map(s => (
               <span key={s} style={{ fontSize: 10, background: VERT_LIGHT, color: VERT, padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
             ))}
           </div>
@@ -580,7 +580,7 @@ export default function Results() {
                 ✅ Projet optimisé EDGE — {edgeOptimise.edge.niveau_certification}
               </div>
               <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 12 }}>
-                {[['Énergie', edgeOptimise.edge.economie_energie_pct], ['Eau', edgeOptimise.edge.economie_eau_pct], ['Matériaux', edgeOptimise.edge.economie_materiaux_pct]].map(([label, val]) => (
+                {[[t('r_energie_label'), edgeOptimise.edge.economie_energie_pct], [t('r_eau_label'), edgeOptimise.edge.economie_eau_pct], [t('r_materiaux_label'), edgeOptimise.edge.economie_materiaux_pct]].map(([label, val]) => (
                   <div key={label} style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 11, color: '#555' }}>{label}</div>
                     <div style={{ fontSize: 22, fontWeight: 700, color: val >= 20 ? '#43A956' : '#E07B00' }}>{val}%</div>
@@ -636,7 +636,7 @@ export default function Results() {
             <SectionTitle>{t('r_fiche_beton')}</SectionTitle>
             {poteaux.length > 0 ? (
               <DataTable
-                headers={[t('r_niveau'), t('r_section'), t('r_armatures'), 'Cadres', 'Béton']}
+                headers={[t('r_niveau'), t('r_section'), t('r_armatures'), t('r_cadres'), t('r_beton')]}
                 rows={poteaux.map(p => [
                   p.niveau || p.label,
                   `${p.section_mm}×${p.section_mm} mm`,
@@ -691,6 +691,39 @@ export default function Results() {
       )
     }
 
+
+    // ── SCHEMAS DE FERRAILLAGE ──
+    if (activeTab === 'schemas-ferraillage') {
+      return (
+        <Card>
+          <SectionTitle>{t('tab_schemas_ferraillage')}</SectionTitle>
+          <div style={{ fontSize: 12, color: '#444', lineHeight: 1.6 }}>{t('r_schemas_ferr_desc')}</div>
+          <div style={{ fontSize: 11, color: GRIS3, marginTop: 10 }}>{t('r_telecharger_complet')}</div>
+        </Card>
+      )
+    }
+
+    // ── SCHEMAS ISOMÉTRIQUES MEP ──
+    if (activeTab === 'schemas-mep' && mepData) {
+      return (
+        <Card>
+          <SectionTitle>{t('tab_schemas_mep')}</SectionTitle>
+          <div style={{ fontSize: 12, color: '#444', lineHeight: 1.6 }}>{t('r_schemas_mep_desc')}</div>
+          <div style={{ fontSize: 11, color: GRIS3, marginTop: 10 }}>{t('r_telecharger_complet')}</div>
+        </Card>
+      )
+    }
+
+    // ── EDGE ASSESSMENT v3.0.0 ──
+    if (activeTab === 'edge-assessment' && mepData) {
+      return (
+        <Card>
+          <SectionTitle>{t('tab_edge_assessment')}</SectionTitle>
+          <div style={{ fontSize: 12, color: '#444', lineHeight: 1.6 }}>{t('r_edge_assessment_desc')}</div>
+          <div style={{ fontSize: 11, color: GRIS3, marginTop: 10 }}>{t('r_telecharger_complet')}</div>
+        </Card>
+      )
+    }
 
     // ── RAPPORT EXÉCUTIF ──
     if (activeTab === 'rapport-executif') {
@@ -803,6 +836,9 @@ export default function Results() {
     'rapport-executif':   '/generate-rapport-executif',
     'fiches-structure':   '/generate-fiches-structure',
     'fiches-mep':         '/generate-fiches-mep',
+    'schemas-ferraillage':'/generate-schemas-ferraillage',
+    'schemas-mep':        '/generate-schemas-mep',
+    'edge-assessment':    '/generate-edge-assessment',
     'plan-ba':            '/generate-plans-structure',
     'plan-mep':           '/generate-plans-mep',
   }
@@ -815,6 +851,9 @@ export default function Results() {
     'rapport-executif':   `TijanAI_RapportExecutif_${slug}_${today}.pdf`,
     'fiches-structure':   `TijanAI_FichesStructure_${slug}_${today}.pdf`,
     'fiches-mep':         `TijanAI_FichesMEP_${slug}_${today}.pdf`,
+    'schemas-ferraillage':`TijanAI_SchemasFerraillage_${slug}_${today}.pdf`,
+    'schemas-mep':        `TijanAI_SchemasMEP_${slug}_${today}.pdf`,
+    'edge-assessment':    `TijanAI_EdgeAssessment_${slug}_${today}.pdf`,
     'plan-ba':            `TijanAI_PlansStructure_${slug}_${today}.pdf`,
     'plan-mep':           `TijanAI_PlansMEP_${slug}_${today}.pdf`,
   }
@@ -902,7 +941,7 @@ export default function Results() {
                   opacity: (MEP_TABS.includes(activeTab) && !mepData?.ok && activeTab !== 'plan-mep') ? 0.5 : 1,
                 }}
               >
-                {dlLoading === endpoint ? t('res_generation') : (t('res_telecharger') || 'Télécharger PDF')}
+                {dlLoading === endpoint ? t('res_generation') : (t('res_telecharger') || t('r_telecharger_pdf'))}
               </button>
               {activeTab === 'boq-structure' && (
                 <button

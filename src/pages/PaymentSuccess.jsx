@@ -30,17 +30,19 @@ export default function PaymentSuccess() {
       }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
-          Paiement confirmé !
+          {lang === 'en' ? 'Payment confirmed!' : 'Paiement confirmé !'}
         </h1>
         <p style={{ fontSize: 14, color: '#666', marginBottom: 20 }}>
-          {credits} crédit{credits > 1 ? 's' : ''} ajouté{credits > 1 ? 's' : ''} à votre compte.
+          {lang === 'en'
+            ? `${credits} credit${credits > 1 ? 's' : ''} added to your account.`
+            : `${credits} crédit${credits > 1 ? 's' : ''} ajouté${credits > 1 ? 's' : ''} à votre compte.`}
         </p>
         <div style={{
           background: '#F0FFF4', border: `1px solid ${VERT}`, borderRadius: 8,
           padding: '12px 20px', fontSize: 18, fontWeight: 700, color: VERT,
           marginBottom: 24,
         }}>
-          {done ? restants : '...'} crédits {lang === 'en' ? 'available' : 'disponibles'}
+          {done ? restants : '...'} {lang === 'en' ? 'credits available' : 'crédits disponibles'}
         </div>
         <button onClick={() => navigate('/projects/new')} style={{
           background: VERT, color: '#fff', border: 'none', borderRadius: 8,

@@ -78,11 +78,11 @@ export default function Pricing() {
       if (data.ok) {
         window.location.href = data.url
       } else {
-        alert('Erreur: ' + (data.error || 'Réessayez'))
+        alert(t('pricing_err') + ': ' + (data.error || t('pricing_retry')))
       }
     } catch (e) {
       console.error('Payment error:', e)
-      alert('Impossible de contacter le serveur. Vérifiez votre connexion.')
+      alert(t('pricing_no_server'))
     } finally {
       setPayLoading(false)
     }
