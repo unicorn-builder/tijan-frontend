@@ -53,7 +53,42 @@ const Spinner = ({ text = '' }) => (
   </div>
 )
 
-function usePdfDownload(params, lang = 'fr') {
+// Endpoints whose output should be archived to Supabase Storage on download.
+// Key = endpoint, value = { key: storage key suffix, ext: file extension, contentType }
+const PLAN_ARCHIVE_MAP = {
+  '/generate-plans-structure':     { key: 'plans_structure',     ext: 'pdf', contentType: 'application/pdf' },
+  '/generate-plans-mep':           { key: 'plans_mep',           ext: 'pdf', contentType: 'application/pdf' },
+  '/generate-plans-structure-dwg': { key: 'plans_structure_dxf', ext: 'dxf', contentType: 'application/dxf' },
+  '/generate-plans-mep-dwg':       { key: 'plans_mep_dxf',       ext: 'dxf', contentType: 'application/dxf' },
+}
+
+async function archivePlan({ supabase, projectId, endpoint, blob }) {
+  // Best-effort archive: upload latest plan to Supabase Storage and update projets.plans_urls.
+  // Silent on failure — must never block the user's download.
+  if (!supabase || !projectId) return null
+  const meta = PLAN_ARCHIVE_MAP[endpoint]
+  if (!meta) return null
+  try {
+    const path = `${projectId}/${meta.key}.${meta.ext}`
+    const up = await supabase.storage.from('plans').upload(path, blob, {
+      upsert: true, contentType: meta.contentType, cacheControl: '3600',
+    })
+    if (up.error) { console.warn('[plan archive] upload failed:', up.error.message); return null }
+    const { data: pub } = supabase.storage.from('plans').getPublicUrl(path)
+    const url = pub?.publicUrl || null
+    // Merge into projets.plans_urls jsonb column
+    const { data: row } = await supabase.from('projets')
+      .select('plans_urls').eq('id', projectId).single()
+    const next = { ...(row?.plans_urls || {}), [meta.key]: { url, updated_at: new Date().toISOString() } }
+    await supabase.from('projets').update({ plans_urls: next }).eq('id', projectId)
+    return url
+  } catch (e) {
+    console.warn('[plan archive] error:', e?.message || e)
+    return null
+  }
+}
+
+function usePdfDownload(params, lang = 'fr', { supabase = null, projectId = null } = {}) {
   const [loading, setLoading] = useState(null)
   const download = async (endpoint, filename, extra = {}) => {
     if (!params || !endpoint) return
@@ -63,18 +98,37 @@ function usePdfDownload(params, lang = 'fr') {
       const { dwg_geometry, dwgGeometry, ...cleanParams } = params
       const res = await fetch(`${BACKEND}${endpoint}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...cleanParams, lang, ...extra }),
+        body: JSON.stringify({ ...cleanParams, lang, project_id: projectId || undefined, ...extra }),
       })
       if (!res.ok) {
         const errText = await res.text().catch(() => '')
-        throw new Error(`${res.status}: ${errText.slice(0, 200)}`)
+        // Extract clean "detail" from FastAPI JSON error bodies
+        let detail = errText
+        try { const j = JSON.parse(errText); if (j?.detail) detail = j.detail } catch {}
+        const err = new Error(detail.slice(0, 400))
+        err.status = res.status
+        throw err
       }
       const blob = await res.blob()
+      // Fire-and-forget archive to Supabase Storage for plan endpoints (non-blocking)
+      if (PLAN_ARCHIVE_MAP[endpoint]) {
+        archivePlan({ supabase, projectId, endpoint, blob }).catch(() => {})
+      }
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url; a.download = filename; a.click()
       URL.revokeObjectURL(url)
-    } catch (e) { console.warn('PDF generation failed:', e); alert((lang === 'en' ? 'Download error: ' : 'Erreur téléchargement: ') + e.message) }
+    } catch (e) {
+      console.warn('PDF generation failed:', e)
+      // 422 = DWG-only guard for plans. Show a clear, actionable message.
+      if (e.status === 422 && (endpoint.includes('plans-structure') || endpoint.includes('plans-mep'))) {
+        alert(lang === 'en'
+          ? 'Plans require a DWG/DXF input file. This project was created from a PDF — please create a new project with a DWG/DXF to generate structure and MEP plans. (Other deliverables remain available.)'
+          : 'Les plans nécessitent un fichier DWG/DXF en entrée. Ce projet a été créé à partir d\'un PDF — créez un nouveau projet avec un DWG/DXF pour générer les plans structure et MEP. (Les autres livrables restent disponibles.)')
+      } else {
+        alert((lang === 'en' ? 'Download error: ' : 'Erreur téléchargement: ') + e.message)
+      }
+    }
     finally { setLoading(null) }
   }
   return { download, loading }
@@ -105,7 +159,7 @@ export default function Results() {
   const [mepError, setMepError] = useState(false)
   const [edgeOptimise, setEdgeOptimise] = useState(null)
   const [edgeLoading, setEdgeLoading] = useState(false)
-  const { download, loading: dlLoading } = usePdfDownload(params, lang)
+  const { download, loading: dlLoading } = usePdfDownload(params, lang, { supabase, projectId })
 
   // Load project from Supabase if opened by URL (no location.state)
   useEffect(() => {
