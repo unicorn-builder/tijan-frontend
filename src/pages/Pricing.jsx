@@ -1,4 +1,4 @@
-// Pricing.jsx — Page abonnements Tijan AI
+// Pricing.jsx — Page tarifs Tijan AI (modèle crédit unique style Wave)
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -7,57 +7,34 @@ import { VERT, BACKEND } from '../constants'
 import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
+const PRIX_CREDIT = 500000 // FCFA TTC par crédit
+const TVA_RATE = 0.18      // Sénégal
+const QUANTITES = [1, 2, 3, 5, 10]
 
 function formatFCFA(n) {
   return n.toLocaleString('fr-FR') + ' FCFA'
 }
 
-const PLANS = [
-  {
-    id: 'starter',
-    projets: 1,
-    prix: 100000,
-    prixParProjet: 100000,
-    badge: null,
-    extra: false,
-  },
-  {
-    id: 'pro',
-    projets: 3,
-    prix: 225000,
-    prixParProjet: 75000,
-    badge: 'popular',
-    extra: true,
-    extraPrix: 75000,
-  },
-  {
-    id: 'enterprise',
-    projets: null, // unlimited
-    prix: null,    // custom
-    prixParProjet: null,
-    badge: null,
-    extra: false,
-  },
-]
-
 const EXTRAS = [
-  { id: 'review', prix: 250000 },
-  { id: 'edge', prix: 350000 },
-  { id: 'permis', prix: 200000 },
+  { id: 'review' },
+  { id: 'edge' },
+  { id: 'permis' },
 ]
 
 export default function Pricing() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { t } = useLang()
-  const [selectedPlan, setSelectedPlan] = useState('pro')
+  const [qty, setQty] = useState(1)
   const [payLoading, setPayLoading] = useState(false)
 
-  const handlePay = async (plan) => {
-    if (plan.id === 'enterprise') {
-      window.location.href = 'mailto:malicktall@gmail.com?subject=Tijan Enterprise'
-      return
-    }
+  const bonus = Math.floor(qty / 5)
+  const totalCredits = qty + bonus
+  const totalTTC = qty * PRIX_CREDIT
+  const totalHT = Math.round(totalTTC / (1 + TVA_RATE))
+  const totalTVA = totalTTC - totalHT
+
+  const handlePay = async () => {
     if (!user) {
       navigate('/login')
       return
@@ -68,10 +45,10 @@ export default function Pricing() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          credits: plan.projets,
-          prix: plan.prix,
+          credits: totalCredits, // Inclut le bonus — le backend ajoute ce nombre
+          prix: totalTTC,
           user_id: user.id,
-          plan: plan.id,
+          plan: `credits_${qty}${bonus ? `_plus_${bonus}` : ''}`,
         }),
       })
       const data = await response.json()
@@ -93,10 +70,10 @@ export default function Pricing() {
 
       <Header />
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px' }}>
 
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             background: NAVY, color: '#fff', borderRadius: 20,
@@ -116,104 +93,130 @@ export default function Pricing() {
           </p>
         </div>
 
-        {/* Plans */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18, marginBottom: 40 }}>
-          {PLANS.map(plan => {
-            const selected = selectedPlan === plan.id
-            const isEnterprise = plan.id === 'enterprise'
-            return (
-              <div key={plan.id} onClick={() => setSelectedPlan(plan.id)} style={{
-                background: '#fff',
-                border: selected ? `2px solid ${VERT}` : '1px solid #E5E5E5',
-                borderRadius: 14, padding: '28px 24px',
-                cursor: 'pointer', position: 'relative',
-                boxShadow: selected ? `0 0 0 4px ${VERT}22` : 'none',
-                transition: 'all 0.15s',
-              }}>
-                {plan.badge === 'popular' && (
-                  <div style={{
-                    position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
-                    background: VERT, color: '#fff', fontSize: 10, fontWeight: 700,
-                    padding: '3px 12px', borderRadius: 10, whiteSpace: 'nowrap',
-                  }}>{t('pr_populaire')}</div>
-                )}
+        {/* Carte tarif unique */}
+        <div style={{
+          background: '#fff',
+          border: `2px solid ${VERT}`,
+          borderRadius: 16,
+          padding: '32px 28px',
+          marginBottom: 32,
+          boxShadow: `0 0 0 6px ${VERT}18`,
+        }}>
+          {/* Prix unitaire */}
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: VERT, letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
+              {t('pr_credit_label')}
+            </div>
+            <div style={{ fontSize: 40, fontWeight: 800, color: NAVY, marginBottom: 4, lineHeight: 1 }}>
+              {formatFCFA(PRIX_CREDIT)}
+            </div>
+            <div style={{ fontSize: 13, color: '#666' }}>
+              {t('pr_ttc_par_credit')}
+            </div>
+            <div style={{ fontSize: 13, color: '#333', marginTop: 10, fontWeight: 600 }}>
+              1 {t('pr_credit')} = 1 {t('pr_projet_complet')}
+            </div>
+          </div>
 
-                <div style={{ textAlign: 'center' }}>
-                  {/* Plan name */}
-                  <div style={{ fontSize: 12, fontWeight: 700, color: VERT, letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
-                    {t(`pr_plan_${plan.id}`)}
-                  </div>
+          {/* Quantité */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#444', marginBottom: 10, textAlign: 'center' }}>
+              {t('pr_choisir_quantite')}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
+              {QUANTITES.map(q => {
+                const active = qty === q
+                return (
+                  <button key={q} onClick={() => setQty(q)} style={{
+                    minWidth: 56,
+                    background: active ? NAVY : '#fff',
+                    color: active ? '#fff' : NAVY,
+                    border: active ? `1.5px solid ${NAVY}` : '1px solid #D0D0D0',
+                    borderRadius: 8, padding: '10px 14px',
+                    fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}>{q}</button>
+                )
+              })}
+            </div>
+          </div>
 
-                  {/* Price */}
-                  {isEnterprise ? (
-                    <div style={{ fontSize: 26, fontWeight: 800, color: NAVY, marginBottom: 4 }}>
-                      {t('pr_sur_devis')}
-                    </div>
-                  ) : (
-                    <>
-                      <div style={{ fontSize: 28, fontWeight: 800, color: NAVY, marginBottom: 2 }}>
-                        {formatFCFA(plan.prix)}
-                      </div>
-                      <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>
-                        {t('pr_par_mois')}
-                      </div>
-                    </>
-                  )}
+          {/* Bonus banner */}
+          {bonus > 0 && (
+            <div style={{
+              background: `${VERT}18`,
+              border: `1px solid ${VERT}`,
+              borderRadius: 10,
+              padding: '10px 14px',
+              textAlign: 'center',
+              fontSize: 13, fontWeight: 700, color: VERT,
+              marginBottom: 16,
+            }}>
+              🎁 +{bonus} {bonus > 1 ? t('pr_credits_offerts') : t('pr_credit_offert')} — {t('pr_bonus_regle')}
+            </div>
+          )}
 
-                  {/* Divider */}
-                  <div style={{ width: 40, height: 2, background: '#E5E5E5', margin: '14px auto' }} />
-
-                  {/* Projects */}
-                  <div style={{ fontSize: 14, color: '#333', fontWeight: 600, marginBottom: 6 }}>
-                    {isEnterprise ? t('pr_projets_illimites') : `${plan.projets} ${plan.projets > 1 ? t('pr_projets_plural') : t('pr_projet_single')}`}
-                  </div>
-
-                  {/* Per project price */}
-                  {plan.prixParProjet && (
-                    <div style={{ fontSize: 11, color: '#888', marginBottom: 8 }}>
-                      {formatFCFA(plan.prixParProjet)} / {t('pr_par_projet')}
-                    </div>
-                  )}
-
-                  {/* Extra credits note */}
-                  {plan.extra && (
-                    <div style={{
-                      fontSize: 11, color: VERT, fontWeight: 600,
-                      background: '#F0FFF4', borderRadius: 6, padding: '6px 10px', marginTop: 8,
-                    }}>
-                      {t('pr_extra_credit')}
-                    </div>
-                  )}
-
-                  {/* Enterprise features */}
-                  {isEnterprise && (
-                    <div style={{ fontSize: 12, color: '#666', lineHeight: 1.7, marginTop: 8 }}>
-                      {t('pr_enterprise_features')}
-                    </div>
-                  )}
-
-                  {/* CTA button */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handlePay(plan) }}
-                    disabled={payLoading && selected}
-                    style={{
-                      marginTop: 18, width: '100%',
-                      background: selected ? (isEnterprise ? NAVY : VERT) : '#fff',
-                      color: selected ? '#fff' : NAVY,
-                      border: selected ? 'none' : `1.5px solid ${NAVY}`,
-                      borderRadius: 8, padding: '11px 0', fontSize: 14, fontWeight: 700,
-                      cursor: payLoading ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {isEnterprise ? t('pr_contact') : (payLoading && selected ? t('pr_redirection') : t('pr_souscrire'))}
-                  </button>
-                </div>
+          {/* Récap */}
+          <div style={{
+            background: '#F7F8FA',
+            borderRadius: 10,
+            padding: '14px 16px',
+            fontSize: 13, color: '#444',
+            marginBottom: 20,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span>{t('pr_credits_achetes')}</span>
+              <span style={{ fontWeight: 600, color: NAVY }}>{qty}</span>
+            </div>
+            {bonus > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, color: VERT }}>
+                <span>{t('pr_credits_bonus')}</span>
+                <span style={{ fontWeight: 700 }}>+{bonus}</span>
               </div>
-            )
-          })}
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, paddingTop: 6, borderTop: '1px dashed #D0D0D0' }}>
+              <span style={{ fontWeight: 700, color: NAVY }}>{t('pr_credits_recus')}</span>
+              <span style={{ fontWeight: 800, color: NAVY }}>{totalCredits}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#888', marginTop: 10 }}>
+              <span>{t('pr_montant_ht')}</span>
+              <span>{formatFCFA(totalHT)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#888' }}>
+              <span>{t('pr_tva_18')}</span>
+              <span>{formatFCFA(totalTVA)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, fontWeight: 800, color: NAVY, marginTop: 6, paddingTop: 6, borderTop: '1px solid #D0D0D0' }}>
+              <span>{t('pr_total_ttc')}</span>
+              <span>{formatFCFA(totalTTC)}</span>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={handlePay}
+            disabled={payLoading}
+            style={{
+              width: '100%',
+              background: VERT,
+              color: '#fff',
+              border: 'none',
+              borderRadius: 10,
+              padding: '14px 0',
+              fontSize: 15, fontWeight: 700,
+              cursor: payLoading ? 'not-allowed' : 'pointer',
+              opacity: payLoading ? 0.7 : 1,
+            }}
+          >
+            {payLoading ? t('pr_redirection') : t('pr_souscrire')}
+          </button>
+
+          <div style={{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 10 }}>
+            {t('pr_moyens')}
+          </div>
         </div>
 
-        {/* Inclus dans chaque plan */}
+        {/* Inclus dans chaque crédit */}
         <div style={{
           background: '#fff', border: '0.5px solid #E5E5E5',
           borderRadius: 12, padding: '24px', marginBottom: 32,
@@ -237,7 +240,7 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Services premium */}
+        {/* Services premium — bientôt */}
         <div style={{
           background: NAVY, borderRadius: 14, padding: '28px 24px', color: '#fff',
         }}>
@@ -283,9 +286,9 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Payment methods */}
-        <div style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: '#999' }}>
-          {t('pr_moyens')}
+        {/* Enterprise contact */}
+        <div style={{ textAlign: 'center', marginTop: 32, fontSize: 13, color: '#666' }}>
+          {t('pr_enterprise_line')} <a href="mailto:malicktall@gmail.com?subject=Tijan Enterprise" style={{ color: VERT, fontWeight: 600, textDecoration: 'none' }}>malicktall@gmail.com</a>
         </div>
 
       </div>

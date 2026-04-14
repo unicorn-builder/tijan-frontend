@@ -55,7 +55,11 @@ export function useCredits() {
     return false
   }
 
+  // ajouter(nb) — nb est le total de crédits à créditer (bonus déjà inclus côté appelant).
+  // Ex : Pricing.jsx envoie `totalCredits = qty + Math.floor(qty/5)` au backend,
+  // puis PaymentSuccess lit ?credits=totalCredits et appelle ajouter(totalCredits).
   const ajouter = async (nb) => {
+    if (!credits) return false
     const { error } = await supabase
       .from('credits')
       .update({ total: credits.total + nb, updated_at: new Date().toISOString() })

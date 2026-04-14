@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCredits } from '../hooks/useCredits'
+import { useLang } from '../i18n.jsx'
 import { VERT } from '../constants'
 
 const NAVY = '#1B2A4A'
@@ -10,6 +11,7 @@ export default function PaymentSuccess() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { ajouter, restants, loading } = useCredits()
+  const { lang } = useLang()
   const [done, setDone] = useState(false)
   const credits = parseInt(searchParams.get('credits')) || 0
 

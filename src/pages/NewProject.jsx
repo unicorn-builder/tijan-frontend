@@ -39,6 +39,23 @@ export default function NewProject() {
   const loading = step === 'uploading' || step === 'calculating'
   const loadingText = step === 'uploading' ? (parseProgress || t('np_uploading')) : t('np_calculating')
   const [creditWarningShown, setCreditWarningShown] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  function prepareLancer() {
+    // Same up-front validations as lancer() so we don't open the modal if the form is invalid
+    if (!nom.trim()) { setErrorMsg(t('np_err_nom')); return }
+    if (!ville.trim()) { setErrorMsg(t('np_err_ville')); return }
+    if (!mainFile) { setErrorMsg(t('np_err_plans')); return }
+    if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
+    if (!nbLogements || parseInt(nbLogements) < 1) { setErrorMsg(t('np_err_logements')); return }
+    if (restants < 1) {
+      setErrorMsg(t('np_credits_insufficient'))
+      setTimeout(() => navigate('/pricing'), 1500)
+      return
+    }
+    setErrorMsg('')
+    setShowConfirm(true)
+  }
 
   async function lancer() {
     if (!nom.trim()) { setErrorMsg(t('np_err_nom')); return }
@@ -47,8 +64,8 @@ export default function NewProject() {
     if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
     if (!nbLogements || parseInt(nbLogements) < 1) { setErrorMsg(t('np_err_logements')); return }
 
-    // Check if user has sufficient credits (2 required)
-    if (restants < 2) {
+    // Check if user has sufficient credits (1 required)
+    if (restants < 1) {
       setErrorMsg(t('np_credits_insufficient'))
       if (!creditWarningShown) {
         setCreditWarningShown(true)
@@ -196,12 +213,17 @@ export default function NewProject() {
           setStep('error'); setErrorMsg(`${t('np_err_save')} (RLS)`); return
         }
         projectId = saved.id
-        // Consommer 2 crédits seulement après sauvegarde réussie
+        // Consommer 1 crédit — si la décrémentation échoue, rollback du projet.
+        // Pas de fallback silencieux : un projet sans crédit est un trou de caisse.
         if (consommer) {
-          const ok = await consommer(2)
-          if (!ok && restants <= 0) {
-            // Credit failed but project is saved — user can still access it
-            console.warn('Credit deduction failed, project saved anyway')
+          const ok = await consommer(1)
+          if (!ok) {
+            console.error('Credit deduction failed — rolling back project', projectId)
+            await supabase.from('projets').delete().eq('id', projectId)
+            setStep('error')
+            setErrorMsg(t('np_credits_insufficient'))
+            setTimeout(() => navigate('/pricing'), 2000)
+            return
           }
         }
         // Persist archi PDF to Supabase Storage + geometry to projets row
@@ -360,7 +382,7 @@ export default function NewProject() {
 
             {errorMsg && <div style={{ fontSize: 12, color: '#888', textAlign: 'center' }}>{errorMsg}</div>}
 
-            <button onClick={lancer} style={{ width: '100%', padding: 13, background: VERT, color: '#fff', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={prepareLancer} style={{ width: '100%', padding: 13, background: VERT, color: '#fff', border: 'none', borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
               {t('np_lancer')}
             </button>
             <div style={{ fontSize: 11, color: '#aaa', textAlign: 'center' }}>{t('np_disclaimer')}</div>
@@ -371,6 +393,27 @@ export default function NewProject() {
           <div style={{ textAlign: 'center', paddingTop: 40 }}>
             <div style={{ width: 36, height: 36, border: `3px solid ${GRIS2}`, borderTop: `3px solid ${VERT}`, borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 20px' }} />
             <div style={{ fontSize: 14, color: '#555' }}>{loadingText}</div>
+          </div>
+        )}
+
+        {showConfirm && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+            <div style={{ background: '#fff', borderRadius: 14, padding: '28px 26px', maxWidth: 420, width: '90%', boxShadow: '0 10px 40px rgba(0,0,0,0.15)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#1B2A4A', marginBottom: 10 }}>
+                {t('np_confirm_title')}
+              </div>
+              <div style={{ fontSize: 14, color: '#444', lineHeight: 1.55, marginBottom: 18 }}>
+                {t('np_confirm_body_1')} <strong>1 {t('pr_credit')}</strong>. {t('np_confirm_body_2')} <strong>{Math.max(restants - 1, 0)}</strong>.
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setShowConfirm(false)} style={{ flex: 1, padding: 12, background: '#fff', color: '#1B2A4A', border: '1.5px solid #1B2A4A', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                  {t('np_confirm_cancel')}
+                </button>
+                <button onClick={() => { setShowConfirm(false); lancer() }} style={{ flex: 1, padding: 12, background: VERT, color: '#fff', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+                  {t('np_confirm_ok')}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
