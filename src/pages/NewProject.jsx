@@ -418,8 +418,23 @@ export default function NewProject() {
         )}
 
         {step === 'error' && (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 14, color: '#555', marginBottom: 20 }}>{errorMsg}</div>
+          <div style={{ textAlign: 'center', maxWidth: 520, margin: '0 auto' }}>
+            <div style={{ fontSize: 15, color: '#111', fontWeight: 600, marginBottom: 10 }}>{t('np_err_titre')}</div>
+            <div style={{ fontSize: 13, color: '#555', marginBottom: 18 }}>{errorMsg}</div>
+            <div style={{
+              background: '#F7F8FA', border: '0.5px solid #E5E5E5', borderRadius: 10,
+              padding: '16px 18px', fontSize: 13, color: '#333', textAlign: 'left',
+              marginBottom: 20, lineHeight: 1.55,
+            }}>
+              <div style={{ fontWeight: 600, color: '#1B2A4A', marginBottom: 6 }}>{t('np_err_support_titre')}</div>
+              <div>{t('np_err_support_body')}</div>
+              <div style={{ marginTop: 8 }}>
+                ✉️ <a href="mailto:malick@cepic.holdings" style={{ color: VERT, textDecoration: 'none', fontWeight: 600 }}>malick@cepic.holdings</a>
+              </div>
+              <div style={{ marginTop: 4 }}>
+                💬 <a href="https://wa.me/221755500000" target="_blank" rel="noopener noreferrer" style={{ color: VERT, textDecoration: 'none', fontWeight: 600 }}>WhatsApp +221 75 550 00 00</a>
+              </div>
+            </div>
             <button onClick={() => { setStep('form'); setErrorMsg('') }} style={{ padding: '10px 28px', background: VERT, color: '#fff', border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>{t('np_reessayer')}</button>
           </div>
         )}

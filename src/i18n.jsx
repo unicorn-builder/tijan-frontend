@@ -82,6 +82,10 @@ const T = {
   login_already_registered: { fr: 'Cet email est déjà utilisé.', en: 'This email is already registered.' },
   signup_success: { fr: 'Compte créé ! Vérifiez votre email pour confirmer votre inscription.', en: 'Account created! Check your email to confirm.' },
   signup_nom_required: { fr: 'Veuillez entrer votre nom.', en: 'Please enter your name.' },
+  signup_cgu_required: { fr: "Vous devez accepter les Conditions Générales d'Utilisation pour continuer.", en: 'You must accept the Terms of Service to continue.' },
+  signup_cgu_label_1: { fr: "J'accepte les", en: 'I accept the' },
+  signup_cgu_link: { fr: "Conditions Générales d'Utilisation", en: 'Terms of Service' },
+  signup_cgu_label_2: { fr: 'et reconnais que Tijan AI fournit des estimations d\'ingénierie (±15%) qui nécessitent une validation par un bureau d\'études agréé avant exécution.', en: 'and acknowledge that Tijan AI provides engineering estimates (±15%) that require validation by a certified engineering firm before execution.' },
   signup_password_short: { fr: 'Le mot de passe doit contenir au moins 6 caractères.', en: 'Password must be at least 6 characters.' },
 
   // DASHBOARD
@@ -131,6 +135,9 @@ const T = {
   np_confirm_body_2: { fr: 'Il vous restera ensuite', en: 'You will then have' },
   np_confirm_ok: { fr: 'Lancer et débiter', en: 'Launch and charge' },
   np_confirm_cancel: { fr: 'Annuler', en: 'Cancel' },
+  np_err_titre: { fr: "Une erreur est survenue", en: 'An error occurred' },
+  np_err_support_titre: { fr: "Contactez le support", en: 'Contact support' },
+  np_err_support_body: { fr: "Notre back-office traitera votre demande et procèdera au remboursement du crédit si applicable.", en: 'Our back-office will handle your request and process the credit refund if applicable.' },
   np_buy_credits: { fr: 'Acheter des crédits', en: 'Buy credits' },
   np_err_connexion: { fr: 'Erreur de connexion.', en: 'Connection error.' },
   np_err_save: { fr: 'Erreur lors de la sauvegarde du projet. Veuillez réessayer.', en: 'Failed to save project. Please try again.' },
@@ -247,6 +254,7 @@ const T = {
   r_cout_bas: { fr: 'COÛT STRUCTURE (BAS)', en: 'STRUCTURAL COST (LOW)' },
   r_cout_haut: { fr: 'COÛT STRUCTURE (HAUT)', en: 'STRUCTURAL COST (HIGH)' },
   r_cout_m2: { fr: 'COÛT / m² BÂTI', en: 'COST / m² BUILT' },
+  r_boq_mep_m2: { fr: 'COÛT MEP / m² BÂTI', en: 'MEP COST / m² BUILT' },
   r_structure_seule: { fr: 'Structure seule', en: 'Structure only' },
   r_estimation_note: { fr: 'Estimation ±15% — BOQ détaillé disponible en téléchargement.', en: 'Estimate ±15% — Detailed BOQ available for download.' },
   r_mep_loading: { fr: 'Calcul MEP en cours...', en: 'MEP calculation in progress...' },
@@ -349,6 +357,7 @@ const T = {
   pr_incl_boq_mep: { fr: 'BOQ MEP 3 gammes', en: 'MEP BOQ 3 tiers' },
   pr_incl_plans_ba: { fr: "Plans d'exécution BA", en: 'RC execution drawings' },
   pr_incl_plans_mep: { fr: 'Plans MEP', en: 'MEP drawings' },
+  pr_incl_schemas_mep: { fr: 'Schémas isométriques MEP', en: 'MEP isometric schematics' },
   pr_incl_edge: { fr: 'Conformité EDGE IFC', en: 'EDGE IFC compliance' },
   pr_incl_rapport: { fr: 'Rapport exécutif', en: 'Executive report' },
   pr_extras_section: { fr: 'SERVICES PREMIUM', en: 'PREMIUM SERVICES' },
@@ -378,6 +387,19 @@ const T = {
   pr_tva_18: { fr: 'TVA 18% (Sénégal)', en: 'VAT 18% (Senegal)' },
   pr_total_ttc: { fr: 'Total TTC', en: 'Total incl. VAT' },
   pr_enterprise_line: { fr: 'Besoin de projets illimités, API ou intégration sur mesure ? Écrivez à', en: 'Need unlimited projects, API, or custom integration? Email' },
+
+  // CREDITS HISTORY
+  ch_titre: { fr: 'Mes crédits', en: 'My credits' },
+  ch_desc: { fr: 'Historique de vos achats et consommations de crédits Tijan.', en: 'History of your Tijan credit purchases and usage.' },
+  ch_acheter: { fr: 'Acheter des crédits', en: 'Buy credits' },
+  ch_kpi_disponibles: { fr: 'DISPONIBLES', en: 'AVAILABLE' },
+  ch_kpi_achetes: { fr: 'TOTAL REÇUS', en: 'TOTAL RECEIVED' },
+  ch_kpi_utilises: { fr: 'UTILISÉS', en: 'USED' },
+  ch_kpi_depense: { fr: 'DÉPENSÉ', en: 'SPENT' },
+  ch_historique: { fr: 'Historique', en: 'History' },
+  ch_chargement: { fr: 'Chargement...', en: 'Loading...' },
+  ch_vide: { fr: "Aucune transaction pour le moment. Achetez des crédits pour commencer.", en: 'No transactions yet. Purchase credits to start.' },
+  ch_support: { fr: 'Question sur vos crédits ?', en: 'Question about your credits?' },
 
   // CHAT
   chat_titre: { fr: 'Votre partenaire ingénierie sur', en: 'Your engineering partner on' },

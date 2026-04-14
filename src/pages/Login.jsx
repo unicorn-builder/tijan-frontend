@@ -19,6 +19,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [acceptCGU, setAcceptCGU] = useState(false)
 
   const { signIn, signUp, supabase } = useAuth()
   const { t } = useLang()
@@ -45,6 +46,7 @@ export default function Login() {
       } else {
         if (!nom.trim()) throw new Error(t('signup_nom_required'))
         if (password.length < 6) throw new Error(t('signup_password_short'))
+        if (!acceptCGU) throw new Error(t('signup_cgu_required'))
         const { error } = await signUp(email, password, nom)
         if (error) throw error
         setSuccess(t('signup_success'))
@@ -183,6 +185,24 @@ export default function Login() {
             </div>
           )}
 
+          {mode === 'signup' && (
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#444', marginBottom: 14, cursor: 'pointer', lineHeight: 1.5 }}>
+              <input
+                type="checkbox"
+                checked={acceptCGU}
+                onChange={e => setAcceptCGU(e.target.checked)}
+                style={{ marginTop: 3, cursor: 'pointer' }}
+              />
+              <span>
+                {t('signup_cgu_label_1')}{' '}
+                <a href="/cgu" target="_blank" rel="noopener noreferrer" style={{ color: VERT, fontWeight: 600, textDecoration: 'underline' }}>
+                  {t('signup_cgu_link')}
+                </a>
+                {' '}{t('signup_cgu_label_2')}
+              </span>
+            </label>
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -205,7 +225,7 @@ export default function Login() {
               background: 'none', border: 'none', color: VERT,
               fontWeight: 600, cursor: 'pointer', fontSize: 12,
             }}>
-              Créer un compte
+              {t('login_create')}
             </button>
           </div>
         )}

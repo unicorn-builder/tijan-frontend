@@ -386,11 +386,11 @@ export default function Results() {
           <Card>
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>COÛT STRUCTURE (BAS)</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_bas')}</div>
                 <div style={{ fontSize: 22, fontWeight: 700, color: '#111' }}>{fmtFcfa(boq.total_bas_fcfa, deviseInfo)}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: GRIS3 }}>COÛT STRUCTURE (HAUT)</div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_haut')}</div>
                 <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(boq.total_haut_fcfa, deviseInfo)}</div>
               </div>
               <div>
@@ -411,12 +411,12 @@ export default function Results() {
 
     // ── MEP chargement (sauf plan-mep qui génère son propre calcul côté backend) ──
     if (MEP_TABS.includes(activeTab) && activeTab !== 'plan-mep') {
-      if (mepLoading) return <Spinner text="Calcul MEP en cours..." />
+      if (mepLoading) return <Spinner text={t('r_mep_loading')} />
       if (mepError || !mepData?.ok) return (
         <div style={{ textAlign: 'center', padding: 60, color: GRIS3 }}>
           <div style={{ fontSize: 13, marginBottom: 12 }}>{t('r_mep_non_dispo')}</div>
           <button onClick={() => { setMepError(false); setMepData(null) }} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '8px 20px', fontSize: 12 }}>
-            Réessayer
+            {t('r_reessayer')}
           </button>
         </div>
       )
@@ -493,13 +493,13 @@ export default function Results() {
               ))}
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${GRIS2}` }}>
-              <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>COÛT MEP / m² BÂTI</div>
+              <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_boq_mep_m2')}</div>
               <div style={{ fontWeight: 600 }}>{fmt(ratio_b)} — {fmt(ratio_h)} {deviseInfo?.symbole || 'FCFA'}/m² <span style={{ fontSize: 11, color: GRIS3 }}>(basic → high-end)</span></div>
-              <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }}>Détail complet disponible dans le PDF</div>
+              <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }}>{t('r_detail_pdf')}</div>
             </div>
             {boqm.recommandation && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: VERT_LIGHT, borderRadius: 6, fontSize: 12, color: '#2d7a3a' }}>
-                <strong>Recommandation :</strong> {boqm.recommandation}
+                <strong>{t('r_recommandation')} :</strong> {boqm.recommandation}
               </div>
             )}
           </Card>
@@ -584,20 +584,20 @@ export default function Results() {
                   <div key={label} style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 11, color: '#555' }}>{label}</div>
                     <div style={{ fontSize: 22, fontWeight: 700, color: val >= 20 ? '#43A956' : '#E07B00' }}>{val}%</div>
-                    <div style={{ fontSize: 10, color: '#888' }}>Seuil : 20%</div>
+                    <div style={{ fontSize: 10, color: '#888' }}>{t('r_seuil_edge')}</div>
                   </div>
                 ))}
               </div>
               {edgeOptimise.surcout_edge && (
                 <div style={{ fontSize: 12, color: '#555', borderTop: '1px solid #C8E6C9', paddingTop: 10 }}>
-                  <strong>Surcoût d'optimisation :</strong>{' '}
+                  <strong>{t('r_surcout')} :</strong>{' '}
                   {fmtFcfa(edgeOptimise.surcout_edge.total_fcfa, deviseInfo)}
                   {' '}({edgeOptimise.surcout_edge.pct_boq_mep}% du BOQ MEP Basic)
                   <div style={{ marginTop: 4, fontSize: 11, color: '#888' }}>
-                    LED {(edgeOptimise.surcout_edge.led_fcfa/1e6).toFixed(1)}M +
-                    Isolation {(edgeOptimise.surcout_edge.isolation_fcfa/1e6).toFixed(1)}M +
-                    WC éco {(edgeOptimise.surcout_edge.wc_fcfa/1e3).toFixed(0)}k +
-                    Robinetterie {fmtFcfa(edgeOptimise.surcout_edge.robinetterie_fcfa, deviseInfo)}
+                    {lang === 'en' ? 'LED' : 'LED'} {(edgeOptimise.surcout_edge.led_fcfa/1e6).toFixed(1)}M +
+                    {lang === 'en' ? 'Insulation' : 'Isolation'} {(edgeOptimise.surcout_edge.isolation_fcfa/1e6).toFixed(1)}M +
+                    {lang === 'en' ? 'Eco WC' : 'WC éco'} {(edgeOptimise.surcout_edge.wc_fcfa/1e3).toFixed(0)}k +
+                    {lang === 'en' ? 'Faucets' : 'Robinetterie'} {fmtFcfa(edgeOptimise.surcout_edge.robinetterie_fcfa, deviseInfo)}
                   </div>
                 </div>
               )}

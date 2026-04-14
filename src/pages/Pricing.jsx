@@ -230,6 +230,7 @@ export default function Pricing() {
               { icon: '📊', label: t('pr_incl_boq_mep') },
               { icon: '🏗️', label: t('pr_incl_plans_ba') },
               { icon: '📐', label: t('pr_incl_plans_mep') },
+              { icon: '🔀', label: t('pr_incl_schemas_mep') },
               { icon: '🌱', label: t('pr_incl_edge') },
               { icon: '📋', label: t('pr_incl_rapport') },
             ].map((item, i) => (

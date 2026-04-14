@@ -98,10 +98,10 @@ export default function Dashboard() {
             <div style={{ fontSize: 13, color: GRIS3, marginBottom: 24 }}>
               {t('dash_creer_desc')}
             </div>
-            <button onClick={() => navigate('/pricing')} style={{
+            <button onClick={() => navigate('/credits')} style={{
               background: '#F0FFF4', color: VERT, border: '1px solid ' + VERT,
               borderRadius: 6, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            }}>{restants ?? '...'} {lang === 'en' ? 'credits' : 'crédit'}{restants !== 1 ? 's' : ''} · {lang === 'en' ? 'Buy' : 'Acheter'}</button>
+            }}>{restants ?? '...'} {lang === 'en' ? 'credits' : 'crédit'}{restants !== 1 ? 's' : ''} · {lang === 'en' ? 'History' : 'Historique'}</button>
             <button onClick={() => navigate('/projects/new')} style={{
               background: VERT, color: '#fff', border: 'none',
               borderRadius: 8, padding: '12px 28px', fontSize: 14,
@@ -189,14 +189,14 @@ export default function Dashboard() {
                 background: GRIS1, border: `1px solid ${GRIS2}`, borderRadius: 7,
                 padding: '9px 20px', fontSize: 13, cursor: 'pointer',
               }}>
-                Annuler
+                {t('dash_annuler')}
               </button>
               <button onClick={() => handleDelete(confirmDelete)} style={{
                 background: '#DC2626', color: '#fff', border: 'none',
                 borderRadius: 7, padding: '9px 20px', fontSize: 13,
                 fontWeight: 700, cursor: 'pointer',
               }}>
-                Supprimer
+                {t('dash_supprimer')}
               </button>
             </div>
           </div>

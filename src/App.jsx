@@ -11,6 +11,8 @@ import Pricing from './pages/Pricing'
 import PaymentSuccess from './pages/PaymentSuccess'
 import Impact from './pages/Impact'
 import Investors from './pages/Investors'
+import CGU from './pages/CGU'
+import CreditsHistory from './pages/CreditsHistory'
 
 const MobileStyles = () => (
   <style>{`
@@ -40,6 +42,8 @@ export default function App() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
           <Route path="/projects/:id/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
+          <Route path="/cgu" element={<CGU />} />
+          <Route path="/credits" element={<ProtectedRoute><CreditsHistory /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
