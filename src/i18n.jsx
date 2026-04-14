@@ -407,8 +407,10 @@ const T = {
   chat_disclaimer: { fr: 'Tijan vous accompagne dans vos décisions. Estimations ±15% — validation BET requise avant travaux.', en: 'Tijan supports your decisions. Estimates ±15% — engineering firm validation required before construction.' },
   chat_signaler: { fr: 'Signaler un problème', en: 'Report a problem' },
   chat_contacter: { fr: "Contacter l'équipe", en: 'Contact the team' },
-  chat_placeholder: { fr: 'Posez votre question sur ce projet...', en: 'Ask your question about this project...' },
+  chat_placeholder: { fr: 'Posez votre question sur ce projet... (Entrée pour envoyer)', en: 'Ask your question about this project... (Enter to send)' },
   chat_erreur: { fr: 'Impossible de joindre Tijan AI. Vérifiez votre connexion.', en: 'Unable to reach Tijan AI. Check your connection.' },
+  chat_suggestions: { fr: 'Suggestions :', en: 'Suggestions:' },
+  chat_recalc: { fr: '✅ Études mises à jour avec les nouveaux paramètres.', en: '✅ Studies updated with new parameters.' },
 
   // IMPACT PAGE — Environmental & Safety Focus
   impact_hero_title: { fr: 'Construire Durable, Construire Sûr', en: 'Build Sustainable, Build Safe' },

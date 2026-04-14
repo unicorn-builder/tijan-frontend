@@ -59,7 +59,9 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
   const { t, lang } = useLang()
   const defaultMsg = [{
     role: 'assistant',
-    content: `Salut ! 👋 Je suis Tijan, votre partenaire ingénierie sur **${params?.nom || 'votre projet'}**.\n\nJ'ai analysé votre projet en détail — structure, MEP, coûts, certification EDGE. N'hésitez pas à me poser toutes vos questions, même les plus pointues. Je suis là pour vous aider à prendre les meilleures décisions pour votre projet.`,
+    content: lang === 'en'
+      ? `Hi! 👋 I'm Tijan, your engineering partner on **${params?.nom || 'your project'}**.\n\nI've analyzed your project in detail — structure, MEP, costs, EDGE certification. Feel free to ask me any questions. I'm here to help you make the best decisions for your project.`
+      : `Salut ! 👋 Je suis Tijan, votre partenaire ingénierie sur **${params?.nom || 'votre projet'}**.\n\nJ'ai analysé votre projet en détail — structure, MEP, coûts, certification EDGE. N'hésitez pas à me poser toutes vos questions, même les plus pointues. Je suis là pour vous aider à prendre les meilleures décisions pour votre projet.`,
   }]
   const [messages, setMessages] = useState(savedChat?.length > 0 ? savedChat : defaultMsg)
   const [input, setInput] = useState('')
@@ -88,6 +90,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
           params: params || {},
           resultats_structure: resultatsStructure || {},
           resultats_mep: resultatsMep || null,
+          lang: lang,
         }),
       })
       const data = await res.json()
@@ -96,7 +99,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
 
         // Backend already handles <MODIF> and returns recalcul results
         if (data.recalcul && data.updated_resultats) {
-          reponseText = (lang === 'en' ? '✅ Studies updated with new parameters.\n\n' : '✅ Études mises à jour avec les nouveaux paramètres.\n\n') + reponseText
+          reponseText = (t('chat_recalc') + '\n\n') + reponseText
         }
 
         const updated = [...newMessages, { role: 'assistant', content: reponseText }]
@@ -116,10 +119,10 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
             .then(() => {})
         }
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: "Une erreur s'est produite. Réessayez." }])
+        setMessages(prev => [...prev, { role: 'assistant', content: lang === 'en' ? 'An error occurred. Please try again.' : "Une erreur s'est produite. Réessayez." }])
       }
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: "{t('chat_erreur')}" }])
+      setMessages(prev => [...prev, { role: 'assistant', content: t('chat_erreur') }])
     } finally {
       setLoading(false)
     }
@@ -144,10 +147,10 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       }}>
         <div style={{ width: 8, height: 8, borderRadius: '50%', background: VERT }} />
         <span style={{ fontSize: 12, color: VERT, fontWeight: 600 }}>
-          Tijan — {t('chat_titre')} {params?.nom || 'votre projet'}
+          Tijan — {t('chat_titre')} {params?.nom || (lang === 'en' ? 'your project' : 'votre projet')}
         </span>
         <span style={{ fontSize: 11, color: GRIS3, marginLeft: 'auto' }}>
-          {lang === "en" ? "Project analyzed ✓" : "Projet analysé ✓"}
+          {t('chat_charge')}
         </span>
       </div>
 
@@ -176,7 +179,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
       {/* Suggestions */}
       {messages.length <= 2 && (
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 11, color: GRIS3, marginBottom: 6 }}>{lang === "en" ? "Suggestions:" : "Suggestions :"}</div>
+          <div style={{ fontSize: 11, color: GRIS3, marginBottom: 6 }}>{t('chat_suggestions')}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {(lang === 'en' ? SUGGESTIONS_EN : SUGGESTIONS_FR).slice(0, 4).map((s, i) => (
               <button key={i} onClick={() => envoyer(s)} style={{
@@ -195,7 +198,7 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKey}
-          placeholder={lang === "en" ? "Ask about your project... (Enter to send)" : "Posez une question sur votre projet... (Entrée pour envoyer)"}
+          placeholder={t('chat_placeholder')}
           rows={2}
           style={{
             flex: 1, border: `1px solid ${GRIS2}`, borderRadius: 8,
