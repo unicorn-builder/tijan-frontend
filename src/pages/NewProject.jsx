@@ -294,7 +294,19 @@ export default function NewProject() {
           }
           // Save extracted geometry (compact: only walls + rooms + axes per level)
           if (dwgGeometry && typeof dwgGeometry === 'object') {
-            extras.dwg_geometry = dwgGeometry
+            // Compact: drop heavy CV intermediate metadata to stay under
+            // Supabase row-update payload limits.
+            const _compactGeom = (g) => {
+              if (!g || typeof g !== 'object') return g
+              const { _cv_meta, ...lean } = g
+              return { ...lean,
+                ...(g._cv_meta ? { _cv_meta: { quality: g._cv_meta.quality, source_page_idx: g._cv_meta.source_page_idx } } : {}),
+              }
+            }
+            const compact = ('walls' in dwgGeometry)
+              ? _compactGeom(dwgGeometry)
+              : Object.fromEntries(Object.entries(dwgGeometry).map(([k, g]) => [k, _compactGeom(g)]))
+            extras.dwg_geometry = compact
           }
           // Save EDGE optional inputs as jsonb blob
           const edgeExtras = {}
@@ -309,8 +321,19 @@ export default function NewProject() {
           if (payload.typologies) edgeExtras.typologies = payload.typologies
           if (Object.keys(edgeExtras).length > 0) extras.edge_extras = edgeExtras
           if (Object.keys(extras).length > 0) {
-            const { error: updErr } = await supabase.from('projets').update(extras).eq('id', projectId)
-            if (updErr) console.warn('Update extras failed:', updErr.message, updErr.code)
+            const payloadSize = new Blob([JSON.stringify(extras)]).size
+            console.log('[NewProject] persist extras', { projectId, keys: Object.keys(extras), bytes: payloadSize })
+            const { error: updErr, data: updData } = await supabase
+              .from('projets').update(extras).eq('id', projectId)
+              .select('id, dwg_geometry, archi_pdf_url').maybeSingle()
+            if (updErr) {
+              console.error('[NewProject] persist FAILED', updErr.message, updErr.code, updErr.details, updErr.hint)
+            } else if (!updData) {
+              console.error('[NewProject] persist returned no row — RLS likely blocking UPDATE for project', projectId)
+            } else {
+              const persistedLevels = updData.dwg_geometry ? Object.keys(updData.dwg_geometry) : []
+              console.log('[NewProject] persisted ✓', { levels: persistedLevels, archi_pdf_url: !!updData.archi_pdf_url })
+            }
           }
         } catch (e) {
           console.warn('Non-critical: failed to persist geometry/PDF', e)

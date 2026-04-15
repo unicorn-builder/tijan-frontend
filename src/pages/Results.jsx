@@ -184,12 +184,43 @@ function DwgLevelsManager({ dwgGeometry, setDwgGeometry, supabase, projectId, la
         }
       }
       const newGeom = result?.dwg_geometry || {}
-      const merged = { ...(dwgGeometry || {}), ...newGeom }
-      setDwgGeometry(merged)
-      if (supabase && projectId) {
-        await supabase.from('projets').update({ dwg_geometry: merged }).eq('id', projectId)
+      // If backend returned a flat geometry (single-page PDF, no level dict),
+      // wrap it under the first explicit level the user picked.
+      const newGeomDict = ('walls' in newGeom)
+        ? { [levels[0] || 'RDC']: newGeom }
+        : newGeom
+      const merged = { ...(dwgGeometry || {}), ...newGeomDict }
+      // Strip heavy debug metadata so the row stays under Supabase update limits.
+      const compact = {}
+      for (const [k, g] of Object.entries(merged)) {
+        if (!g || typeof g !== 'object') continue
+        const { _cv_meta, ...lean } = g
+        compact[k] = { ...lean,
+          ...(g._cv_meta ? { _cv_meta: { quality: g._cv_meta.quality, source_page_idx: g._cv_meta.source_page_idx } } : {})
+        }
       }
-      setMsg(lang === 'en' ? `Added ${Object.keys(newGeom).length} level(s) ✓` : `${Object.keys(newGeom).length} niveau(x) ajoutés ✓`)
+      setDwgGeometry(compact)
+      if (supabase && projectId) {
+        const payloadSize = new Blob([JSON.stringify(compact)]).size
+        console.log('[DwgLevelsManager] persist', { projectId, levels: Object.keys(compact), bytes: payloadSize })
+        const { error: updErr, data: updData } = await supabase
+          .from('projets').update({ dwg_geometry: compact })
+          .eq('id', projectId).select('id, dwg_geometry').maybeSingle()
+        if (updErr) {
+          console.error('[DwgLevelsManager] update FAILED', updErr)
+          throw new Error(`save: ${updErr.message || updErr.code || 'unknown'}`)
+        }
+        if (!updData) {
+          // RLS silently refused the update — the row exists for SELECT but not UPDATE
+          console.error('[DwgLevelsManager] update returned no row — RLS likely blocking UPDATE for', projectId)
+          throw new Error(lang === 'en' ? 'save blocked (RLS — check projets UPDATE policy)' : 'sauvegarde bloquée (RLS — vérifier policy UPDATE projets)')
+        }
+        const persistedKeys = Object.keys(updData.dwg_geometry || {})
+        console.log('[DwgLevelsManager] persisted ✓', persistedKeys)
+      }
+      setMsg((lang === 'en'
+        ? `Added ${Object.keys(newGeomDict).length} level(s) — total ${Object.keys(compact).length} ✓`
+        : `${Object.keys(newGeomDict).length} niveau(x) ajoutés — total ${Object.keys(compact).length} ✓`))
       setFiles([]); setLevels([])
     } catch (e) {
       setMsg((lang === 'en' ? 'Error: ' : 'Erreur : ') + (e.message || 'parse failed'))
