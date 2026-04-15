@@ -15,14 +15,14 @@ export default function Header() {
   return (
     <nav style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 10px', minHeight: 56, flexWrap: 'wrap', gap: 8, borderBottom: '0.5px solid #E5E5E5',
+      padding: '0 14px', minHeight: 64, flexWrap: 'wrap', gap: 10, borderBottom: '0.5px solid #E5E5E5',
       background: '#fff', position: 'sticky', top: 0, zIndex: 100,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <img
           src="/tijan_logo_crop.png" alt="Tijan AI"
           onClick={() => navigate('/')}
-          style={{ height: 24, cursor: 'pointer' }}
+          style={{ height: 40, cursor: 'pointer', display: 'block' }}
         />
         <button onClick={() => navigate('/impact')} style={{
           background: 'none', border: 'none', fontSize: 13, color: '#555', cursor: 'pointer', fontWeight: 500,

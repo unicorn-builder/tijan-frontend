@@ -171,7 +171,12 @@ function DwgLevelsManager({ dwgGeometry, setDwgGeometry, supabase, projectId, la
       for (const f of files) form.append('files', f)
       for (const lv of levels) form.append('levels', lv || '')
       const r = await fetch(`${BACKEND}/parse-multi`, { method: 'POST', body: form })
-      const d = await r.json()
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok) {
+        const detail = d?.errors ? JSON.stringify(d.errors) : (d?.detail || r.statusText)
+        console.error('[DwgLevelsManager] parse-multi HTTP', r.status, detail, d)
+        throw new Error(`parse-multi ${r.status}: ${detail}`.slice(0, 240))
+      }
       let result = d
       if (d?.ok && d.async && d.job_id) {
         for (let i = 0; i < 240; i++) {
@@ -1041,7 +1046,7 @@ export default function Results() {
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 6 : 16 }}>
           <button onClick={() => navigate('/')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: '#555', cursor: 'pointer' }}>←</button>
           <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: '1px solid #E5E5E5', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: '#555', cursor: 'pointer' }}>Projets</button>
-          <img src="/tijan_logo.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: isMobile ? 18 : 22, objectFit: 'contain' }} />
+          <img src="/tijan_logo.png" alt="Tijan AI" onClick={() => navigate("/")} style={{ cursor: "pointer", height: isMobile ? 30 : 38, objectFit: 'contain' }} />
           {!isMobile && <span style={{ color: GRIS3, fontSize: 11 }}>Engineering Intelligence for Africa</span>}
         </div>
         {!isMobile && <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{params.nom} — {params.ville}</div>}

@@ -126,7 +126,15 @@ export default function NewProject() {
         form.append('ville', ville)
         if (userNiveaux) form.append('nb_niveaux', String(userNiveaux))
         const res = await fetch(`${BACKEND}/parse-multi`, { method: 'POST', body: form })
-        const data = await res.json()
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          // Surface the real reason — backend returns {errors:[…]} on 422
+          const detail = data?.errors ? JSON.stringify(data.errors) : (data?.detail || res.statusText)
+          console.error('[parse-multi] HTTP', res.status, detail, data)
+          setErrorMsg(`Erreur upload (${res.status}) — ${detail}`.slice(0, 280))
+          setStep('idle')
+          return
+        }
         if (data.ok) parsed = data
         // Async APS path: poll job status until done
         if (data.ok && data.async && data.job_id) {
@@ -150,7 +158,14 @@ export default function NewProject() {
         form.append('ville', ville)
         if (userNiveaux) form.append('nb_niveaux', String(userNiveaux))
         const res = await fetch(`${BACKEND}/parse`, { method: 'POST', body: form })
-        const data = await res.json()
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          const detail = data?.errors ? JSON.stringify(data.errors) : (data?.detail || res.statusText)
+          console.error('[parse] HTTP', res.status, detail, data)
+          setErrorMsg(`Erreur upload (${res.status}) — ${detail}`.slice(0, 280))
+          setStep('idle')
+          return
+        }
         if (data.ok) parsed = data
       }
 
@@ -351,7 +366,7 @@ export default function NewProject() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#fff', padding: 24 }}>
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, padding: '14px 24px', display: 'flex', alignItems: 'center', borderBottom: `0.5px solid ${GRIS2}`, background: '#fff', zIndex: 10 }}>
         <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', fontSize: 13, color: '#888', cursor: 'pointer' }}>{t('np_accueil')}</button>
-        <img src="/tijan_logo.png" alt="Tijan AI" style={{ height: 26, objectFit: 'contain', marginLeft: 16 }} />
+        <img src="/tijan_logo.png" alt="Tijan AI" style={{ height: 40, objectFit: 'contain', marginLeft: 16 }} />
         <span style={{ fontSize: 11, color: '#888', marginLeft: 8 }}>Engineering Intelligence for Africa</span>
       </div>
 
