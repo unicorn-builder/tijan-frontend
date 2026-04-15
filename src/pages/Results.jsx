@@ -134,6 +134,106 @@ function usePdfDownload(params, lang = 'fr', { supabase = null, projectId = null
   return { download, loading }
 }
 
+// Inline manager to add/replace DWGs per level on an existing project.
+// Calls /parse-multi with the NEW files only, then merges into existing dwg_geometry
+// (keys already present get overwritten). Persists back to Supabase.
+function DwgLevelsManager({ dwgGeometry, setDwgGeometry, supabase, projectId, lang }) {
+  const [open, setOpen] = useState(false)
+  const [files, setFiles] = useState([])
+  const [levels, setLevels] = useState([])
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const LEVEL_OPTIONS = (() => {
+    const out = [{ v: 'SOUS_SOL', label: 'Sous-sol' }, { v: 'RDC', label: 'RDC' }]
+    for (let k = 1; k <= 40; k++) out.push({ v: `ETAGE_${k}`, label: `Étage ${k}` })
+    out.push({ v: 'TERRASSE', label: 'Terrasse' })
+    return out
+  })()
+  function guess(fname, idx) {
+    const u = (fname || '').toUpperCase()
+    if (/SOUS[\s-]?SOL|PARKING|BASEMENT/.test(u)) return 'SOUS_SOL'
+    if (/REZ|RDC|GROUND/.test(u)) return 'RDC'
+    if (/TERRASSE|ROOFTOP|TOITURE/.test(u)) return 'TERRASSE'
+    const m = u.match(/(?:ETAGE|FLOOR|LEVEL)[^0-9]*(\d{1,2})/)
+    if (m) return `ETAGE_${parseInt(m[1])}`
+    return idx === 0 ? 'RDC' : `ETAGE_${idx}`
+  }
+  const onPick = e => {
+    const fs = Array.from(e.target.files || [])
+    setFiles(fs)
+    setLevels(fs.map((f, i) => guess(f.name, i)))
+  }
+  const submit = async () => {
+    if (!files.length) return
+    setBusy(true); setMsg(lang === 'en' ? 'Parsing…' : 'Analyse…')
+    try {
+      const form = new FormData()
+      for (const f of files) form.append('files', f)
+      for (const lv of levels) form.append('levels', lv || '')
+      const r = await fetch(`${BACKEND}/parse-multi`, { method: 'POST', body: form })
+      const d = await r.json()
+      let result = d
+      if (d?.ok && d.async && d.job_id) {
+        for (let i = 0; i < 240; i++) {
+          await new Promise(x => setTimeout(x, 3000))
+          const pr = await fetch(`${BACKEND}/parse-status/${d.job_id}`)
+          const pd = await pr.json()
+          setMsg(`${lang === 'en' ? 'Parsing' : 'Analyse'} ${pd.progress || ''}`)
+          if (pd.status === 'done' && pd.result) { result = pd.result; break }
+          if (pd.status === 'error') { throw new Error(pd.error || 'parse error') }
+        }
+      }
+      const newGeom = result?.dwg_geometry || {}
+      const merged = { ...(dwgGeometry || {}), ...newGeom }
+      setDwgGeometry(merged)
+      if (supabase && projectId) {
+        await supabase.from('projets').update({ dwg_geometry: merged }).eq('id', projectId)
+      }
+      setMsg(lang === 'en' ? `Added ${Object.keys(newGeom).length} level(s) ✓` : `${Object.keys(newGeom).length} niveau(x) ajoutés ✓`)
+      setFiles([]); setLevels([])
+    } catch (e) {
+      setMsg((lang === 'en' ? 'Error: ' : 'Erreur : ') + (e.message || 'parse failed'))
+    } finally { setBusy(false) }
+  }
+  const existing = Object.keys(dwgGeometry || {})
+  return (
+    <div style={{ marginTop: 10, borderTop: `1px dashed ${GRIS2}`, paddingTop: 10 }}>
+      <button onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', color: VERT, fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+        {open ? '−' : '+'} {lang === 'en' ? 'Manage DWGs per level' : 'Gérer les DWG par niveau'}
+        {existing.length > 0 && <span style={{ color: GRIS3, fontWeight: 400 }}> ({existing.length} {lang === 'en' ? 'level(s)' : 'niveau(x)'})</span>}
+      </button>
+      {open && (
+        <div style={{ marginTop: 8, padding: 10, background: '#FAFAFA', border: `1px solid ${GRIS2}`, borderRadius: 6 }}>
+          {existing.length > 0 && (
+            <div style={{ fontSize: 10, color: GRIS3, marginBottom: 8 }}>
+              {lang === 'en' ? 'Already present' : 'Déjà présents'} : {existing.join(', ')}
+            </div>
+          )}
+          <input type="file" accept=".pdf,.dwg,.dxf" multiple onChange={onPick} style={{ fontSize: 11, marginBottom: 8 }} />
+          {files.length > 0 && (
+            <div style={{ display: 'grid', gap: 6, marginBottom: 8 }}>
+              {files.map((f, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 140px', gap: 8, alignItems: 'center' }}>
+                  <div style={{ fontSize: 11, color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={f.name}>{f.name}</div>
+                  <select value={levels[i] || guess(f.name, i)} onChange={e => { const v = e.target.value; setLevels(p => { const n = [...p]; while (n.length < files.length) n.push(''); n[i] = v; return n }) }} style={{ padding: '5px 7px', border: `1px solid ${GRIS2}`, borderRadius: 5, fontSize: 11, background: '#fff' }}>
+                    {LEVEL_OPTIONS.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button onClick={submit} disabled={!files.length || busy} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 5, padding: '6px 14px', fontSize: 11, fontWeight: 600, cursor: files.length && !busy ? 'pointer' : 'not-allowed', opacity: files.length && !busy ? 1 : 0.6 }}>
+              {busy ? '…' : (lang === 'en' ? 'Upload & merge' : 'Ajouter / remplacer')}
+            </button>
+            {msg && <span style={{ fontSize: 10, color: GRIS3 }}>{msg}</span>}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Results() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -302,6 +402,7 @@ export default function Results() {
           <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>
             {t('res_plan_ba_note') || 'Plans A3 paysage — géométrie DXF architecte — calculs EC2/EC8 réels'}
           </div>
+          <DwgLevelsManager dwgGeometry={dwgGeometry} setDwgGeometry={setDwgGeometry} supabase={supabase} projectId={projectId} lang={lang} />
         </Card>
       )
     }
@@ -334,6 +435,7 @@ export default function Results() {
           <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>
             {t('res_plan_mep_note') || 'Plans A3 paysage — géométrie DXF architecte — calculs MEP réels'}
           </div>
+          <DwgLevelsManager dwgGeometry={dwgGeometry} setDwgGeometry={setDwgGeometry} supabase={supabase} projectId={projectId} lang={lang} />
         </Card>
       )
     }

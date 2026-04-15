@@ -16,6 +16,9 @@ export default function NewProject() {
   const [surfaceTerrain, setSurfaceTerrain] = useState('')
   const [mainFile, setMainFile] = useState(null)
   const [mainFiles, setMainFiles] = useState([])
+  // Parallel array of level labels, one per entry in mainFiles
+  // Values: "SOUS_SOL" | "RDC" | "ETAGE_1".."ETAGE_40" | "TERRASSE" | "" (auto)
+  const [mainLevels, setMainLevels] = useState([])
   const [nbNiveaux, setNbNiveaux] = useState('')
   const [nbLogements, setNbLogements] = useState('')
   const [solFile, setSolFile] = useState(null)
@@ -36,6 +39,31 @@ export default function NewProject() {
   const solRef = useRef(null)
 
   const [parseProgress, setParseProgress] = useState('')
+
+  // Guess level label from filename — same heuristic as backend _classify_level_from_name
+  function guessLevelFromName(fname, idx) {
+    const u = (fname || '').toUpperCase()
+    if (/SOUS[\s-]?SOL|PARKING|BASEMENT/.test(u)) return 'SOUS_SOL'
+    if (/REZ|RDC|GROUND/.test(u)) return 'RDC'
+    if (/TERRASSE|ROOFTOP|TOITURE/.test(u)) return 'TERRASSE'
+    const m = u.match(/(?:ETAGE|FLOOR|LEVEL)[^0-9]*(\d{1,2})/)
+    if (m) return `ETAGE_${parseInt(m[1])}`
+    // Common defaults by index order: RDC, ETAGE_1, ETAGE_2, ..., TERRASSE
+    if (idx === 0) return 'RDC'
+    return `ETAGE_${idx}`
+  }
+  function autoLevels(files) {
+    return files.map((f, i) => guessLevelFromName(f.name, i))
+  }
+  const LEVEL_OPTIONS = (() => {
+    const out = [
+      { v: 'SOUS_SOL', label: 'Sous-sol' },
+      { v: 'RDC', label: 'RDC' },
+    ]
+    for (let k = 1; k <= 40; k++) out.push({ v: `ETAGE_${k}`, label: `Étage ${k}` })
+    out.push({ v: 'TERRASSE', label: 'Terrasse' })
+    return out
+  })()
   const loading = step === 'uploading' || step === 'calculating'
   const loadingText = step === 'uploading' ? (parseProgress || t('np_uploading')) : t('np_calculating')
   const [creditWarningShown, setCreditWarningShown] = useState(false)
@@ -79,27 +107,52 @@ export default function NewProject() {
     setErrorMsg('')
     setStep('uploading')
 
-    // Always send ONE file to /parse — the biggest one (most geometry)
-    // For multi-DWG: nb_niveaux = user input or file count
+    // Multi-DWG: one file per level → /parse-multi returns dwg_geometry dict keyed by level.
+    // Single DWG/PDF: /parse as before (single geometry).
     const allFiles = mainFiles.length > 1 ? mainFiles : [mainFile]
-    const fileToSend = allFiles.length > 1
-      ? [...allFiles].sort((a, b) => b.size - a.size)[0]
-      : mainFile
     const userNiveaux = parseInt(nbNiveaux) || (allFiles.length > 1 ? allFiles.length : null)
 
     let parsed = {}
     try {
-      setParseProgress(allFiles.length > 1
-        ? `Analyse du plan principal (${fileToSend.name})... peut prendre 1-2 minutes`
-        : 'Analyse du plan en cours...')
-
-      const form = new FormData()
-      form.append('file', fileToSend)
-      form.append('ville', ville)
-      if (userNiveaux) form.append('nb_niveaux', String(userNiveaux))
-      const res = await fetch(`${BACKEND}/parse`, { method: 'POST', body: form })
-      const data = await res.json()
-      if (data.ok) parsed = data
+      if (allFiles.length > 1) {
+        setParseProgress(`Analyse de ${allFiles.length} plans... peut prendre 1-3 minutes`)
+        const form = new FormData()
+        for (const f of allFiles) form.append('files', f)
+        // Parallel level labels (one per file, same order)
+        const labels = (mainLevels && mainLevels.length === allFiles.length)
+          ? mainLevels
+          : autoLevels(allFiles)
+        for (const lv of labels) form.append('levels', lv || '')
+        form.append('ville', ville)
+        if (userNiveaux) form.append('nb_niveaux', String(userNiveaux))
+        const res = await fetch(`${BACKEND}/parse-multi`, { method: 'POST', body: form })
+        const data = await res.json()
+        if (data.ok) parsed = data
+        // Async APS path: poll job status until done
+        if (data.ok && data.async && data.job_id) {
+          const jobId = data.job_id
+          for (let i = 0; i < 240; i++) { // up to ~12 min
+            await new Promise(r => setTimeout(r, 3000))
+            try {
+              const pr = await fetch(`${BACKEND}/parse-status/${jobId}`)
+              const pd = await pr.json()
+              setParseProgress(`Analyse (${pd.progress || '...'})`)
+              if (pd.status === 'done' && pd.result) { parsed = pd.result; break }
+              if (pd.status === 'error') { break }
+            } catch {}
+          }
+        }
+      } else {
+        const fileToSend = mainFile
+        setParseProgress('Analyse du plan en cours...')
+        const form = new FormData()
+        form.append('file', fileToSend)
+        form.append('ville', ville)
+        if (userNiveaux) form.append('nb_niveaux', String(userNiveaux))
+        const res = await fetch(`${BACKEND}/parse`, { method: 'POST', body: form })
+        const data = await res.json()
+        if (data.ok) parsed = data
+      }
 
       // Override nb_niveaux: user field > file count > parsed value
       if (userNiveaux) {
@@ -326,8 +379,8 @@ export default function NewProject() {
                 onDrop={e => {
                   e.preventDefault(); setDragging(false)
                   const files = Array.from(e.dataTransfer.files)
-                  if (files.length > 1) { setMainFiles(files); setMainFile(files[0]); if (!nbNiveaux) setNbNiveaux(String(files.length)) }
-                  else if (files[0]) { setMainFile(files[0]); setMainFiles([]) }
+                  if (files.length > 1) { setMainFiles(files); setMainFile(files[0]); setMainLevels(autoLevels(files)); if (!nbNiveaux) setNbNiveaux(String(files.length)) }
+                  else if (files[0]) { setMainFile(files[0]); setMainFiles([]); setMainLevels([]) }
                 }}
                 style={{ border: `2px dashed ${dragging ? VERT : mainFile ? VERT : GRIS2}`, borderRadius: 8, padding: '24px 20px', textAlign: 'center', cursor: 'pointer', background: mainFile ? '#F0FAF1' : '#FAFAFA' }}
               >
@@ -339,11 +392,42 @@ export default function NewProject() {
                 }
                 <input ref={mainRef} type="file" accept=".pdf,.dwg,.dxf" multiple style={{ display: 'none' }} onChange={e => {
                   const files = Array.from(e.target.files || [])
-                  if (files.length > 1) { setMainFiles(files); setMainFile(files[0]); if (!nbNiveaux) setNbNiveaux(String(files.length)) }
-                  else if (files[0]) { setMainFile(files[0]); setMainFiles([]) }
+                  if (files.length > 1) { setMainFiles(files); setMainFile(files[0]); setMainLevels(autoLevels(files)); if (!nbNiveaux) setNbNiveaux(String(files.length)) }
+                  else if (files[0]) { setMainFile(files[0]); setMainFiles([]); setMainLevels([]) }
                 }} />
               </div>
             </div>
+
+            {mainFiles.length > 1 && (
+              <div style={{ border: `1px solid ${GRIS2}`, borderRadius: 8, padding: 12, background: '#FAFAFA' }}>
+                <div style={{ fontSize: 12, color: '#555', marginBottom: 8, fontWeight: 500 }}>
+                  Niveau de chaque fichier
+                  <span style={{ color: '#aaa', fontWeight: 400 }}> — auto-détecté, modifiable</span>
+                </div>
+                <div style={{ display: 'grid', gap: 6 }}>
+                  {mainFiles.map((f, i) => (
+                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 140px', gap: 8, alignItems: 'center' }}>
+                      <div style={{ fontSize: 11, color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={f.name}>{f.name}</div>
+                      <select
+                        value={(mainLevels[i] || guessLevelFromName(f.name, i))}
+                        onChange={e => {
+                          const v = e.target.value
+                          setMainLevels(prev => {
+                            const next = [...prev]
+                            while (next.length < mainFiles.length) next.push('')
+                            next[i] = v
+                            return next
+                          })
+                        }}
+                        style={{ padding: '6px 8px', border: `1px solid ${GRIS2}`, borderRadius: 6, fontSize: 12, background: '#fff' }}
+                      >
+                        {LEVEL_OPTIONS.map(o => <option key={o.v} value={o.v}>{o.label}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div>
               <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_sol')} <span style={{ color: '#aaa' }}>({t('np_sol_opt')})</span></label>
