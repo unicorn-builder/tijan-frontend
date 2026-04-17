@@ -294,23 +294,32 @@ export default function NewProject() {
             return
           }
         }
-        // Persist archi PDF to Supabase Storage + geometry to projets row
-        // so plan generation works even after server redeploys wipe /tmp
+        // ── Persist archi PDF URL first (small string, must never fail) ──
+        // Then try geometry + extras in a second UPDATE (may fail if payload
+        // is too large for Supabase JSONB). This guarantees archi_pdf_url is
+        // always in the row so the backend can re-extract geometry on demand.
         try {
-          const extras = {}
-          // Upload the original archi PDF to Supabase Storage
+          // Step 1: Upload archi PDF to Storage + save URL to row (separate UPDATE)
           if (mainFile && mainFile.name.toLowerCase().endsWith('.pdf')) {
             const storagePath = `archi_pdfs/${projectId}/${mainFile.name}`
             const { error: upErr } = await supabase.storage.from('project-files').upload(storagePath, mainFile, { upsert: true })
             if (!upErr) {
               const { data: urlData } = supabase.storage.from('project-files').getPublicUrl(storagePath)
-              if (urlData?.publicUrl) extras.archi_pdf_url = urlData.publicUrl
+              if (urlData?.publicUrl) {
+                const { error: urlSaveErr } = await supabase
+                  .from('projets').update({ archi_pdf_url: urlData.publicUrl })
+                  .eq('id', projectId)
+                if (urlSaveErr) {
+                  console.error('[NewProject] archi_pdf_url persist FAILED', urlSaveErr.message)
+                } else {
+                  console.log('[NewProject] archi_pdf_url persisted ✓', urlData.publicUrl.slice(-40))
+                }
+              }
             }
           }
-          // Save extracted geometry (compact: only walls + rooms + axes per level)
+          // Step 2: Try to persist geometry + EDGE extras (best-effort, may fail for large payloads)
+          const extras = {}
           if (dwgGeometry && typeof dwgGeometry === 'object') {
-            // Compact: drop heavy CV intermediate metadata to stay under
-            // Supabase row-update payload limits.
             const _compactGeom = (g) => {
               if (!g || typeof g !== 'object') return g
               const { _cv_meta, ...lean } = g
@@ -323,7 +332,6 @@ export default function NewProject() {
               : Object.fromEntries(Object.entries(dwgGeometry).map(([k, g]) => [k, _compactGeom(g)]))
             extras.dwg_geometry = compact
           }
-          // Save EDGE optional inputs as jsonb blob
           const edgeExtras = {}
           if (payload.cost_construction_xof_m2) edgeExtras.cost_construction_xof_m2 = payload.cost_construction_xof_m2
           if (payload.sale_value_xof_m2) edgeExtras.sale_value_xof_m2 = payload.sale_value_xof_m2
@@ -340,14 +348,12 @@ export default function NewProject() {
             console.log('[NewProject] persist extras', { projectId, keys: Object.keys(extras), bytes: payloadSize })
             const { error: updErr, data: updData } = await supabase
               .from('projets').update(extras).eq('id', projectId)
-              .select('id, dwg_geometry, archi_pdf_url').maybeSingle()
+              .select('id, dwg_geometry').maybeSingle()
             if (updErr) {
-              console.error('[NewProject] persist FAILED', updErr.message, updErr.code, updErr.details, updErr.hint)
-            } else if (!updData) {
-              console.error('[NewProject] persist returned no row — RLS likely blocking UPDATE for project', projectId)
-            } else {
+              console.error('[NewProject] geometry persist FAILED (non-critical, backend will re-extract from PDF)', updErr.message)
+            } else if (updData) {
               const persistedLevels = updData.dwg_geometry ? Object.keys(updData.dwg_geometry) : []
-              console.log('[NewProject] persisted ✓', { levels: persistedLevels, archi_pdf_url: !!updData.archi_pdf_url })
+              console.log('[NewProject] geometry persisted ✓', { levels: persistedLevels })
             }
           }
         } catch (e) {
