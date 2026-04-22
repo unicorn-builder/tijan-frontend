@@ -15,8 +15,8 @@ const T = {
   // LANDING
   badge_world_first: { fr: "1er ingénieur IA génie civil & MEP au monde", en: "World's 1st AI civil & MEP engineer" },
   badge_eurocodes: { fr: 'Eurocodes EC2/EC8', en: 'Eurocodes EC2/EC8' },
-  hero_title_1: { fr: 'Votre ingénieur structure et MEP,', en: 'Your structural & MEP engineer,' },
-  hero_title_2: { fr: 'disponible en 5 minutes', en: 'available in 5 minutes' },
+  hero_title_1: { fr: 'Tijan fournit les études structurelle et MEP', en: 'Tijan delivers structural and MEP studies' },
+  hero_title_2: { fr: 'en 5 minutes pour chaque projet', en: 'in 5 minutes for every project' },
   hero_subtitle: { fr: "Tijan est un ingénieur IA qui lit vos plans architecte et produit le dossier d'études complet — calculs, plans BA, BOQ, MEP et certification EDGE — comme le ferait votre BET, mais en 5 minutes.", en: "Tijan is an AI engineer that reads your architectural drawings and produces the complete engineering dossier — calculations, structural plans, BOQ, MEP and EDGE certification — just like your engineering firm, but in 5 minutes." },
   cta_analyser: { fr: 'Analyser mon projet →', en: 'Analyze my project →' },
   cta_livrables: { fr: 'Voir les livrables', en: 'View deliverables' },
@@ -62,7 +62,7 @@ const T = {
   cta_final_titre: { fr: "Recrutez Tijan dans votre équipe", en: "Hire Tijan for your team" },
   cta_final_desc: { fr: "Un ingénieur structure et MEP disponible 24/7, qui produit vos dossiers techniques 10x plus vite et à une fraction du coût.", en: 'A structural and MEP engineer available 24/7, producing your technical reports 10x faster at a fraction of the cost.' },
   cta_commencer: { fr: 'Voir les formules →', en: 'See plans →' },
-  cta_gratuit: { fr: 'À partir de 100 000 FCFA / mois', en: 'Starting at 100,000 FCFA / month' },
+  cta_gratuit: { fr: '', en: '' },
 
   // LOGIN
   login_tab: { fr: 'Se connecter', en: 'Sign in' },
