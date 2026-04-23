@@ -11,7 +11,7 @@ import Pricing from './pages/Pricing'
 import PaymentSuccess from './pages/PaymentSuccess'
 import Impact from './pages/Impact'
 import Investors from './pages/Investors'
-// cgu from './pages/CGU'
+import CGU from './pages/CGU'
 import CreditsHistory from './pages/CreditsHistory'
 
 const MobileStyles = () => (
