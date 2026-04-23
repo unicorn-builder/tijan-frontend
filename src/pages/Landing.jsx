@@ -547,6 +547,9 @@ export default function Landing() {
           <button onClick={() => navigate('/impact')} style={{
             background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11,
           }}>{t('nav_impact')}</button>
+          <button onClick={() => navigate('/cgu')} style={{
+            background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11,
+          }}>Conditions d'utilisation</button>
           <button onClick={() => navigate('/investors')} style={{
             background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11,
           }}>{t('nav_investors')}</button>
