@@ -22,13 +22,15 @@ const LIVRABLES_KEYS = [
   { label: 'liv_boq_mep', norme: 'Basic / High-End / Luxury', icon: '📊' },
   { label: 'liv_edge', norme: 'liv_norme_edge', icon: '🌱' },
   { label: 'liv_rapport', norme: 'liv_norme_rapport', icon: '📋' },
-  { label: 'liv_plans_ba', norme: 'bientot_dispo', icon: '🏗️' },
-  { label: 'liv_plans_mep', norme: 'bientot_dispo', icon: '📐' },
+  { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8', icon: '🏗️' },
+  { label: 'liv_plans_mep', norme: 'A3 — 7 lots', icon: '📐' },
+  { label: 'liv_schemas_structure', norme: 'liv_norme_schemas_str', icon: '🔀' },
+  { label: 'liv_schemas_mep', norme: 'liv_norme_schemas_mep', icon: '🔌' },
 ]
 
 const CHIFFRES_KEYS = [
   { val: '<5 min', label: 'chiffre_dossier' },
-  { val: '8', label: 'chiffre_docs' },
+  { val: '10', label: 'chiffre_docs' },
   { val: '5', label: 'chiffre_pays' },
   { val: '±15%', label: 'chiffre_precision' },
 ]

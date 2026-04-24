@@ -7,7 +7,7 @@ import { VERT, BACKEND } from '../constants'
 import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
-const PRIX_MENSUEL = 500000 // FCFA TTC par mois
+const PRIX_MENSUEL = 250000 // FCFA TTC par mois — prix de lancement beta
 const TVA_RATE = 0.18
 
 function formatFCFA(n) {
@@ -99,6 +99,9 @@ export default function Pricing() {
             </div>
             <div style={{ fontSize: 14, color: '#666', marginTop: 6 }}>
               par mois, TTC — sans engagement
+            </div>
+            <div style={{ fontSize: 12, color: VERT, marginTop: 8, fontWeight: 600, fontStyle: 'italic' }}>
+              Prix de lancement — Plans d'exécution en cours de finalisation
             </div>
           </div>
 
