@@ -532,9 +532,6 @@ export default function Landing() {
           >
             {t('cta_commencer')}
           </button>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 14 }}>
-            {t('cta_gratuit')}
-          </div>
         </div>
       </section>
 
