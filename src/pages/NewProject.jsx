@@ -12,7 +12,16 @@ export default function NewProject() {
   const { t } = useLang()
   const [step, setStep] = useState('form')
   const [nom, setNom] = useState('')
+  const [pays, setPays] = useState('Sénégal')
   const [ville, setVille] = useState('Dakar')
+
+  const PAYS_VILLES = {
+    'Sénégal': ['Dakar', 'Thiès', 'Saint-Louis', 'Ziguinchor', 'Kaolack', 'Mbour', 'Rufisque', 'Diourbel', 'Louga', 'Tambacounda', 'Kolda', 'Fatick', 'Kaffrine', 'Matam', 'Sédhiou', 'Touba', 'Tivaouane', 'Mbacké'],
+    "Côte d'Ivoire": ['Abidjan', 'Bouaké', 'Daloa', 'Korhogo', 'Yamoussoukro', 'San-Pédro', 'Man', 'Gagnoa', 'Abengourou', 'Divo', 'Soubré', 'Grand-Bassam'],
+    'Maroc': ['Casablanca', 'Rabat', 'Fès', 'Marrakech', 'Agadir', 'Tanger', 'Meknès', 'Oujda', 'Kenitra', 'Tétouan', 'Mohammedia'],
+    'Nigeria': ['Lagos', 'Abuja', 'Kano', 'Ibadan', 'Port Harcourt', 'Benin City', 'Jos', 'Enugu', 'Kaduna', 'Calabar', 'Warri', 'Owerri'],
+    'Ghana': ['Accra', 'Kumasi', 'Tamale', 'Takoradi', 'Cape Coast', 'Tema'],
+  }
   const [surfaceTerrain, setSurfaceTerrain] = useState('')
   const [mainFile, setMainFile] = useState(null)
   const [mainFiles, setMainFiles] = useState([])
@@ -384,14 +393,22 @@ export default function NewProject() {
 
         {!loading && step !== 'error' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
               <div>
                 <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_nom')} *</label>
                 <input value={nom} onChange={e => setNom(e.target.value)} placeholder={t('np_placeholder_nom')} style={inp} />
               </div>
               <div>
+                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_pays') || 'Pays'} *</label>
+                <select value={pays} onChange={e => { setPays(e.target.value); setVille(PAYS_VILLES[e.target.value]?.[0] || '') }} style={inp}>
+                  {Object.keys(PAYS_VILLES).map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div>
                 <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_ville')} *</label>
-                <input value={ville} onChange={e => setVille(e.target.value)} placeholder="Dakar" style={inp} />
+                <select value={ville} onChange={e => setVille(e.target.value)} style={inp}>
+                  {(PAYS_VILLES[pays] || []).map(v => <option key={v} value={v}>{v}</option>)}
+                </select>
               </div>
             </div>
 

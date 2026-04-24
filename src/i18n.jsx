@@ -107,6 +107,7 @@ const T = {
   np_titre: { fr: 'Nouveau projet', en: 'New project' },
   np_desc: { fr: 'Nommez votre projet et déposez vos plans', en: 'Name your project and upload your plans' },
   np_nom: { fr: 'Nom du projet', en: 'Project name' },
+  np_pays: { fr: 'Pays', en: 'Country' },
   np_ville: { fr: 'Ville', en: 'City' },
   np_surface: { fr: 'Surface du terrain (m²)', en: 'Land area (m²)' },
   np_emprise_note: { fr: "L'emprise bâtie sera estimée à 70% si non détectée depuis les plans.", en: 'Building footprint estimated at 70% if not detected from plans.' },
