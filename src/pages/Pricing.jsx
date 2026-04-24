@@ -8,6 +8,7 @@ import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
 const PRIX_MENSUEL = 250000 // FCFA TTC par mois — prix de lancement beta
+const PRIX_UNITE = 100000   // FCFA TTC — étude supplémentaire à l'unité
 const TVA_RATE = 0.18
 
 function formatFCFA(n) {
@@ -28,6 +29,8 @@ export default function Pricing() {
 
   const totalHT = Math.round(PRIX_MENSUEL / (1 + TVA_RATE))
   const totalTVA = PRIX_MENSUEL - totalHT
+
+  const [unitLoading, setUnitLoading] = useState(false)
 
   const handlePay = async () => {
     if (!user) { navigate('/login'); return }
@@ -54,6 +57,34 @@ export default function Pricing() {
       alert(t('pricing_no_server'))
     } finally {
       setPayLoading(false)
+    }
+  }
+
+  const handlePayUnit = async () => {
+    if (!user) { navigate('/login'); return }
+    setUnitLoading(true)
+    try {
+      const response = await fetch(`${BACKEND}/create-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          credits: 1,
+          prix: PRIX_UNITE,
+          user_id: user.id,
+          plan: 'etude_unitaire',
+        }),
+      })
+      const data = await response.json()
+      if (data.ok) {
+        window.location.href = data.url
+      } else {
+        alert(t('pricing_err') + ': ' + (data.error || t('pricing_retry')))
+      }
+    } catch (e) {
+      console.error('Payment error:', e)
+      alert(t('pricing_no_server'))
+    } finally {
+      setUnitLoading(false)
     }
   }
 
@@ -154,6 +185,45 @@ export default function Pricing() {
           </button>
           <div style={{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 10 }}>
             Wave · Orange Money · Free Money · Carte bancaire
+          </div>
+        </div>
+
+        {/* Étude à l'unité */}
+        <div style={{
+          background: '#fff',
+          border: '1px solid #E5E5E5',
+          borderRadius: 16,
+          padding: '24px 28px',
+          marginBottom: 32,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flexWrap: 'wrap', gap: 16,
+        }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 4 }}>
+              Besoin d'une seule étude ?
+            </div>
+            <div style={{ fontSize: 13, color: '#666' }}>
+              1 projet complet — tous documents inclus, sans abonnement
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 24, fontWeight: 800, color: NAVY }}>{formatFCFA(PRIX_UNITE)}</div>
+              <div style={{ fontSize: 11, color: '#999' }}>TTC — paiement unique</div>
+            </div>
+            <button
+              onClick={handlePayUnit}
+              disabled={unitLoading}
+              style={{
+                background: NAVY, color: '#fff',
+                border: 'none', borderRadius: 10, padding: '12px 24px',
+                fontSize: 14, fontWeight: 600,
+                cursor: unitLoading ? 'not-allowed' : 'pointer',
+                opacity: unitLoading ? 0.7 : 1, whiteSpace: 'nowrap',
+              }}
+            >
+              {unitLoading ? '...' : 'Acheter →'}
+            </button>
           </div>
         </div>
 

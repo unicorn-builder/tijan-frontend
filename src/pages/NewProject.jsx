@@ -75,7 +75,7 @@ export default function NewProject() {
   })()
   const loading = step === 'uploading' || step === 'calculating'
   const loadingText = step === 'uploading' ? (parseProgress || t('np_uploading')) : t('np_calculating')
-  const [creditWarningShown, setCreditWarningShown] = useState(false)
+  const [showNoCreditModal, setShowNoCreditModal] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
   function prepareLancer() {
@@ -86,8 +86,7 @@ export default function NewProject() {
     if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
     if (!nbLogements || parseInt(nbLogements) < 1) { setErrorMsg(t('np_err_logements')); return }
     if (restants < 1) {
-      setErrorMsg(t('np_credits_insufficient'))
-      setTimeout(() => navigate('/pricing'), 1500)
+      setShowNoCreditModal(true)
       return
     }
     setErrorMsg('')
@@ -103,14 +102,7 @@ export default function NewProject() {
 
     // Check if user has sufficient credits (1 required)
     if (restants < 1) {
-      setErrorMsg(t('np_credits_insufficient'))
-      if (!creditWarningShown) {
-        setCreditWarningShown(true)
-        // Auto-redirect to pricing after 2 seconds
-        setTimeout(() => {
-          navigate('/pricing')
-        }, 2000)
-      }
+      setShowNoCreditModal(true)
       return
     }
     setErrorMsg('')
@@ -558,6 +550,49 @@ export default function NewProject() {
                   {t('np_confirm_ok')}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {showNoCreditModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+            <div style={{ background: '#fff', borderRadius: 14, padding: '28px 26px', maxWidth: 440, width: '90%', boxShadow: '0 10px 40px rgba(0,0,0,0.15)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: '#1B2A4A', marginBottom: 10 }}>
+                {t('np_no_credit_title') || "Plus d'études disponibles"}
+              </div>
+              <div style={{ fontSize: 14, color: '#444', lineHeight: 1.55, marginBottom: 20 }}>
+                {t('np_no_credit_body') || "Vous avez utilisé toutes vos études. Choisissez une option pour continuer :"}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+                <button onClick={() => { setShowNoCreditModal(false); navigate('/pricing') }} style={{
+                  padding: '14px 16px', background: VERT, color: '#fff', border: 'none', borderRadius: 10,
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer', textAlign: 'left',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <div>
+                    <div>Abonnement mensuel</div>
+                    <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>3 études/mois — le plus avantageux</div>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800 }}>250K</div>
+                </button>
+                <button onClick={() => { setShowNoCreditModal(false); navigate('/pricing') }} style={{
+                  padding: '14px 16px', background: '#1B2A4A', color: '#fff', border: 'none', borderRadius: 10,
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer', textAlign: 'left',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <div>
+                    <div>1 étude à l'unité</div>
+                    <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>Tous documents inclus — sans abonnement</div>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800 }}>100K</div>
+                </button>
+              </div>
+              <button onClick={() => setShowNoCreditModal(false)} style={{
+                width: '100%', padding: 10, background: 'transparent', color: '#999', border: '1px solid #E5E5E5',
+                borderRadius: 8, fontSize: 13, cursor: 'pointer',
+              }}>
+                Annuler
+              </button>
             </div>
           </div>
         )}

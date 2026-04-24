@@ -135,6 +135,8 @@ const T = {
   np_err_calcul: { fr: 'Erreur lors du calcul.', en: 'Calculation error.' },
   np_err_credits: { fr: "Vous n'avez plus de crédits. Achetez-en sur la page Pricing.", en: 'No credits left. Purchase more on the Pricing page.' },
   np_credits_insufficient: { fr: 'Crédits insuffisants. Achetez des crédits pour continuer.', en: 'Insufficient credits. Buy credits to continue.' },
+  np_no_credit_title: { fr: "Plus d'études disponibles", en: 'No studies remaining' },
+  np_no_credit_body: { fr: 'Vous avez utilisé toutes vos études. Choisissez une option pour continuer :', en: 'You have used all your studies. Choose an option to continue:' },
   np_confirm_title: { fr: 'Confirmer le lancement du projet', en: 'Confirm project launch' },
   np_confirm_body_1: { fr: 'Ce projet consommera', en: 'This project will consume' },
   np_confirm_body_2: { fr: 'Il vous restera ensuite', en: 'You will then have' },
