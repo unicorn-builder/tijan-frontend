@@ -7,8 +7,8 @@ import { VERT, BACKEND } from '../constants'
 import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
-const PRIX_MENSUEL = 250000 // FCFA TTC par mois — prix de lancement beta
-const PRIX_UNITE = 100000   // FCFA TTC — étude supplémentaire à l'unité
+const PRIX_MENSUEL = 500000 // FCFA TTC par mois — offre Cabinet
+const PRIX_UNITE = 200000   // FCFA TTC — étude supplémentaire à l'unité
 const TVA_RATE = 0.18
 
 function formatFCFA(n) {
@@ -31,6 +31,42 @@ export default function Pricing() {
   const totalTVA = PRIX_MENSUEL - totalHT
 
   const [unitLoading, setUnitLoading] = useState(false)
+  const [showPromo, setShowPromo] = useState(false)
+  const [promoCode, setPromoCode] = useState('')
+  const [promoLoading, setPromoLoading] = useState(false)
+  const [promoResult, setPromoResult] = useState(null) // { valid, discount_percent, monthly_price, duration_months, ... }
+  const [promoError, setPromoError] = useState('')
+
+  // Auto-fill from URL param ?promo=TIJAN-XXX-YYYY
+  useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('promo')
+    if (code) { setPromoCode(code.toUpperCase()); setShowPromo(true) }
+  }, [])
+
+  const validatePromo = async () => {
+    if (!promoCode.trim()) return
+    setPromoLoading(true); setPromoError(''); setPromoResult(null)
+    try {
+      const res = await fetch(`${BACKEND}/promo-codes/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode.trim().toUpperCase() }),
+      })
+      const data = await res.json()
+      if (data.valid) {
+        setPromoResult(data)
+      } else {
+        setPromoError(data.reason || 'Code invalide')
+      }
+    } catch (e) {
+      setPromoError('Erreur de connexion')
+    } finally {
+      setPromoLoading(false)
+    }
+  }
+
+  const effectivePrice = promoResult ? promoResult.monthly_price : PRIX_MENSUEL
 
   const handlePay = async () => {
     if (!user) { navigate('/login'); return }
@@ -41,9 +77,10 @@ export default function Pricing() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           credits: 3,
-          prix: PRIX_MENSUEL,
+          prix: effectivePrice,
           user_id: user.id,
-          plan: 'abonnement_mensuel',
+          plan: 'cabinet_mensuel',
+          promo_code: promoResult ? promoCode.trim().toUpperCase() : undefined,
         }),
       })
       const data = await response.json()
@@ -123,16 +160,30 @@ export default function Pricing() {
           {/* Prix */}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: VERT, letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
-              Abonnement mensuel
+              Offre Cabinet
             </div>
-            <div style={{ fontSize: 48, fontWeight: 800, color: NAVY, marginBottom: 4, lineHeight: 1 }}>
-              {formatFCFA(PRIX_MENSUEL)}
-            </div>
+            {promoResult ? (
+              <>
+                <div style={{ fontSize: 24, color: '#999', textDecoration: 'line-through', lineHeight: 1 }}>
+                  {formatFCFA(PRIX_MENSUEL)}
+                </div>
+                <div style={{ fontSize: 48, fontWeight: 800, color: VERT, marginBottom: 4, lineHeight: 1 }}>
+                  {formatFCFA(promoResult.monthly_price)}
+                </div>
+                <div style={{ fontSize: 13, color: VERT, fontWeight: 600, marginTop: 6 }}>
+                  -{promoResult.discount_percent}% pendant {promoResult.duration_months} mois
+                </div>
+                <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
+                  puis {formatFCFA(PRIX_MENSUEL)}/mois
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: 48, fontWeight: 800, color: NAVY, marginBottom: 4, lineHeight: 1 }}>
+                {formatFCFA(PRIX_MENSUEL)}
+              </div>
+            )}
             <div style={{ fontSize: 14, color: '#666', marginTop: 6 }}>
               par mois, TTC — sans engagement
-            </div>
-            <div style={{ fontSize: 12, color: VERT, marginTop: 8, fontWeight: 600, fontStyle: 'italic' }}>
-              Prix de lancement — Plans d'exécution en cours de finalisation
             </div>
           </div>
 
@@ -153,20 +204,69 @@ export default function Pricing() {
             ))}
           </div>
 
+          {/* Code promo toggle */}
+          <div style={{ marginBottom: 16 }}>
+            {!showPromo ? (
+              <button onClick={() => setShowPromo(true)} style={{
+                background: 'none', border: 'none', color: VERT, fontSize: 13,
+                cursor: 'pointer', fontWeight: 600, padding: 0,
+              }}>
+                J'ai un code partenaire
+              </button>
+            ) : (
+              <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '14px 16px' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: NAVY, marginBottom: 8 }}>Code partenaire</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    value={promoCode}
+                    onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); setPromoResult(null) }}
+                    placeholder="TIJAN-XXX-XXXX"
+                    style={{
+                      flex: 1, padding: '10px 12px', border: `1.5px solid ${promoError ? '#EF4444' : promoResult ? VERT : '#DDD'}`,
+                      borderRadius: 8, fontSize: 14, fontFamily: 'monospace', letterSpacing: 1,
+                    }}
+                  />
+                  <button
+                    onClick={validatePromo}
+                    disabled={promoLoading || !promoCode.trim()}
+                    style={{
+                      padding: '10px 18px', background: NAVY, color: '#fff', border: 'none',
+                      borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                      opacity: promoLoading ? 0.7 : 1,
+                    }}
+                  >
+                    {promoLoading ? '...' : 'Appliquer'}
+                  </button>
+                </div>
+                {promoError && <div style={{ color: '#EF4444', fontSize: 12, marginTop: 6 }}>{promoError}</div>}
+                {promoResult && (
+                  <div style={{ color: VERT, fontSize: 12, marginTop: 6, fontWeight: 600 }}>
+                    Code valide — {promoResult.discount_percent}% de remise pendant {promoResult.duration_months} mois
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Récap fiscal */}
           <div style={{
             background: '#F7F8FA', borderRadius: 10,
             padding: '14px 16px', fontSize: 12, color: '#666', marginBottom: 20,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span>Montant HT</span><span>{formatFCFA(totalHT)}</span>
+              <span>Montant HT</span><span>{formatFCFA(Math.round(effectivePrice / (1 + TVA_RATE)))}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span>TVA 18%</span><span>{formatFCFA(totalTVA)}</span>
+              <span>TVA 18%</span><span>{formatFCFA(effectivePrice - Math.round(effectivePrice / (1 + TVA_RATE)))}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: NAVY, fontSize: 14, paddingTop: 8, borderTop: '1px solid #D0D0D0' }}>
-              <span>Total TTC</span><span>{formatFCFA(PRIX_MENSUEL)}</span>
+              <span>Total TTC</span><span>{formatFCFA(effectivePrice)}</span>
             </div>
+            {promoResult && (
+              <div style={{ fontSize: 11, color: '#999', marginTop: 8, lineHeight: 1.5 }}>
+                À l'issue des {promoResult.duration_months} mois, votre abonnement passe automatiquement à {formatFCFA(PRIX_MENSUEL)}/mois.
+              </div>
+            )}
           </div>
 
           {/* CTA */}
@@ -181,7 +281,7 @@ export default function Pricing() {
               opacity: payLoading ? 0.7 : 1,
             }}
           >
-            {payLoading ? t('pr_redirection') : "S'abonner maintenant →"}
+            {payLoading ? t('pr_redirection') : promoResult ? `S'abonner à ${formatFCFA(effectivePrice)}/mois →` : "S'abonner maintenant →"}
           </button>
           <div style={{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 10 }}>
             Wave · Orange Money · Free Money · Carte bancaire
