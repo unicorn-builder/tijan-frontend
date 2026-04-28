@@ -171,6 +171,7 @@ const T = {
   tab_chat: { fr: 'Discuter avec Tijan', en: 'Chat with Tijan' },
   tab_plan_ba: { fr: 'Plans BA', en: 'RC drawings' },
   tab_plan_mep: { fr: 'Plans MEP', en: 'MEP drawings' },
+  tab_finitions: { fr: 'BOQ Finitions', en: 'Finishes BOQ' },
   res_plan_ba_titre: { fr: 'Plans Structure (BA)', en: 'Structural Drawings (RC)' },
   res_plan_ba_note: { fr: 'Plans A3 paysage — géométrie DXF architecte — calculs EC2/EC8 réels', en: 'A3 landscape drawings — architect DXF geometry — real EC2/EC8 calculations' },
   res_plan_mep_titre: { fr: 'Plans MEP (7 lots)', en: 'MEP Drawings (7 lots)' },
@@ -507,5 +508,6 @@ export const TAB_KEYS = {
   'fiches-structure': 'tab_fiches_structure', 'fiches-mep': 'tab_fiches_mep',
   'schemas-ferraillage': 'tab_schemas_ferraillage', 'schemas-mep': 'tab_schemas_mep',
   'edge-assessment': 'tab_edge_assessment',
+  'finitions': 'tab_finitions',
   'chat': 'tab_chat', 'plan-ba': 'tab_plan_ba', 'plan-mep': 'tab_plan_mep',
 }

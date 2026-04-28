@@ -20,6 +20,7 @@ export const TABS = [
   { id: 'fiches-mep',       label: 'Fiches techniques MEP',       endpoint: '/generate-fiches-mep',       filename: 'fiches_mep.pdf',       mep: true  },
   { id: 'schemas-ferraillage', label: 'Schémas de ferraillage',   endpoint: '/generate-schemas-ferraillage', filename: 'schemas_ferraillage.pdf', mep: false },
   { id: 'schemas-mep',      label: 'Schémas isométriques MEP',    endpoint: '/generate-schemas-mep',      filename: 'schemas_mep.pdf',      mep: true  },
+  { id: 'finitions',        label: 'BOQ Finitions',                 endpoint: '/generate-boq-finitions',   filename: 'boq_finitions.pdf',    mep: false },
   { id: 'chat', label: 'Discuter avec Tijan', endpoint: 'chat', filename: '', mep: false },
   { id: 'plan-ba',          label: 'Plans BA',                    endpoint: '/generate-plans-structure',  filename: 'plans_structure.pdf',  mep: false },
   { id: 'plan-mep',         label: 'Plans MEP',                   endpoint: '/generate-plans-mep',        filename: 'plans_mep.pdf',        mep: true  },

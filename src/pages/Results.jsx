@@ -290,6 +290,7 @@ export default function Results() {
   const { restants, consommer } = useCredits()
   const { lang, setLang, t } = useLang()
   const [mepData, setMepData] = useState(state?.mepData || null)
+  const [finitionsData, setFinitionsData] = useState(null)
   const [chatMessages, setChatMessages] = useState(state?.chatHistorique || [])
   const [mepLoading, setMepLoading] = useState(false)
   const [mepError, setMepError] = useState(false)
@@ -883,6 +884,69 @@ export default function Results() {
       )
     }
 
+
+    // ── BOQ FINITIONS ──
+    if (activeTab === 'finitions') {
+      if (!finitionsData && params?.surface_emprise_m2) {
+        fetch(`${BACKEND}/calculate-finitions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params),
+        }).then(r => r.json()).then(d => { if (d.ok) setFinitionsData(d.finitions) }).catch(() => {})
+      }
+      const POSTE_LABELS = {
+        carrelage: 'Carrelage', menuiserie_interieure: 'Menuiserie int.',
+        menuiserie_exterieure: 'Menuiserie ext.', faux_plafond: 'Faux-plafond',
+        peinture: 'Peinture', cuisine: 'Cuisine équipée'
+      }
+      const GAMME_LABELS = { basic: 'BASIC', high_end: 'HIGH-END', luxury: 'LUXURY' }
+      const GAMME_COLORS = { basic: '#3B82F6', high_end: VERT, luxury: '#F59E0B' }
+      return (
+        <Card>
+          <SectionTitle>{t('tab_finitions')}</SectionTitle>
+          <div style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>
+            Estimation des finitions intérieures et extérieures pour 3 gammes de standing.
+          </div>
+          {!finitionsData ? (
+            <Spinner text="Calcul des finitions..." />
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {Object.entries(GAMME_LABELS).map(([gamme, label]) => {
+                const d = finitionsData[gamme] || {}
+                const color = GAMME_COLORS[gamme]
+                return (
+                  <div key={gamme} style={{ border: `2px solid ${color}`, borderRadius: 12, overflow: 'hidden' }}>
+                    <div style={{ background: color, color: '#fff', padding: '10px 14px', fontWeight: 700, fontSize: 13, textAlign: 'center' }}>
+                      {label}
+                    </div>
+                    <div style={{ padding: '10px 12px' }}>
+                      {Object.entries(POSTE_LABELS).map(([poste, pl]) => {
+                        const item = d.detail?.[poste] || {}
+                        return (
+                          <div key={poste} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0F0F0', fontSize: 11 }}>
+                            <div>
+                              <div style={{ fontWeight: 600, color: '#333' }}>{pl}</div>
+                              <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{item.description || ''}</div>
+                            </div>
+                            <div style={{ fontWeight: 700, color: '#111', whiteSpace: 'nowrap', marginLeft: 8 }}>
+                              {(item.montant || 0).toLocaleString('fr-FR')}
+                            </div>
+                          </div>
+                        )
+                      })}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 4px', fontWeight: 800, fontSize: 13, color, borderTop: `2px solid ${color}`, marginTop: 6 }}>
+                        <span>TOTAL</span>
+                        <span>{(d.total || 0).toLocaleString('fr-FR')} FCFA</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </Card>
+      )
+    }
 
     // ── SCHEMAS DE FERRAILLAGE ──
     if (activeTab === 'schemas-ferraillage') {
