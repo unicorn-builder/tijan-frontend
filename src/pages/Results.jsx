@@ -927,6 +927,7 @@ export default function Results() {
                             <div>
                               <div style={{ fontWeight: 600, color: '#333' }}>{pl}</div>
                               <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{item.description || ''}</div>
+                              {item.marques && <div style={{ fontSize: 9, color: '#BBB', marginTop: 1, fontStyle: 'italic' }}>{item.marques}</div>}
                             </div>
                             <div style={{ fontWeight: 700, color: '#111', whiteSpace: 'nowrap', marginLeft: 8 }}>
                               {(item.montant || 0).toLocaleString('fr-FR')}
