@@ -7,7 +7,7 @@ import { VERT, BACKEND } from '../constants'
 import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
-const PRIX_MENSUEL = 500000 // FCFA TTC par mois — offre Cabinet
+const PRIX_MENSUEL = 250000 // FCFA TTC par mois — tarif beta lancement
 const PRIX_UNITE = 200000   // FCFA TTC — étude supplémentaire à l'unité
 const TVA_RATE = 0.18
 
@@ -134,17 +134,18 @@ export default function Pricing() {
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: NAVY, color: '#fff', borderRadius: 20,
-            padding: '5px 16px', fontSize: 11, fontWeight: 600, marginBottom: 14,
+            background: '#E8F5E9', color: VERT, borderRadius: 20,
+            padding: '5px 16px', fontSize: 11, fontWeight: 700, marginBottom: 14,
+            border: `1px solid ${VERT}40`,
           }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: VERT, display: 'inline-block', boxShadow: `0 0 5px ${VERT}` }} />
-            {t('pr_badge')}
+            Tarif Beta — Offre de lancement
           </div>
           <h1 style={{ fontSize: 32, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
-            Une offre simple et complète
+            Lancez-vous au tarif fondateur
           </h1>
           <p style={{ fontSize: 15, color: '#666', maxWidth: 500, margin: '0 auto' }}>
-            Accès illimité à la plateforme, 3 études complètes par mois, support prioritaire 24h.
+            Profitez du tarif beta à 250 000 FCFA/mois — 3 études complètes, tous documents inclus.
           </p>
         </div>
 
@@ -160,7 +161,7 @@ export default function Pricing() {
           {/* Prix */}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: VERT, letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
-              Offre Cabinet
+              Offre Beta — Cabinet
             </div>
             {promoResult ? (
               <>

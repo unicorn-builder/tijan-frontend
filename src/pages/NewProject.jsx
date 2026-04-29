@@ -573,7 +573,7 @@ export default function NewProject() {
                     <div>Abonnement mensuel</div>
                     <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, marginTop: 2 }}>3 études/mois — le plus avantageux</div>
                   </div>
-                  <div style={{ fontSize: 16, fontWeight: 800 }}>500K</div>
+                  <div style={{ fontSize: 16, fontWeight: 800 }}>250K</div>
                 </button>
                 <button onClick={() => { setShowNoCreditModal(false); navigate('/pricing') }} style={{
                   padding: '14px 16px', background: '#1B2A4A', color: '#fff', border: 'none', borderRadius: 10,
