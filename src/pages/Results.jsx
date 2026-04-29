@@ -1086,6 +1086,7 @@ export default function Results() {
     'edge-assessment':    '/generate-edge-assessment',
     'plan-ba':            '/generate-plans-structure',
     'plan-mep':           '/generate-plans-mep',
+    'finitions':          '/generate-boq-finitions',
   }
   const FILENAME_MAP = {
     'structure':          `TijanAI_NoteStructure_${slug}_${today}.pdf`,
@@ -1100,6 +1101,7 @@ export default function Results() {
     'edge-assessment':    `TijanAI_EdgeAssessment_${slug}_${today}.pdf`,
     'plan-ba':            `TijanAI_PlansStructure_${slug}_${today}.pdf`,
     'plan-mep':           `TijanAI_PlansMEP_${slug}_${today}.pdf`,
+    'finitions':          `TijanAI_BOQFinitions_${slug}_${today}.pdf`,
   }
 
   const endpoint = activeTab === 'chat' ? null : ENDPOINT_MAP[activeTab]
