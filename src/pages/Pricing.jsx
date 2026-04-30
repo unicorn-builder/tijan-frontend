@@ -8,7 +8,7 @@ import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
 const PRIX_MENSUEL = 250000 // FCFA TTC par mois — tarif beta lancement
-const PRIX_UNITE = 200000   // FCFA TTC — étude supplémentaire à l'unité
+const PRIX_UNITE = 100000   // FCFA TTC — étude à l'unité
 const TVA_RATE = 0.18
 
 function formatFCFA(n) {
