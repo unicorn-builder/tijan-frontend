@@ -285,7 +285,7 @@ export default function Pricing() {
             {payLoading ? t('pr_redirection') : promoResult ? `S'abonner à ${formatFCFA(effectivePrice)}/mois →` : "S'abonner maintenant →"}
           </button>
           <div style={{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 10 }}>
-            Wave · Orange Money · Free Money · Carte bancaire
+            Paiement sécurisé via Wave
           </div>
         </div>
 
