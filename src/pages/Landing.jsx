@@ -22,10 +22,10 @@ const LIVRABLES_KEYS = [
   { label: 'liv_boq_mep', norme: 'Basic / High-End / Luxury', icon: '📊' },
   { label: 'liv_edge', norme: 'liv_norme_edge', icon: '🌱' },
   { label: 'liv_rapport', norme: 'liv_norme_rapport', icon: '📋' },
-  { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8', icon: '🏗️' },
-  { label: 'liv_plans_mep', norme: 'A3 — 7 lots', icon: '📐' },
   { label: 'liv_schemas_structure', norme: 'liv_norme_schemas_str', icon: '🔀' },
   { label: 'liv_schemas_mep', norme: 'liv_norme_schemas_mep', icon: '🔌' },
+  { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8', icon: '🏗️', comingSoon: true },
+  { label: 'liv_plans_mep', norme: 'A3 — 7 lots', icon: '📐', comingSoon: true },
 ]
 
 const CHIFFRES_KEYS = [
@@ -449,19 +449,26 @@ export default function Landing() {
           {LIVRABLES_KEYS.map((l, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 12,
-              background: '#fff', border: '1px solid #EEF0F2', borderRadius: 10,
+              background: '#fff', border: l.comingSoon ? '1px dashed #E0E0E0' : '1px solid #EEF0F2', borderRadius: 10,
               padding: '16px 18px',
               boxShadow: '0 1px 6px rgba(27,42,74,0.03)',
               transition: 'transform 0.15s',
+              opacity: l.comingSoon ? 0.75 : 1,
+              position: 'relative',
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
             >
               <span style={{ fontSize: 24 }}>{l.icon}</span>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 13, color: '#111' }}>{t(l.label)}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: l.comingSoon ? '#888' : '#111' }}>{t(l.label)}</div>
                 <div style={{ fontSize: 11, color: '#999' }}>{t(l.norme)}</div>
               </div>
+              {l.comingSoon && (
+                <span style={{ fontSize: 9, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '2px 8px', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                  {t('bientot_dispo')}
+                </span>
+              )}
             </div>
           ))}
         </div>

@@ -342,16 +342,22 @@ export default function Pricing() {
               { icon: '💰', label: 'BOQ Structure détaillé (7 lots)' },
               { icon: '⚡', label: 'Note de calcul MEP complète' },
               { icon: '📊', label: 'BOQ MEP 3 gammes' },
-              { icon: '🏗️', label: 'Plans BA (coffrage + ferraillage)' },
-              { icon: '📐', label: 'Plans MEP tous niveaux' },
               { icon: '🔀', label: 'Schémas structure' },
               { icon: '🔌', label: 'Schémas MEP' },
               { icon: '🌱', label: 'Conformité EDGE IFC v3' },
               { icon: '📋', label: 'Rapport exécutif maître ouvrage' },
               { icon: '📑', label: 'Fiches techniques structure + MEP' },
+              { icon: '🏗️', label: 'Plans BA (coffrage + ferraillage)', comingSoon: true },
+              { icon: '📐', label: 'Plans MEP tous niveaux', comingSoon: true },
             ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#444', padding: '4px 0' }}>
-                <span>{item.icon}</span> {item.label}
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: item.comingSoon ? '#999' : '#444', padding: '4px 0' }}>
+                <span>{item.icon}</span>
+                <span style={{ flex: 1 }}>{item.label}</span>
+                {item.comingSoon ? (
+                  <span style={{ fontSize: 9, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '1px 7px', fontWeight: 700 }}>Bientôt</span>
+                ) : (
+                  <span style={{ marginLeft: 'auto', color: VERT, fontWeight: 700 }}>✓</span>
+                )}
               </div>
             ))}
           </div>

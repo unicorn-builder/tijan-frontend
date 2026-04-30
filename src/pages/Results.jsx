@@ -414,65 +414,49 @@ export default function Results() {
 
   const renderContent = () => {
     if (activeTab === 'plan-ba') {
-      const nbPages = (params.nb_niveaux || 4) + 5
       return (
         <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{t('res_plan_ba_titre') || 'Plans Structure (BA)'}</div>
-              <div style={{ fontSize: 11, color: GRIS3 }}>{nbPages} {lang === 'en' ? 'pages' : 'planches'} A3</div>
+          <div style={{ textAlign: 'center', padding: '32px 16px' }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🏗️</div>
+            <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A', marginBottom: 8 }}>{t('res_plan_ba_titre') || 'Plans Structure (BA)'}</div>
+            <span style={{ display: 'inline-block', fontSize: 11, background: '#FFF3E0', color: '#E65100', borderRadius: 12, padding: '4px 14px', fontWeight: 700, marginBottom: 16 }}>
+              {lang === 'en' ? 'Coming soon' : 'Bientôt disponible'}
+            </span>
+            <p style={{ fontSize: 13, color: '#666', maxWidth: 400, margin: '0 auto 20px', lineHeight: 1.6 }}>
+              {lang === 'en'
+                ? 'Automated structural drawings (formwork + reinforcement) generated from your DWG plans and Eurocode calculations. Available in a future update.'
+                : 'Plans d\'exécution BA (coffrage + ferraillage) générés automatiquement à partir de vos plans DWG et des calculs Eurocodes. Disponible dans une prochaine mise à jour.'}
+            </p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {[t('r_lot_coffrage'), t('r_lot_ferr_pot'), t('r_lot_ferr_pou'), t('r_lot_ferr_dal'), t('r_lot_fond'), t('r_lot_nomenclature')].map(s => (
+                <span key={s} style={{ fontSize: 10, background: '#F5F5F5', color: '#999', padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
+              ))}
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}), ...(archiPdfUrl ? { archi_pdf_url: archiPdfUrl } : {}) }; download('/generate-plans-structure', `TijanAI_PlansStructure_${slug}_${today}.pdf`, extra) }} disabled={!!dlLoading} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
-                {dlLoading === '/generate-plans-structure' ? '...' : 'PDF'}
-              </button>
-              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}), ...(archiPdfUrl ? { archi_pdf_url: archiPdfUrl } : {}) }; download('/generate-plans-structure-dwg', `TijanAI_PlansStructure_${slug}_${today}.dxf`, extra) }} disabled={!!dlLoading} style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
-                {dlLoading === '/generate-plans-structure-dwg' ? '...' : 'DWG'}
-              </button>
-            </div>
           </div>
-          <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {[t('r_lot_coffrage'), t('r_lot_ferr_pot'), t('r_lot_ferr_pou'), t('r_lot_ferr_dal'), t('r_lot_fond'), t('r_lot_voiles'), t('r_lot_escaliers'), t('r_lot_coupes'), t('r_lot_nomenclature'), t('r_lot_details')].map(s => (
-              <span key={s} style={{ fontSize: 10, background: VERT_LIGHT, color: VERT, padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
-            ))}
-          </div>
-          <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>
-            {t('res_plan_ba_note') || 'Plans A3 paysage — géométrie DXF architecte — calculs EC2/EC8 réels'}
-          </div>
-          <DwgLevelsManager dwgGeometry={dwgGeometry} setDwgGeometry={setDwgGeometry} supabase={supabase} projectId={projectId} lang={lang} />
         </Card>
       )
     }
 
     if (activeTab === 'plan-mep') {
-      const nbLots = 7
-      const nbLevels = params.nb_niveaux || 4
-      const nbPages = nbLots * nbLevels
       return (
         <Card>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{t('res_plan_mep_titre') || 'Plans MEP (7 lots)'}</div>
-              <div style={{ fontSize: 11, color: GRIS3 }}>{nbPages} {lang === 'en' ? 'pages' : 'planches'} A3 ({nbLots} lots x {nbLevels} {lang === 'en' ? 'levels' : 'niveaux'})</div>
+          <div style={{ textAlign: 'center', padding: '32px 16px' }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>📐</div>
+            <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A', marginBottom: 8 }}>{t('res_plan_mep_titre') || 'Plans MEP (7 lots)'}</div>
+            <span style={{ display: 'inline-block', fontSize: 11, background: '#FFF3E0', color: '#E65100', borderRadius: 12, padding: '4px 14px', fontWeight: 700, marginBottom: 16 }}>
+              {lang === 'en' ? 'Coming soon' : 'Bientôt disponible'}
+            </span>
+            <p style={{ fontSize: 13, color: '#666', maxWidth: 400, margin: '0 auto 20px', lineHeight: 1.6 }}>
+              {lang === 'en'
+                ? 'MEP execution drawings (plumbing, electrical, HVAC, fire safety...) generated from your DWG plans and MEP calculations. Available in a future update.'
+                : 'Plans d\'exécution MEP (plomberie, électricité, CVC, sécurité incendie...) générés automatiquement à partir de vos plans DWG et des calculs MEP. Disponible dans une prochaine mise à jour.'}
+            </p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {[t('r_lot_plomberie'), t('r_lot_electricite'), t('r_lot_cvc'), t('r_lot_secu'), t('r_lot_courants_faibles'), t('r_lot_ascenseurs'), t('r_lot_gtb')].map(s => (
+                <span key={s} style={{ fontSize: 10, background: '#F5F5F5', color: '#999', padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
+              ))}
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}), ...(archiPdfUrl ? { archi_pdf_url: archiPdfUrl } : {}) }; download('/generate-plans-mep', `TijanAI_PlansMEP_${slug}_${today}.pdf`, extra) }} disabled={!!dlLoading} style={{ background: VERT, color: '#fff', border: 'none', borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
-                {dlLoading === '/generate-plans-mep' ? '...' : 'PDF'}
-              </button>
-              <button onClick={() => { const extra = { ...(dwgGeometry ? { dwg_geometry: dwgGeometry } : {}), ...(archiPdfRef ? { archi_pdf_ref: archiPdfRef } : {}), ...(geomRef ? { geom_ref: geomRef } : {}), ...(archiPdfUrl ? { archi_pdf_url: archiPdfUrl } : {}) }; download('/generate-plans-mep-dwg', `TijanAI_PlansMEP_${slug}_${today}.dxf`, extra) }} disabled={!!dlLoading} style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '9px 20px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}>
-                {dlLoading === '/generate-plans-mep-dwg' ? '...' : 'DWG'}
-              </button>
-            </div>
           </div>
-          <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {[t('r_lot_plomberie'), t('r_lot_electricite'), t('r_lot_cvc'), t('r_lot_secu'), t('r_lot_courants_faibles'), t('r_lot_ascenseurs'), t('r_lot_gtb')].map(s => (
-              <span key={s} style={{ fontSize: 10, background: VERT_LIGHT, color: VERT, padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
-            ))}
-          </div>
-          <div style={{ marginTop: 12, fontSize: 11, color: GRIS3 }}>
-            {t('res_plan_mep_note') || 'Plans A3 paysage — géométrie DXF architecte — calculs MEP réels'}
-          </div>
-          <DwgLevelsManager dwgGeometry={dwgGeometry} setDwgGeometry={setDwgGeometry} supabase={supabase} projectId={projectId} lang={lang} />
         </Card>
       )
     }
@@ -1084,8 +1068,7 @@ export default function Results() {
     'schemas-ferraillage':'/generate-schemas-ferraillage',
     'schemas-mep':        '/generate-schemas-mep',
     'edge-assessment':    '/generate-edge-assessment',
-    'plan-ba':            '/generate-plans-structure',
-    'plan-mep':           '/generate-plans-mep',
+    // plan-ba et plan-mep: bientôt disponible — pas de téléchargement
     'finitions':          '/generate-boq-finitions',
   }
   const FILENAME_MAP = {
@@ -1099,8 +1082,7 @@ export default function Results() {
     'schemas-ferraillage':`TijanAI_SchemasFerraillage_${slug}_${today}.pdf`,
     'schemas-mep':        `TijanAI_SchemasMEP_${slug}_${today}.pdf`,
     'edge-assessment':    `TijanAI_EdgeAssessment_${slug}_${today}.pdf`,
-    'plan-ba':            `TijanAI_PlansStructure_${slug}_${today}.pdf`,
-    'plan-mep':           `TijanAI_PlansMEP_${slug}_${today}.pdf`,
+    // plan-ba et plan-mep: bientôt disponible
     'finitions':          `TijanAI_BOQFinitions_${slug}_${today}.pdf`,
   }
 
@@ -1127,19 +1109,20 @@ export default function Results() {
       <div style={{ display: 'flex', height: isMobile ? 'auto' : 'calc(100vh - 56px)', minHeight: isMobile ? '100vh' : 'auto', flexDirection: isMobile ? 'column' : 'row' }}>
         <div style={{ width: isMobile ? '100%' : 220, minWidth: isMobile ? 'unset' : 220, background: '#fff', borderRight: isMobile ? 'none' : `1px solid ${GRIS2}`, borderBottom: isMobile ? `1px solid ${GRIS2}` : 'none', padding: isMobile ? '8px 0' : '16px 0', overflowY: isMobile ? 'hidden' : 'auto', overflowX: isMobile ? 'auto' : 'hidden', flexShrink: 0, display: isMobile ? 'flex' : 'block', whiteSpace: isMobile ? 'nowrap' : 'normal' }}>
           {TABS.map(tab => {
-            const disabled = !tab.endpoint
-            const active = activeTab === tab.id
+            const disabled = !tab.endpoint || tab.comingSoon
+            const active = !disabled && activeTab === tab.id
             return (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+              <button key={tab.id} onClick={() => { if (!disabled) setActiveTab(tab.id) }} style={{
                 display: isMobile ? 'inline-block' : 'block', width: isMobile ? 'auto' : '100%', textAlign: 'left', padding: '10px 20px',
                 border: 'none', fontSize: 12, fontWeight: active ? 600 : 400,
                 color: disabled ? '#BBB' : active ? VERT : '#444',
                 background: active ? VERT_LIGHT : 'transparent',
                 borderLeft: active ? `3px solid ${VERT}` : '3px solid transparent',
-                transition: 'all 0.15s', cursor: 'pointer',
+                transition: 'all 0.15s', cursor: disabled ? 'default' : 'pointer',
+                opacity: disabled ? 0.7 : 1,
               }}>
                 {t(TAB_KEYS[tab.id]) || tab.label}
-                {disabled && <span style={{ marginLeft: 6, fontSize: 9, background: '#F0F0F0', color: '#888', borderRadius: 8, padding: '1px 6px' }}>{t('res_bientot_badge')}</span>}
+                {disabled && <span style={{ marginLeft: 6, fontSize: 9, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '1px 6px', fontWeight: 600 }}>{t('res_bientot_badge')}</span>}
               </button>
             )
           })}

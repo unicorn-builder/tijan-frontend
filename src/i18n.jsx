@@ -37,7 +37,7 @@ const T = {
   cible_architectes: { fr: 'Architectes', en: 'Architects' },
   cible_architectes_desc: { fr: 'Tijan apporte la valeur technique à vos projets sans sous-traiter', en: 'Tijan brings technical value to your projects without subcontracting' },
   livrables_section: { fr: 'LIVRABLES', en: 'DELIVERABLES' },
-  livrables_titre: { fr: '8 documents générés automatiquement', en: '8 documents generated automatically' },
+  livrables_titre: { fr: '10 documents techniques par projet', en: '10 technical documents per project' },
   livrables_desc: { fr: 'Uploadez vos plans → Tijan analyse, dimensionne et chiffre → Téléchargez vos documents', en: 'Upload your plans → Tijan analyzes, designs and costs → Download your documents' },
   livrables_plans_soon: { fr: "Plans d'exécution BA et MEP disponibles très prochainement.", en: 'RC and MEP execution drawings available very soon.' },
   liv_note_structure: { fr: 'Note de calcul structure', en: 'Structural calculation report' },
