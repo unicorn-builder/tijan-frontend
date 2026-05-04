@@ -331,19 +331,25 @@ export default function Landing() {
 
       {/* ── HERO ── */}
       <section style={{
-        padding: '48px 24px 40px',
-        background: '#fff',
+        padding: '56px 24px 48px',
+        background: 'linear-gradient(180deg, #F6FFF8 0%, #F9FEFB 40%, #fff 100%)',
         position: 'relative', overflow: 'hidden',
         borderBottom: '1px solid #EEF0F2',
       }}>
         {/* Subtle grid background */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 0,
-          backgroundImage: `linear-gradient(${VERT}0A 1px, transparent 1px), linear-gradient(90deg, ${VERT}0A 1px, transparent 1px)`,
-          backgroundSize: '48px 48px',
+          backgroundImage: `linear-gradient(${VERT}12 1px, transparent 1px), linear-gradient(90deg, ${VERT}12 1px, transparent 1px)`,
+          backgroundSize: '52px 52px',
           animation: 'gridFade 5s ease-in-out infinite',
-          maskImage: 'radial-gradient(ellipse 60% 80% at 50% 40%, black 10%, transparent 70%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 60% 80% at 50% 40%, black 10%, transparent 70%)',
+          maskImage: 'radial-gradient(ellipse 70% 70% at 50% 50%, black 10%, transparent 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at 50% 50%, black 10%, transparent 70%)',
+        }} />
+        {/* Green glow accent */}
+        <div style={{
+          position: 'absolute', top: -80, right: -60, width: 400, height: 400,
+          borderRadius: '50%', background: `radial-gradient(circle, ${VERT}08 0%, transparent 70%)`,
+          zIndex: 0,
         }} />
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 960, margin: '0 auto' }}>
@@ -372,18 +378,22 @@ export default function Landing() {
 
               {/* Title */}
               <h1 style={{
-                fontSize: 'clamp(28px, 4.5vw, 44px)', fontWeight: 700, color: NAVY, lineHeight: 1.15,
-                marginBottom: 16,
+                fontSize: 'clamp(30px, 4.5vw, 46px)', fontWeight: 800, color: NAVY, lineHeight: 1.12,
+                marginBottom: 18, letterSpacing: '-0.02em',
                 animation: 'slideUp 0.6s ease-out 0.15s both',
               }}>
                 {t('hero_title_1')}<br />
-                <span style={{ color: VERT }}>{t('hero_title_2')}</span>
+                <span style={{
+                  color: VERT,
+                  background: `linear-gradient(180deg, transparent 60%, ${VERT}15 60%)`,
+                  paddingBottom: 2,
+                }}>{t('hero_title_2')}</span>
               </h1>
 
               {/* Subtitle */}
               <p style={{
-                fontSize: 'clamp(14px, 2vw, 16px)', color: '#888', lineHeight: 1.65,
-                marginBottom: 28,
+                fontSize: 'clamp(14px, 2vw, 17px)', color: '#666', lineHeight: 1.7,
+                marginBottom: 30, maxWidth: 440,
                 animation: 'slideUp 0.6s ease-out 0.3s both',
               }}>
                 {t('hero_subtitle')}
@@ -422,6 +432,11 @@ export default function Landing() {
             <div style={{
               flex: '1 1 320px', maxWidth: 420,
               animation: 'slideUp 0.8s ease-out 0.3s both',
+              background: '#fff',
+              borderRadius: 16,
+              border: '1px solid #EEF0F2',
+              boxShadow: '0 4px 24px rgba(27,42,74,0.06)',
+              padding: '20px 16px 12px',
             }}>
               <BuildingAnimation />
             </div>
@@ -433,15 +448,16 @@ export default function Landing() {
       <section style={{
         display: 'flex', gap: 0, justifyContent: 'center',
         borderBottom: '1px solid #EEF0F2',
+        background: '#FAFBFC',
       }}>
         {CHIFFRES_KEYS.map((c, i) => (
           <div key={i} style={{
-            flex: 1, textAlign: 'center', padding: '18px 12px',
+            flex: 1, textAlign: 'center', padding: '22px 12px',
             borderRight: i < CHIFFRES_KEYS.length - 1 ? '1px solid #EEF0F2' : 'none',
             maxWidth: 240,
           }}>
-            <div style={{ fontSize: 26, fontWeight: 700, color: NAVY, letterSpacing: '-0.02em' }}>{c.val}</div>
-            <div style={{ fontSize: 11, color: '#AAA', marginTop: 3 }}>{t(c.label)}</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: NAVY, letterSpacing: '-0.02em' }}>{c.val}</div>
+            <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>{t(c.label)}</div>
           </div>
         ))}
       </section>
@@ -465,43 +481,44 @@ export default function Landing() {
       </section>
 
       {/* ── POUR QUI ── */}
-      <section style={{ padding: '52px 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 600, marginBottom: 6 }}>{t('pour_qui')}</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('pour_qui_titre')}</h2>
+      <section style={{ padding: '56px 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase' }}>{t('pour_qui')}</div>
+          <h2 style={{ fontSize: 28, fontWeight: 700, color: NAVY }}>{t('pour_qui_titre')}</h2>
         </div>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(165px, 1fr))',
-          gap: 14, maxWidth: 920, margin: '0 auto',
+          gap: 16, maxWidth: 920, margin: '0 auto',
         }}>
           {CIBLES.map((c, i) => (
             <div key={i} style={{
-              background: '#fff', border: '1px solid #EEF0F2', borderRadius: 12,
-              padding: '24px 18px', textAlign: 'center',
+              background: '#fff', border: '1px solid #EEF0F2', borderRadius: 14,
+              padding: '28px 18px', textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(27,42,74,0.04)',
               transition: 'transform 0.2s, box-shadow 0.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.06)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(27,42,74,0.08)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(27,42,74,0.04)' }}
             >
               <div style={{
-                width: 44, height: 44, borderRadius: 10, background: c.bg,
+                width: 48, height: 48, borderRadius: 12, background: c.bg,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 12px',
+                margin: '0 auto 14px',
               }}>
-                <c.Icon color={c.color} size={22} />
+                <c.Icon color={c.color} size={24} />
               </div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: NAVY, marginBottom: 5 }}>{t(c.titre)}</div>
-              <div style={{ fontSize: 12, color: '#888', lineHeight: 1.55 }}>{t(c.desc)}</div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: NAVY, marginBottom: 6 }}>{t(c.titre)}</div>
+              <div style={{ fontSize: 12, color: '#777', lineHeight: 1.6 }}>{t(c.desc)}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── LIVRABLES ── */}
-      <section id="livrables" style={{ padding: '52px 24px', background: '#FAFBFC', borderTop: '1px solid #EEF0F2', borderBottom: '1px solid #EEF0F2' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 600, marginBottom: 6 }}>{t('livrables_section')}</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('livrables_titre')}</h2>
+      <section id="livrables" style={{ padding: '56px 24px', background: '#FAFBFC', borderTop: '1px solid #EEF0F2', borderBottom: '1px solid #EEF0F2' }}>
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase' }}>{t('livrables_section')}</div>
+          <h2 style={{ fontSize: 28, fontWeight: 700, color: NAVY }}>{t('livrables_titre')}</h2>
           <p style={{ fontSize: 14, color: '#888', marginTop: 8, maxWidth: 500, margin: '8px auto 0' }}>
             {t('livrables_desc')}
           </p>
@@ -515,7 +532,8 @@ export default function Landing() {
               display: 'flex', alignItems: 'center', gap: 12,
               background: '#fff', border: l.comingSoon ? '1px dashed #D1D5DB' : '1px solid #EEF0F2', borderRadius: 10,
               padding: '14px 18px',
-              transition: 'transform 0.15s',
+              boxShadow: l.comingSoon ? 'none' : '0 1px 8px rgba(27,42,74,0.03)',
+              transition: 'transform 0.15s, box-shadow 0.15s',
               opacity: l.comingSoon ? 0.6 : 1,
             }}
             onMouseEnter={e => { if (!l.comingSoon) e.currentTarget.style.transform = 'translateY(-2px)' }}
@@ -542,10 +560,10 @@ export default function Landing() {
       </section>
 
       {/* ── COMMENT CA MARCHE ── */}
-      <section style={{ padding: '52px 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 600, marginBottom: 6 }}>{t('comment_section')}</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('comment_titre')}</h2>
+      <section style={{ padding: '56px 24px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase' }}>{t('comment_section')}</div>
+          <h2 style={{ fontSize: 28, fontWeight: 700, color: NAVY }}>{t('comment_titre')}</h2>
         </div>
         <div style={{
           display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap',
@@ -558,15 +576,17 @@ export default function Landing() {
           ].map((s, i) => (
             <div key={i} style={{
               flex: '1 1 230px', textAlign: 'center',
-              background: '#fff', borderRadius: 14, padding: '28px 22px',
+              background: '#fff', borderRadius: 14, padding: '32px 22px',
               border: '1px solid #EEF0F2',
+              boxShadow: '0 2px 12px rgba(27,42,74,0.04)',
             }}>
               <div style={{
-                width: 40, height: 40, borderRadius: '50%',
+                width: 44, height: 44, borderRadius: '50%',
                 background: s.bg,
                 color: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 16, fontWeight: 700, margin: '0 auto 14px',
+                fontSize: 17, fontWeight: 800, margin: '0 auto 14px',
+                boxShadow: s.bg === VERT ? `0 3px 12px ${VERT}33` : `0 3px 12px ${NAVY}22`,
               }}>{s.step}</div>
               <div style={{ fontWeight: 700, fontSize: 15, color: NAVY, marginBottom: 7 }}>{s.titre}</div>
               <div style={{ fontSize: 12, color: '#888', lineHeight: 1.6 }}>{s.desc}</div>
@@ -577,27 +597,34 @@ export default function Landing() {
 
       {/* ── CTA FINAL ── */}
       <section style={{
-        padding: '52px 24px', textAlign: 'center',
-        background: '#FAFBFC',
-        borderTop: '1px solid #EEF0F2',
+        padding: '56px 24px', textAlign: 'center',
+        background: `linear-gradient(135deg, ${NAVY} 0%, #243656 100%)`,
+        position: 'relative', overflow: 'hidden',
       }}>
-        <h2 style={{ fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: NAVY, marginBottom: 10 }}>
-          {t('cta_final_titre')}
-        </h2>
-        <p style={{ fontSize: 15, color: '#888', marginBottom: 28, maxWidth: 500, margin: '0 auto 28px' }}>
-          {t('cta_final_desc')}
-        </p>
-        <button onClick={() => navigate('/pricing')} style={{
-          background: VERT, color: '#fff', border: 'none', borderRadius: 10,
-          padding: '15px 40px', fontSize: 16, fontWeight: 600, cursor: 'pointer',
-          boxShadow: `0 4px 24px ${VERT}33`,
-          transition: 'transform 0.15s',
-        }}
-        onMouseEnter={e => { e.target.style.transform = 'translateY(-2px)' }}
-        onMouseLeave={e => { e.target.style.transform = 'translateY(0)' }}
-        >
-          {t('cta_commencer')}
-        </button>
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `linear-gradient(${VERT}10 1px, transparent 1px), linear-gradient(90deg, ${VERT}10 1px, transparent 1px)`,
+          backgroundSize: '40px 40px', opacity: 0.3,
+        }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h2 style={{ fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 800, color: '#fff', marginBottom: 12 }}>
+            {t('cta_final_titre')}
+          </h2>
+          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginBottom: 28, maxWidth: 500, margin: '0 auto 28px' }}>
+            {t('cta_final_desc')}
+          </p>
+          <button onClick={() => navigate('/pricing')} style={{
+            background: VERT, color: '#fff', border: 'none', borderRadius: 10,
+            padding: '15px 40px', fontSize: 16, fontWeight: 600, cursor: 'pointer',
+            boxShadow: `0 4px 24px ${VERT}55`,
+            transition: 'transform 0.15s',
+          }}
+          onMouseEnter={e => { e.target.style.transform = 'translateY(-2px)' }}
+          onMouseLeave={e => { e.target.style.transform = 'translateY(0)' }}
+          >
+            {t('cta_commencer')}
+          </button>
+        </div>
       </section>
 
       {/* ── FOOTER ── */}
