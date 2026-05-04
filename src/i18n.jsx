@@ -15,7 +15,7 @@ const T = {
   // LANDING
   badge_world_first: { fr: "Bureau d'études automatisé", en: "Automated engineering bureau" },
   badge_eurocodes: { fr: 'Eurocodes', en: 'Eurocodes' },
-  hero_title_1: { fr: 'Vos études techniques', en: 'Your engineering studies' },
+  hero_title_1: { fr: 'Vos études structurelles et techniques', en: 'Your structural and technical studies' },
   hero_title_2: { fr: 'en 5 minutes', en: 'in 5 minutes' },
   hero_subtitle: { fr: "Notes de calcul, devis quantitatifs, certifications EDGE — générés automatiquement à partir de vos plans. Conforme EC2, EC8, DTU.", en: "Structural calculations, BOQs, EDGE certifications — automatically generated from your plans. EC2, EC8, DTU compliant." },
   cta_analyser: { fr: 'Analyser mon projet →', en: 'Analyze my project →' },
