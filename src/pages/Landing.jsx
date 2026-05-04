@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import { useAuth } from '../context/AuthContext'
 import { VERT } from '../constants'
@@ -7,25 +7,99 @@ import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
 
-const CIBLES_KEYS = [
-  { icon: '🏦', titre: 'cible_banques', desc: 'cible_banques_desc' },
-  { icon: '🏗️', titre: 'cible_promoteurs', desc: 'cible_promoteurs_desc' },
-  { icon: '🔨', titre: 'cible_constructeurs', desc: 'cible_constructeurs_desc' },
-  { icon: '📐', titre: 'cible_bet', desc: 'cible_bet_desc' },
-  { icon: '🏠', titre: 'cible_architectes', desc: 'cible_architectes_desc' },
+/* ── SVG Icon components ── */
+const IconBank = ({ color = '#185FA5', size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="9" x2="9" y2="21" />
+  </svg>
+)
+const IconPromoter = ({ color = '#854F0B', size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 20h20M5 20V10l7-7 7 7v10" /><rect x="9" y="14" width="6" height="6" />
+  </svg>
+)
+const IconConstructor = ({ color = '#3B6D11', size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94L6.73 20.18a2 2 0 01-2.83 0l-.09-.09a2 2 0 010-2.83l6.73-6.73A6 6 0 016.3 2.93l3.77 3.77" />
+  </svg>
+)
+const IconBET = ({ color = '#534AB7', size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 20l9.5-9.5M9 5l3-3 3 3M14 10l3-3 3 3" /><circle cx="19" cy="19" r="2" />
+  </svg>
+)
+const IconArchitect = ({ color = '#0F6E56', size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 21h18M9 8h1M9 12h1M9 16h1M14 8h1M14 12h1M14 16h1" /><rect x="5" y="2" width="14" height="19" rx="1" />
+  </svg>
+)
+
+// Livrable icons
+const IconDoc = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" /><path d="M14 2v6h6" />
+  </svg>
+)
+const IconGrid = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" />
+  </svg>
+)
+const IconBolt = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+  </svg>
+)
+const IconChart = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 20V10M18 20V4M6 20v-4" />
+  </svg>
+)
+const IconCheck = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" /><path d="M9 12l2 2 4-4" />
+  </svg>
+)
+const IconReport = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+  </svg>
+)
+const IconSchema = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9l9 6 9-6" />
+  </svg>
+)
+const IconMEPSchema = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3" /><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4" />
+  </svg>
+)
+const IconPlan = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" />
+  </svg>
+)
+
+const CIBLES = [
+  { Icon: IconBank, bg: '#E6F1FB', color: '#185FA5', titre: 'cible_banques', desc: 'cible_banques_desc' },
+  { Icon: IconPromoter, bg: '#FAEEDA', color: '#854F0B', titre: 'cible_promoteurs', desc: 'cible_promoteurs_desc' },
+  { Icon: IconConstructor, bg: '#EAF3DE', color: '#3B6D11', titre: 'cible_constructeurs', desc: 'cible_constructeurs_desc' },
+  { Icon: IconBET, bg: '#EEEDFE', color: '#534AB7', titre: 'cible_bet', desc: 'cible_bet_desc' },
+  { Icon: IconArchitect, bg: '#E1F5EE', color: '#0F6E56', titre: 'cible_architectes', desc: 'cible_architectes_desc' },
 ]
 
 const LIVRABLES_KEYS = [
-  { label: 'liv_note_structure', norme: 'EC2 / EC8', icon: '📄' },
-  { label: 'liv_boq_structure', norme: '7 lots', icon: '💰' },
-  { label: 'liv_note_mep', norme: 'NF C 15-100 / DTU 60.11', icon: '⚡' },
-  { label: 'liv_boq_mep', norme: 'Basic / High-End / Luxury', icon: '📊' },
-  { label: 'liv_edge', norme: 'liv_norme_edge', icon: '🌱' },
-  { label: 'liv_rapport', norme: 'liv_norme_rapport', icon: '📋' },
-  { label: 'liv_schemas_structure', norme: 'liv_norme_schemas_str', icon: '🔀' },
-  { label: 'liv_schemas_mep', norme: 'liv_norme_schemas_mep', icon: '🔌' },
-  { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8', icon: '🏗️', comingSoon: true },
-  { label: 'liv_plans_mep', norme: 'A3 — 7 lots', icon: '📐', comingSoon: true },
+  { label: 'liv_note_structure', norme: 'EC2 / EC8', Icon: IconDoc, color: '#185FA5', bg: '#E6F1FB' },
+  { label: 'liv_boq_structure', norme: '7 lots', Icon: IconGrid, color: '#3B6D11', bg: '#EAF3DE' },
+  { label: 'liv_note_mep', norme: 'NF C 15-100 / DTU', Icon: IconBolt, color: '#854F0B', bg: '#FAEEDA' },
+  { label: 'liv_boq_mep', norme: 'Basic / High-End / Luxury', Icon: IconChart, color: '#534AB7', bg: '#EEEDFE' },
+  { label: 'liv_edge', norme: 'liv_norme_edge', Icon: IconCheck, color: '#0F6E56', bg: '#E1F5EE' },
+  { label: 'liv_rapport', norme: 'liv_norme_rapport', Icon: IconReport, color: '#993556', bg: '#FBEAF0' },
+  { label: 'liv_schemas_structure', norme: 'liv_norme_schemas_str', Icon: IconSchema, color: '#993C1D', bg: '#FAECE7' },
+  { label: 'liv_schemas_mep', norme: 'liv_norme_schemas_mep', Icon: IconMEPSchema, color: '#A32D2D', bg: '#FCEBEB' },
+  { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8', Icon: IconPlan, color: '#888', bg: '#F1EFE8', comingSoon: true },
+  { label: 'liv_plans_mep', norme: 'A3 — 7 lots', Icon: IconBET, color: '#888', bg: '#F1EFE8', comingSoon: true },
 ]
 
 const CHIFFRES_KEYS = [
@@ -34,6 +108,8 @@ const CHIFFRES_KEYS = [
   { val: '5', label: 'chiffre_pays' },
   { val: '±15%', label: 'chiffre_precision' },
 ]
+
+const NORMES = ['Eurocode 2 / EC8', 'NF C 15-100', 'DTU 60.11', 'IFC EDGE v3', 'IT 246']
 
 /* ── Animation CSS for all 3 scenes ── */
 const animStyles = `
@@ -79,20 +155,14 @@ const animStyles = `
 function ScenePlan() {
   return (
     <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%' }}>
-      {/* Floor plan drawing itself */}
       <rect x="60" y="185" width="280" height="105" stroke="#94A3B8" strokeWidth="1.5" fill="none" rx="1" className="s1-plan" />
       <line x1="200" y1="185" x2="200" y2="290" stroke="#94A3B8" strokeWidth="1" className="s1-plan" style={{ animationDelay: '0.3s' }} />
       <line x1="270" y1="185" x2="270" y2="290" stroke="#94A3B8" strokeWidth="1" className="s1-plan" style={{ animationDelay: '0.5s' }} />
       <line x1="60" y1="235" x2="200" y2="235" stroke="#94A3B8" strokeWidth="1" className="s1-plan" style={{ animationDelay: '0.7s' }} />
       <line x1="200" y1="255" x2="340" y2="255" stroke="#94A3B8" strokeWidth="1" className="s1-plan" style={{ animationDelay: '0.9s' }} />
-      {/* Door gaps */}
-      <rect x="155" y="232" width="20" height="6" fill="#fff" style={{ animation: 'fadeIn 0.3s ease-out 1.2s both' }} />
-      <rect x="197" y="210" width="6" height="20" fill="#fff" style={{ animation: 'fadeIn 0.3s ease-out 1.4s both' }} />
-
-      {/* Green scan bar */}
+      <rect x="155" y="232" width="20" height="6" fill="#FAFBFC" style={{ animation: 'fadeIn 0.3s ease-out 1.2s both' }} />
+      <rect x="197" y="210" width="6" height="20" fill="#FAFBFC" style={{ animation: 'fadeIn 0.3s ease-out 1.4s both' }} />
       <rect x="55" y="180" width="6" height="120" rx="3" fill={VERT} className="s1-scan" />
-
-      {/* Building rising above plan */}
       <rect x="60" y="180" width="280" height="5" rx="1" fill={NAVY} opacity="0.35"
         className="s1-rise" style={{ animationDelay: '3.8s', transformOrigin: '200px 185px' }} />
       {[80, 155, 230, 320].map((x, i) => (
@@ -110,15 +180,10 @@ function ScenePlan() {
           ))}
         </g>
       ))}
-
-      {/* Electrical helix (orange) */}
       <path d="M85,175 C85,158 120,150 120,133 C120,116 85,108 85,91 C85,74 120,66 120,50"
         stroke="#F59E0B" strokeWidth="2.5" fill="none" strokeLinecap="round" className="s1-pipe-e" />
-      {/* Plumbing helix (blue) */}
       <path d="M315,175 C315,158 280,150 280,133 C280,116 315,108 315,91 C315,74 280,66 280,50"
         stroke="#2563EB" strokeWidth="2.5" fill="none" strokeLinecap="round" className="s1-pipe-p" />
-
-      {/* Labels */}
       <g style={{ animation: 'fadeIn 0.5s ease-out 6.5s both' }}>
         <rect x="150" y="33" width="100" height="18" rx="9" fill={NAVY} opacity="0.9" />
         <text x="200" y="45" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="700" fontFamily="DM Sans, sans-serif">STRUCTURE EC2</text>
@@ -146,34 +211,24 @@ function SceneBrain() {
   ]
   return (
     <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%' }}>
-      {/* Central glow */}
       <ellipse cx="200" cy="145" rx="50" ry="40" fill={VERT} opacity="0.06"
         style={{ animation: 'chipGlow 3s ease-in-out infinite' }} />
-
-      {/* AI chip hexagon */}
       <polygon points="200,105 240,125 240,165 200,185 160,165 160,125"
         stroke={VERT} strokeWidth="2.5" fill="none" className="s2-chip" />
       <circle cx="200" cy="145" r="14" stroke={VERT} strokeWidth="1.5" fill={VERT} fillOpacity="0.12"
         className="s2-chip" style={{ animationDelay: '0.5s' }} />
       <text x="200" y="150" textAnchor="middle" fill={VERT} fontSize="11" fontWeight="800"
         fontFamily="DM Sans, sans-serif" style={{ animation: 'fadeIn 0.5s ease-out 1.2s both' }}>AI</text>
-
-      {/* Connections to deliverables */}
       {outputs.map((o, i) => (
         <g key={i}>
-          {/* Base line */}
           <line x1="200" y1="145" x2={o.x} y2={o.y} stroke="#CBD5E1" strokeWidth="1.5"
             className="s2-conn" style={{ animationDelay: `${1.5 + i * 0.3}s` }} />
-          {/* Pulse overlay */}
           <line x1="200" y1="145" x2={o.x} y2={o.y} stroke={VERT} strokeWidth="1.5" opacity="0.6"
             className="s2-pulse" style={{ animationDelay: `${3 + i * 0.2}s` }} />
-          {/* Outer glow node */}
           <circle cx={o.x} cy={o.y} r="20" fill={o.color} fillOpacity="0.06" stroke={o.color} strokeWidth="1.5"
             className="s2-node" style={{ animationDelay: `${2.5 + i * 0.3}s` }} />
-          {/* Inner solid node */}
           <circle cx={o.x} cy={o.y} r="5" fill={o.color}
             className="s2-node" style={{ animationDelay: `${2.7 + i * 0.3}s` }} />
-          {/* Label with background pill */}
           <g className="s2-label" style={{ animationDelay: `${3.5 + i * 0.3}s` }}>
             <rect x={o.x + o.lx - 28} y={o.y + o.ly - 10} width="56" height="16" rx="8"
               fill={o.color} opacity="0.9" />
@@ -192,34 +247,23 @@ function SceneBrain() {
 function SceneLine() {
   return (
     <svg viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%' }}>
-      {/* Single continuous zigzag line — draws a building floor by floor */}
       <path
         d="M60,275 L340,275 L340,240 L60,240 L60,205 L340,205 L340,170 L60,170 L60,135 L340,135 L340,100 L60,100 L60,68 L340,68"
         stroke={NAVY} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"
         className="s3-line"
       />
-
-      {/* Floor fills (appear after line draws) */}
       {[0, 1, 2, 3, 4, 5].map(i => (
         <rect key={`fill${i}`} x="62" y={243 - i * 35} width="276" height="30" rx="1"
           fill={NAVY} className="s3-fill" style={{ animationDelay: `${4.3 + i * 0.15}s` }} />
       ))}
-
-      {/* Column highlights */}
       {[80, 160, 240, 320].map((x, i) => (
         <rect key={`ch${i}`} x={x} y="68" width="3" height="207" fill={VERT}
           className="s3-fill" style={{ animationDelay: `${5 + i * 0.1}s` }} />
       ))}
-
-      {/* Electrical veins (orange) */}
       <path d="M90,270 C90,248 130,238 130,216 C130,194 90,184 90,162 C90,140 130,130 130,108 C130,86 90,76 90,68"
         stroke="#F59E0B" strokeWidth="2.5" fill="none" strokeLinecap="round" className="s3-vein-e" />
-
-      {/* Plumbing veins (blue) */}
       <path d="M310,270 C310,248 270,238 270,216 C270,194 310,184 310,162 C310,140 270,130 270,108 C270,86 310,76 310,68"
         stroke="#2563EB" strokeWidth="2.5" fill="none" strokeLinecap="round" className="s3-vein-p" />
-
-      {/* Bottom label */}
       <text x="200" y="295" textAnchor="middle" fill="#94A3B8" fontSize="9" fontWeight="600"
         fontFamily="DM Sans, sans-serif" style={{ animation: 'fadeIn 0.5s ease-out 6.5s both' }}>
         Un trait continu · Structure + MEP
@@ -245,7 +289,6 @@ function BuildingAnimation() {
         {scene === 1 && <SceneBrain />}
         {scene === 2 && <SceneLine />}
       </div>
-      {/* Navigation dots */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 14 }}>
         {[0, 1, 2].map(i => (
           <button key={i} onClick={() => setScene(i)} style={{
@@ -257,7 +300,7 @@ function BuildingAnimation() {
         ))}
       </div>
       <div style={{ textAlign: 'center', marginTop: 8, fontSize: 10, color: '#94A3B8', fontWeight: 600, letterSpacing: 1 }}>
-        {['VOTRE PLAN \u2192 NOTRE ANALYSE', "L'IA QUI CON\u00C7OIT", 'UN TRAIT, UN B\u00C2TIMENT'][scene]}
+        {[`VOTRE PLAN → NOTRE ANALYSE`, `L'IA QUI CONÇOIT`, `UN TRAIT, UN BÂTIMENT`][scene]}
       </div>
     </div>
   )
@@ -289,36 +332,33 @@ export default function Landing() {
       {/* ── HERO ── */}
       <section style={{
         padding: '48px 24px 40px',
-        background: 'linear-gradient(180deg, #F6FFF8 0%, #FAFFFE 50%, #fff 100%)',
+        background: '#fff',
         position: 'relative', overflow: 'hidden',
+        borderBottom: '1px solid #EEF0F2',
       }}>
         {/* Subtle grid background */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 0,
-          backgroundImage: `linear-gradient(${VERT}18 1px, transparent 1px), linear-gradient(90deg, ${VERT}18 1px, transparent 1px)`,
-          backgroundSize: '52px 52px',
+          backgroundImage: `linear-gradient(${VERT}0A 1px, transparent 1px), linear-gradient(90deg, ${VERT}0A 1px, transparent 1px)`,
+          backgroundSize: '48px 48px',
           animation: 'gridFade 5s ease-in-out infinite',
-          maskImage: 'radial-gradient(ellipse 70% 70% at 50% 50%, black 10%, transparent 70%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at 50% 50%, black 10%, transparent 70%)',
+          maskImage: 'radial-gradient(ellipse 60% 80% at 50% 40%, black 10%, transparent 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 80% at 50% 40%, black 10%, transparent 70%)',
         }} />
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 960, margin: '0 auto' }}>
-
-          {/* Two columns: text left, animation right */}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 32,
             flexWrap: 'wrap', justifyContent: 'center',
           }}>
-
             {/* Left: Text content */}
             <div style={{ flex: '1 1 380px', maxWidth: 500, textAlign: 'left' }}>
               {/* Badge */}
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
-                background: NAVY, borderRadius: 20,
-                padding: '7px 18px', fontSize: 11, color: '#fff', fontWeight: 600,
+                background: '#F6FFF8', border: '1px solid #D4EDDA', borderRadius: 20,
+                padding: '7px 18px', fontSize: 11, color: '#2D7A3A', fontWeight: 600,
                 marginBottom: 20, letterSpacing: 0.2,
-                boxShadow: `0 2px 16px ${NAVY}33`,
                 animation: 'slideUp 0.6s ease-out both',
               }}>
                 <span style={{
@@ -326,13 +366,13 @@ export default function Landing() {
                   display: 'inline-block', boxShadow: `0 0 8px ${VERT}`,
                 }} />
                 {t('badge_world_first')}
-                <span style={{ opacity: 0.35 }}>·</span>
+                <span style={{ opacity: 0.35 }}>{'·'}</span>
                 {t('badge_eurocodes')}
               </div>
 
               {/* Title */}
               <h1 style={{
-                fontSize: 'clamp(26px, 4.5vw, 44px)', fontWeight: 800, color: NAVY, lineHeight: 1.1,
+                fontSize: 'clamp(28px, 4.5vw, 44px)', fontWeight: 700, color: NAVY, lineHeight: 1.15,
                 marginBottom: 16,
                 animation: 'slideUp 0.6s ease-out 0.15s both',
               }}>
@@ -342,7 +382,7 @@ export default function Landing() {
 
               {/* Subtitle */}
               <p style={{
-                fontSize: 'clamp(14px, 2vw, 16px)', color: '#555', lineHeight: 1.65,
+                fontSize: 'clamp(14px, 2vw, 16px)', color: '#888', lineHeight: 1.65,
                 marginBottom: 28,
                 animation: 'slideUp 0.6s ease-out 0.3s both',
               }}>
@@ -356,19 +396,18 @@ export default function Landing() {
               }}>
                 <button onClick={() => navigate(user ? '/projects/new' : '/login')} style={{
                   background: VERT, color: '#fff', border: 'none', borderRadius: 10,
-                  padding: '14px 34px', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-                  boxShadow: `0 4px 20px ${VERT}44`,
+                  padding: '14px 34px', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+                  boxShadow: `0 4px 20px ${VERT}33`,
                   transition: 'transform 0.15s, box-shadow 0.15s',
                 }}
-                onMouseEnter={e => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = `0 6px 28px ${VERT}55` }}
-                onMouseLeave={e => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = `0 4px 20px ${VERT}44` }}
+                onMouseEnter={e => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = `0 6px 28px ${VERT}44` }}
+                onMouseLeave={e => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = `0 4px 20px ${VERT}33` }}
                 >
                   {t('cta_analyser')}
                 </button>
                 <button onClick={() => document.getElementById('livrables')?.scrollIntoView({ behavior: 'smooth' })} style={{
-                  background: '#fff', color: NAVY, border: `1.5px solid ${NAVY}18`, borderRadius: 10,
+                  background: '#fff', color: NAVY, border: '1px solid #E5E7EB', borderRadius: 10,
                   padding: '13px 28px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                  boxShadow: '0 2px 10px rgba(27,42,74,0.05)',
                   transition: 'transform 0.15s',
                 }}
                 onMouseEnter={e => { e.target.style.transform = 'translateY(-1px)' }}
@@ -387,85 +426,113 @@ export default function Landing() {
               <BuildingAnimation />
             </div>
           </div>
-
-          {/* Chiffres */}
-          <div style={{
-            display: 'flex', gap: 32, justifyContent: 'center', marginTop: 44, flexWrap: 'wrap',
-          }}>
-            {CHIFFRES_KEYS.map((c, i) => (
-              <div key={i} style={{
-                textAlign: 'center',
-                animation: `slideUp 0.5s ease-out ${0.7 + i * 0.1}s both`,
-              }}>
-                <div style={{ fontSize: 30, fontWeight: 800, color: NAVY, letterSpacing: '-0.02em' }}>{c.val}</div>
-                <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>{t(c.label)}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
+      {/* ── CHIFFRES BAR ── */}
+      <section style={{
+        display: 'flex', gap: 0, justifyContent: 'center',
+        borderBottom: '1px solid #EEF0F2',
+      }}>
+        {CHIFFRES_KEYS.map((c, i) => (
+          <div key={i} style={{
+            flex: 1, textAlign: 'center', padding: '18px 12px',
+            borderRight: i < CHIFFRES_KEYS.length - 1 ? '1px solid #EEF0F2' : 'none',
+            maxWidth: 240,
+          }}>
+            <div style={{ fontSize: 26, fontWeight: 700, color: NAVY, letterSpacing: '-0.02em' }}>{c.val}</div>
+            <div style={{ fontSize: 11, color: '#AAA', marginTop: 3 }}>{t(c.label)}</div>
+          </div>
+        ))}
+      </section>
+
+      {/* ── NORMES BAR ── */}
+      <section style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28,
+        padding: '12px 24px', flexWrap: 'wrap',
+        borderBottom: '1px solid #EEF0F2',
+        background: '#FAFBFC',
+      }}>
+        {NORMES.map((n, i) => (
+          <div key={i} style={{
+            fontSize: 11, color: '#BBB', fontWeight: 600, letterSpacing: 0.3,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: VERT, opacity: 0.6, display: 'inline-block' }} />
+            {n}
+          </div>
+        ))}
+      </section>
+
       {/* ── POUR QUI ── */}
-      <section style={{ padding: '48px 16px', background: '#FAFBFC' }}>
+      <section style={{ padding: '52px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>{t('pour_qui')}</div>
-          <h2 style={{ fontSize: 28, fontWeight: 700, color: NAVY }}>{t('pour_qui_titre')}</h2>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 600, marginBottom: 6 }}>{t('pour_qui')}</div>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('pour_qui_titre')}</h2>
         </div>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(165px, 1fr))',
           gap: 14, maxWidth: 920, margin: '0 auto',
         }}>
-          {CIBLES_KEYS.map((c, i) => (
+          {CIBLES.map((c, i) => (
             <div key={i} style={{
               background: '#fff', border: '1px solid #EEF0F2', borderRadius: 12,
-              padding: '22px 18px', textAlign: 'center',
-              boxShadow: '0 1px 8px rgba(27,42,74,0.04)',
+              padding: '24px 18px', textAlign: 'center',
               transition: 'transform 0.2s, box-shadow 0.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 4px 20px rgba(67,169,86,0.10)` }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 8px rgba(27,42,74,0.04)' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.06)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
             >
-              <div style={{ fontSize: 30, marginBottom: 10 }}>{c.icon}</div>
+              <div style={{
+                width: 44, height: 44, borderRadius: 10, background: c.bg,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 12px',
+              }}>
+                <c.Icon color={c.color} size={22} />
+              </div>
               <div style={{ fontWeight: 700, fontSize: 14, color: NAVY, marginBottom: 5 }}>{t(c.titre)}</div>
-              <div style={{ fontSize: 12, color: '#666', lineHeight: 1.55 }}>{t(c.desc)}</div>
+              <div style={{ fontSize: 12, color: '#888', lineHeight: 1.55 }}>{t(c.desc)}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── LIVRABLES ── */}
-      <section id="livrables" style={{ padding: '48px 16px' }}>
+      <section id="livrables" style={{ padding: '52px 24px', background: '#FAFBFC', borderTop: '1px solid #EEF0F2', borderBottom: '1px solid #EEF0F2' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>{t('livrables_section')}</div>
-          <h2 style={{ fontSize: 28, fontWeight: 700, color: NAVY }}>{t('livrables_titre')}</h2>
-          <p style={{ fontSize: 14, color: '#666', marginTop: 8, maxWidth: 500, margin: '8px auto 0' }}>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 600, marginBottom: 6 }}>{t('livrables_section')}</div>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('livrables_titre')}</h2>
+          <p style={{ fontSize: 14, color: '#888', marginTop: 8, maxWidth: 500, margin: '8px auto 0' }}>
             {t('livrables_desc')}
           </p>
         </div>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-          gap: 12, maxWidth: 920, margin: '0 auto',
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 10, maxWidth: 920, margin: '0 auto',
         }}>
           {LIVRABLES_KEYS.map((l, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 12,
-              background: '#fff', border: l.comingSoon ? '1px dashed #E0E0E0' : '1px solid #EEF0F2', borderRadius: 10,
-              padding: '16px 18px',
-              boxShadow: '0 1px 6px rgba(27,42,74,0.03)',
+              background: '#fff', border: l.comingSoon ? '1px dashed #D1D5DB' : '1px solid #EEF0F2', borderRadius: 10,
+              padding: '14px 18px',
               transition: 'transform 0.15s',
-              opacity: l.comingSoon ? 0.75 : 1,
-              position: 'relative',
+              opacity: l.comingSoon ? 0.6 : 1,
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)' }}
+            onMouseEnter={e => { if (!l.comingSoon) e.currentTarget.style.transform = 'translateY(-2px)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
             >
-              <span style={{ fontSize: 24 }}>{l.icon}</span>
+              <div style={{
+                width: 32, height: 32, borderRadius: 8, background: l.bg,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <l.Icon color={l.color} />
+              </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: 13, color: l.comingSoon ? '#888' : '#111' }}>{t(l.label)}</div>
-                <div style={{ fontSize: 11, color: '#999' }}>{t(l.norme)}</div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: l.comingSoon ? '#999' : NAVY }}>{t(l.label)}</div>
+                <div style={{ fontSize: 11, color: '#AAA' }}>{t(l.norme)}</div>
               </div>
               {l.comingSoon && (
-                <span style={{ fontSize: 9, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '2px 8px', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 10, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '3px 10px', fontWeight: 600, whiteSpace: 'nowrap' }}>
                   {t('bientot_dispo')}
                 </span>
               )}
@@ -474,37 +541,35 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── COMMENT ÇA MARCHE ── */}
-      <section style={{ padding: '48px 16px', background: '#FAFBFC' }}>
+      {/* ── COMMENT CA MARCHE ── */}
+      <section style={{ padding: '52px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 6 }}>{t('comment_section')}</div>
-          <h2 style={{ fontSize: 28, fontWeight: 700, color: NAVY }}>{t('comment_titre')}</h2>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 600, marginBottom: 6 }}>{t('comment_section')}</div>
+          <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY }}>{t('comment_titre')}</h2>
         </div>
         <div style={{
-          display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap',
+          display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap',
           maxWidth: 820, margin: '0 auto',
         }}>
           {[
-            { step: '1', titre: t('step1_titre'), desc: t('step1_desc') },
-            { step: '2', titre: t('step2_titre'), desc: t('step2_desc') },
-            { step: '3', titre: t('step3_titre'), desc: t('step3_desc') },
+            { step: '1', titre: t('step1_titre'), desc: t('step1_desc'), bg: NAVY },
+            { step: '2', titre: t('step2_titre'), desc: t('step2_desc'), bg: VERT },
+            { step: '3', titre: t('step3_titre'), desc: t('step3_desc'), bg: NAVY },
           ].map((s, i) => (
             <div key={i} style={{
               flex: '1 1 230px', textAlign: 'center',
               background: '#fff', borderRadius: 14, padding: '28px 22px',
               border: '1px solid #EEF0F2',
-              boxShadow: '0 1px 8px rgba(27,42,74,0.04)',
             }}>
               <div style={{
-                width: 44, height: 44, borderRadius: '50%',
-                background: `linear-gradient(135deg, ${VERT}, #2E8B4A)`,
+                width: 40, height: 40, borderRadius: '50%',
+                background: s.bg,
                 color: '#fff',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 18, fontWeight: 800, margin: '0 auto 14px',
-                boxShadow: `0 3px 12px ${VERT}33`,
+                fontSize: 16, fontWeight: 700, margin: '0 auto 14px',
               }}>{s.step}</div>
               <div style={{ fontWeight: 700, fontSize: 15, color: NAVY, marginBottom: 7 }}>{s.titre}</div>
-              <div style={{ fontSize: 12, color: '#666', lineHeight: 1.6 }}>{s.desc}</div>
+              <div style={{ fontSize: 12, color: '#888', lineHeight: 1.6 }}>{s.desc}</div>
             </div>
           ))}
         </div>
@@ -512,55 +577,48 @@ export default function Landing() {
 
       {/* ── CTA FINAL ── */}
       <section style={{
-        padding: '48px 16px', textAlign: 'center',
-        background: `linear-gradient(135deg, ${NAVY} 0%, #243656 100%)`,
-        position: 'relative', overflow: 'hidden',
+        padding: '52px 24px', textAlign: 'center',
+        background: '#FAFBFC',
+        borderTop: '1px solid #EEF0F2',
       }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `linear-gradient(${VERT}10 1px, transparent 1px), linear-gradient(90deg, ${VERT}10 1px, transparent 1px)`,
-          backgroundSize: '40px 40px', opacity: 0.3,
-        }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h2 style={{ fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 800, color: '#fff', marginBottom: 14 }}>
-            {t('cta_final_titre')}
-          </h2>
-          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', marginBottom: 28, maxWidth: 500, margin: '0 auto 28px' }}>
-            {t('cta_final_desc')}
-          </p>
-          <button onClick={() => navigate('/pricing')} style={{
-            background: VERT, color: '#fff', border: 'none', borderRadius: 10,
-            padding: '15px 40px', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-            boxShadow: `0 4px 24px ${VERT}55`,
-            transition: 'transform 0.15s',
-          }}
-          onMouseEnter={e => { e.target.style.transform = 'translateY(-2px)' }}
-          onMouseLeave={e => { e.target.style.transform = 'translateY(0)' }}
-          >
-            {t('cta_commencer')}
-          </button>
-        </div>
+        <h2 style={{ fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 700, color: NAVY, marginBottom: 10 }}>
+          {t('cta_final_titre')}
+        </h2>
+        <p style={{ fontSize: 15, color: '#888', marginBottom: 28, maxWidth: 500, margin: '0 auto 28px' }}>
+          {t('cta_final_desc')}
+        </p>
+        <button onClick={() => navigate('/pricing')} style={{
+          background: VERT, color: '#fff', border: 'none', borderRadius: 10,
+          padding: '15px 40px', fontSize: 16, fontWeight: 600, cursor: 'pointer',
+          boxShadow: `0 4px 24px ${VERT}33`,
+          transition: 'transform 0.15s',
+        }}
+        onMouseEnter={e => { e.target.style.transform = 'translateY(-2px)' }}
+        onMouseLeave={e => { e.target.style.transform = 'translateY(0)' }}
+        >
+          {t('cta_commencer')}
+        </button>
       </section>
 
       {/* ── FOOTER ── */}
       <footer style={{
         padding: '22px 32px', borderTop: '1px solid #EEF0F2',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16,
-        fontSize: 11, color: '#aaa',
+        fontSize: 11, color: '#CCC',
       }}>
-        <div>© 2026 Tijan AI · Engineering Intelligence for Africa</div>
+        <div>{'©'} 2026 Tijan AI {'·'} Engineering Intelligence for Africa</div>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => navigate('/impact')} style={{
-            background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11,
+            background: 'none', border: 'none', color: '#CCC', cursor: 'pointer', fontSize: 11,
           }}>{t('nav_impact')}</button>
           <button onClick={() => navigate('/cgu')} style={{
-            background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11,
+            background: 'none', border: 'none', color: '#CCC', cursor: 'pointer', fontSize: 11,
           }}>Conditions d'utilisation</button>
           <button onClick={() => navigate('/investors')} style={{
-            background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: 11,
+            background: 'none', border: 'none', color: '#CCC', cursor: 'pointer', fontSize: 11,
           }}>{t('nav_investors')}</button>
         </div>
-        <div>Dakar · Abidjan · Casablanca · Lagos · Accra</div>
+        <div>Dakar {'·'} Abidjan {'·'} Casablanca {'·'} Lagos {'·'} Accra</div>
       </footer>
     </div>
   )
