@@ -60,10 +60,6 @@ const PLAN_ARCHIVE_MAP = {
   '/generate-plans-mep':           { key: 'plans_mep',           ext: 'pdf', contentType: 'application/pdf' },
   '/generate-plans-structure-dwg': { key: 'plans_structure_dxf', ext: 'dxf', contentType: 'application/dxf' },
   '/generate-plans-mep-dwg':       { key: 'plans_mep_dxf',       ext: 'dxf', contentType: 'application/dxf' },
-  '/generate-plans-structure-pro': { key: 'plans_structure_pro', ext: 'pdf', contentType: 'application/pdf' },
-  '/generate-plans-mep-pro':       { key: 'plans_mep_pro',       ext: 'pdf', contentType: 'application/pdf' },
-  '/generate-plans-structure-pro?format=dwg': { key: 'plans_structure_pro_dxf', ext: 'dxf', contentType: 'application/dxf' },
-  '/generate-plans-mep-pro?format=dwg':       { key: 'plans_mep_pro_dxf',       ext: 'dxf', contentType: 'application/dxf' },
 }
 
 async function archivePlan({ supabase, projectId, endpoint, blob }) {
@@ -416,35 +412,6 @@ export default function Results() {
   const beton_m3 = boq.beton_total_m3 || 0
   const acier_kg = boq.acier_kg || 0
 
-  // Download button for plans — supports both PDF and DWG
-  const DownloadBtn = ({ endpoint, label, secondary }) => {
-    const isLoading = dlLoading === endpoint
-    const _slug = (params.nom || 'Projet').replace(/\s+/g,'').slice(0,20)
-    const _today = new Date().toISOString().slice(0,10).replace(/-/g,'')
-    const ext = endpoint.includes('format=dwg') ? 'dxf' : 'pdf'
-    const filename = `TijanAI_Plans_${_slug}_${_today}.${ext}`
-    return (
-      <button
-        disabled={!!dlLoading}
-        onClick={() => download(endpoint, filename)}
-        style={{
-          background: secondary ? '#fff' : VERT,
-          color: secondary ? VERT : '#fff',
-          border: secondary ? `1.5px solid ${VERT}` : 'none',
-          borderRadius: 8,
-          padding: '10px 20px',
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: dlLoading ? 'wait' : 'pointer',
-          opacity: dlLoading ? 0.6 : 1,
-          transition: 'all 0.2s',
-        }}
-      >
-        {isLoading ? (lang === 'en' ? 'Generating...' : 'Génération...') : label}
-      </button>
-    )
-  }
-
   const renderContent = () => {
     if (activeTab === 'plan-ba') {
       return (
@@ -452,19 +419,18 @@ export default function Results() {
           <div style={{ textAlign: 'center', padding: '32px 16px' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🏗️</div>
             <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A', marginBottom: 8 }}>{t('res_plan_ba_titre') || 'Plans Structure (BA)'}</div>
+            <span style={{ display: 'inline-block', fontSize: 11, background: '#FFF3E0', color: '#E65100', borderRadius: 12, padding: '4px 14px', fontWeight: 700, marginBottom: 16 }}>
+              {lang === 'en' ? 'Coming soon' : 'Bientôt disponible'}
+            </span>
             <p style={{ fontSize: 13, color: '#666', maxWidth: 400, margin: '0 auto 20px', lineHeight: 1.6 }}>
               {lang === 'en'
-                ? 'Structural drawings (formwork + reinforcement) generated from your project parameters and Eurocode calculations.'
-                : 'Plans d\'exécution BA (coffrage + ferraillage) générés à partir de vos paramètres projet et des calculs Eurocodes.'}
+                ? 'Automated structural drawings (formwork + reinforcement) generated from your DWG plans and Eurocode calculations. Available in a future update.'
+                : 'Plans d\'exécution BA (coffrage + ferraillage) générés automatiquement à partir de vos plans DWG et des calculs Eurocodes. Disponible dans une prochaine mise à jour.'}
             </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 20 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {[t('r_lot_coffrage'), t('r_lot_ferr_pot'), t('r_lot_ferr_pou'), t('r_lot_ferr_dal'), t('r_lot_fond'), t('r_lot_nomenclature')].map(s => (
-                <span key={s} style={{ fontSize: 10, background: '#F0F7F1', color: '#43A956', padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
+                <span key={s} style={{ fontSize: 10, background: '#F5F5F5', color: '#999', padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
               ))}
-            </div>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <DownloadBtn endpoint="/generate-plans-structure-pro" label={lang === 'en' ? '📄 Download PDF' : '📄 Télécharger PDF'} />
-              <DownloadBtn endpoint="/generate-plans-structure-pro?format=dwg" label={lang === 'en' ? '📐 Download DXF' : '📐 Télécharger DXF'} secondary />
             </div>
           </div>
         </Card>
@@ -477,19 +443,18 @@ export default function Results() {
           <div style={{ textAlign: 'center', padding: '32px 16px' }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>📐</div>
             <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A', marginBottom: 8 }}>{t('res_plan_mep_titre') || 'Plans MEP (7 lots)'}</div>
+            <span style={{ display: 'inline-block', fontSize: 11, background: '#FFF3E0', color: '#E65100', borderRadius: 12, padding: '4px 14px', fontWeight: 700, marginBottom: 16 }}>
+              {lang === 'en' ? 'Coming soon' : 'Bientôt disponible'}
+            </span>
             <p style={{ fontSize: 13, color: '#666', maxWidth: 400, margin: '0 auto 20px', lineHeight: 1.6 }}>
               {lang === 'en'
-                ? 'MEP execution drawings (plumbing, electrical, HVAC, fire safety...) generated from your project parameters and MEP calculations.'
-                : 'Plans d\'exécution MEP (plomberie, électricité, CVC, sécurité incendie...) générés à partir de vos paramètres projet et des calculs MEP.'}
+                ? 'MEP execution drawings (plumbing, electrical, HVAC, fire safety...) generated from your DWG plans and MEP calculations. Available in a future update.'
+                : 'Plans d\'exécution MEP (plomberie, électricité, CVC, sécurité incendie...) générés automatiquement à partir de vos plans DWG et des calculs MEP. Disponible dans une prochaine mise à jour.'}
             </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 20 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
               {[t('r_lot_plomberie'), t('r_lot_electricite'), t('r_lot_cvc'), t('r_lot_secu'), t('r_lot_courants_faibles'), t('r_lot_ascenseurs'), t('r_lot_gtb')].map(s => (
-                <span key={s} style={{ fontSize: 10, background: '#F0F7F1', color: '#43A956', padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
+                <span key={s} style={{ fontSize: 10, background: '#F5F5F5', color: '#999', padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
               ))}
-            </div>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <DownloadBtn endpoint="/generate-plans-mep-pro" label={lang === 'en' ? '📄 Download PDF' : '📄 Télécharger PDF'} />
-              <DownloadBtn endpoint="/generate-plans-mep-pro?format=dwg" label={lang === 'en' ? '📐 Download DXF' : '📐 Télécharger DXF'} secondary />
             </div>
           </div>
         </Card>
