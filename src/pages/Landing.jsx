@@ -98,8 +98,8 @@ const LIVRABLES_KEYS = [
   { label: 'liv_rapport', norme: 'liv_norme_rapport', Icon: IconReport, color: '#993556', bg: '#FBEAF0' },
   { label: 'liv_schemas_structure', norme: 'liv_norme_schemas_str', Icon: IconSchema, color: '#993C1D', bg: '#FAECE7' },
   { label: 'liv_schemas_mep', norme: 'liv_norme_schemas_mep', Icon: IconMEPSchema, color: '#A32D2D', bg: '#FCEBEB' },
-  { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8', Icon: IconPlan, color: '#888', bg: '#F1EFE8', comingSoon: true },
-  { label: 'liv_plans_mep', norme: 'A3 — 7 lots', Icon: IconBET, color: '#888', bg: '#F1EFE8', comingSoon: true },
+  { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8 — DWG/DXF', Icon: IconPlan, color: '#1B6B2A', bg: '#E8F5E9' },
+  { label: 'liv_plans_mep', norme: 'A3 — 7 lots — DWG/DXF', Icon: IconBET, color: '#1B6B2A', bg: '#E8F5E9' },
 ]
 
 const CHIFFRES_KEYS = [

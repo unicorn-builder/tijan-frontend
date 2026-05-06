@@ -58,9 +58,8 @@ const Spinner = ({ text = '' }) => (
 const PLAN_ARCHIVE_MAP = {
   '/generate-plans-structure':     { key: 'plans_structure',     ext: 'pdf', contentType: 'application/pdf' },
   '/generate-plans-mep':           { key: 'plans_mep',           ext: 'pdf', contentType: 'application/pdf' },
-  '/generate-dossier-bim':         { key: 'dossier_bim',         ext: 'pdf', contentType: 'application/pdf' },
-  '/generate-plans-structure-dwg': { key: 'plans_structure_dxf', ext: 'dxf', contentType: 'application/dxf' },
-  '/generate-plans-mep-dwg':       { key: 'plans_mep_dxf',       ext: 'dxf', contentType: 'application/dxf' },
+  '/generate-plans-structure-pro': { key: 'plans_structure_dwg', ext: 'dwg', contentType: 'application/octet-stream' },
+  '/generate-plans-mep-pro':       { key: 'plans_mep_dwg',       ext: 'dwg', contentType: 'application/octet-stream' },
 }
 
 async function archivePlan({ supabase, projectId, endpoint, blob }) {
@@ -414,68 +413,54 @@ export default function Results() {
   const acier_kg = boq.acier_kg || 0
 
   const renderContent = () => {
-    if (activeTab === 'plan-ba') {
+    if (activeTab === 'plan-ba' || activeTab === 'plan-mep') {
+      const hasDwg = dwgGeometry && Object.keys(dwgGeometry).length > 0
+      const isPlanBA = activeTab === 'plan-ba'
+      const title = isPlanBA
+        ? (lang === 'en' ? 'Structural Drawings (BA)' : 'Plans Structure (BA)')
+        : (lang === 'en' ? 'MEP Drawings (7 trades)' : 'Plans MEP (7 lots)')
+      const desc = isPlanBA
+        ? (lang === 'en'
+            ? 'Formwork and reinforcement execution drawings generated from Eurocode calculations. Includes axes, dimensions, and title block.'
+            : 'Plans d\'exécution coffrage et ferraillage générés à partir des calculs Eurocodes. Inclut axes, cotations et cartouche.')
+        : (lang === 'en'
+            ? 'MEP execution drawings with equipment placement, network routing, and nomenclature per trade.'
+            : 'Plans d\'exécution MEP avec placement des équipements, routage des réseaux et nomenclature par lot.')
+      const badges = isPlanBA
+        ? [lang === 'en' ? 'Formwork' : 'Coffrage', lang === 'en' ? 'Columns' : 'Poteaux', lang === 'en' ? 'Beams' : 'Poutres', lang === 'en' ? 'Slabs' : 'Dalles', lang === 'en' ? 'Foundations' : 'Fondations']
+        : [lang === 'en' ? 'Plumbing' : 'Plomberie', lang === 'en' ? 'Electrical' : 'Électricité', 'CVC/HVAC', lang === 'en' ? 'Fire safety' : 'Sécurité incendie', lang === 'en' ? 'Low current' : 'Courants faibles']
       return (
         <Card>
           <div style={{ padding: '24px 16px' }}>
-            <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A', marginBottom: 12 }}>
-              {lang === 'en' ? 'Structural Drawings (BA)' : 'Plans Structure (BA)'}
-            </div>
-            <p style={{ fontSize: 13, color: '#666', marginBottom: 16, lineHeight: 1.6 }}>
-              {lang === 'en'
-                ? 'Formwork and reinforcement execution drawings generated from Eurocode calculations. Includes axes, dimensions, and title block.'
-                : 'Plans d\'exécution coffrage et ferraillage générés à partir des calculs Eurocodes. Inclut axes, cotations et cartouche.'}
-            </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[lang === 'en' ? 'Formwork' : 'Coffrage', lang === 'en' ? 'Columns' : 'Poteaux', lang === 'en' ? 'Beams' : 'Poutres', lang === 'en' ? 'Slabs' : 'Dalles', lang === 'en' ? 'Foundations' : 'Fondations'].map(s => (
+            <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A', marginBottom: 12 }}>{title}</div>
+            <p style={{ fontSize: 13, color: '#666', marginBottom: 16, lineHeight: 1.6 }}>{desc}</p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+              {badges.map(s => (
                 <span key={s} style={{ fontSize: 10, background: VERT_LIGHT, color: VERT_DARK, padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
               ))}
             </div>
+            {!hasDwg && (
+              <div style={{ background: '#FFF8E1', border: '1px solid #FFD54F', borderRadius: 8, padding: '16px 20px' }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: '#B8860B', marginBottom: 6 }}>
+                  {lang === 'en' ? 'DWG/DXF file required' : 'Fichier DWG/DXF requis'}
+                </div>
+                <p style={{ fontSize: 12, color: '#8B6914', margin: 0, lineHeight: 1.5 }}>
+                  {lang === 'en'
+                    ? 'To generate execution drawings, please upload your architectural plans in DWG or DXF format using the panel below. All other deliverables (calculations, BOQ, reports) remain available without DWG.'
+                    : 'Pour générer les plans d\'exécution, veuillez importer vos plans architecturaux au format DWG ou DXF via le panneau ci-dessous. Tous les autres livrables (notes de calcul, BOQ, rapports) restent disponibles sans fichier DWG.'}
+                </p>
+              </div>
+            )}
+            {hasDwg && (
+              <div style={{ background: VERT_LIGHT, border: `1px solid ${VERT}`, borderRadius: 8, padding: '12px 16px' }}>
+                <span style={{ fontSize: 12, color: VERT_DARK, fontWeight: 600 }}>
+                  ✓ {lang === 'en' ? `DWG geometry loaded (${Object.keys(dwgGeometry).length} levels)` : `Géométrie DWG chargée (${Object.keys(dwgGeometry).length} niveaux)`}
+                </span>
+              </div>
+            )}
           </div>
-        </Card>
-      )
-    }
-
-    if (activeTab === 'plan-mep') {
-      return (
-        <Card>
-          <div style={{ padding: '24px 16px' }}>
-            <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A', marginBottom: 12 }}>
-              {lang === 'en' ? 'MEP Drawings (7 trades)' : 'Plans MEP (7 lots)'}
-            </div>
-            <p style={{ fontSize: 13, color: '#666', marginBottom: 16, lineHeight: 1.6 }}>
-              {lang === 'en'
-                ? 'MEP execution drawings with equipment placement, network routing, and nomenclature per trade.'
-                : 'Plans d\'exécution MEP avec placement des équipements, routage des réseaux et nomenclature par lot.'}
-            </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[lang === 'en' ? 'Plumbing' : 'Plomberie', lang === 'en' ? 'Electrical' : 'Électricité', 'CVC/HVAC', lang === 'en' ? 'Fire safety' : 'Sécurité incendie', lang === 'en' ? 'Low current' : 'Courants faibles'].map(s => (
-                <span key={s} style={{ fontSize: 10, background: VERT_LIGHT, color: VERT_DARK, padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>{s}</span>
-              ))}
-            </div>
-          </div>
-        </Card>
-      )
-    }
-
-    if (activeTab === 'dossier-bim') {
-      return (
-        <Card>
-          <div style={{ padding: '24px 16px' }}>
-            <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A', marginBottom: 12 }}>
-              {lang === 'en' ? 'BIM Dossier — All Trades' : 'Dossier BIM — Tous Corps d\'État'}
-            </div>
-            <p style={{ fontSize: 13, color: '#666', marginBottom: 16, lineHeight: 1.6 }}>
-              {lang === 'en'
-                ? 'Complete BIM dossier: architecture, structure, plumbing, HVAC, electrical, fire safety, synthesis, and coordination report with clash detection. Single source of truth.'
-                : 'Dossier BIM complet : architecture, structure, plomberie, CVC, électricité, sécurité incendie, synthèse et rapport de coordination avec détection des conflits. Source unique de vérité.'}
-            </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {['ARC', 'STR', 'PLU', 'HVC', 'HCU', 'LCU', 'FIF', 'SYN'].map(s => (
-                <span key={s} style={{ fontSize: 10, background: VERT_LIGHT, color: VERT_DARK, padding: '3px 8px', borderRadius: 4, fontWeight: 600 }}>{s}</span>
-              ))}
-            </div>
-          </div>
+          <DwgLevelsManager dwgGeometry={dwgGeometry} setDwgGeometry={setDwgGeometry}
+            supabase={supabase} projectId={projectId} lang={lang} />
         </Card>
       )
     }
@@ -1089,7 +1074,6 @@ export default function Results() {
     'edge-assessment':    '/generate-edge-assessment',
     'plan-ba':            '/generate-plans-structure',
     'plan-mep':           '/generate-plans-mep',
-    'dossier-bim':        '/generate-dossier-bim',
     'finitions':          '/generate-boq-finitions',
   }
   const FILENAME_MAP = {
@@ -1105,7 +1089,6 @@ export default function Results() {
     'edge-assessment':    `TijanAI_EdgeAssessment_${slug}_${today}.pdf`,
     'plan-ba':            `TijanAI_PlansBA_${slug}_${today}.pdf`,
     'plan-mep':           `TijanAI_PlansMEP_${slug}_${today}.pdf`,
-    'dossier-bim':        `TijanAI_DossierBIM_${slug}_${today}.pdf`,
     'finitions':          `TijanAI_BOQFinitions_${slug}_${today}.pdf`,
   }
 
@@ -1173,6 +1156,8 @@ export default function Results() {
           </div>
           {endpoint && (
             <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {/* Plans BA/MEP: DWG required — hide download if no geometry */}
+              {(activeTab === 'plan-ba' || activeTab === 'plan-mep') && !(dwgGeometry && Object.keys(dwgGeometry).length > 0) ? null : (
               <button
                 onClick={() => {
                   const nomFichier = `TijanAI_${activeTab.replace(/-/g,'')}_${slug}_${today}.pdf`
@@ -1181,6 +1166,9 @@ export default function Results() {
                     if (dwgGeometry) extra.dwg_geometry = dwgGeometry
                     const ee = dbProjet?.edge_extras || {}
                     Object.assign(extra, ee)
+                  }
+                  if (activeTab === 'plan-ba' || activeTab === 'plan-mep') {
+                    if (dwgGeometry) extra.dwg_geometry = dwgGeometry
                   }
                   download(endpoint, nomFichier, extra)
                 }}
@@ -1193,8 +1181,23 @@ export default function Results() {
                   opacity: (MEP_TABS.includes(activeTab) && !mepData?.ok && activeTab !== 'plan-mep') ? 0.5 : 1,
                 }}
               >
-                {dlLoading === endpoint ? t('res_generation') : (t('res_telecharger') || t('r_telecharger_pdf'))}
+                {dlLoading === endpoint ? t('res_generation') : (activeTab === 'plan-ba' || activeTab === 'plan-mep' ? 'PDF' : (t('res_telecharger') || t('r_telecharger_pdf')))}
               </button>
+              )}
+              {/* DWG download button for plans */}
+              {(activeTab === 'plan-ba' || activeTab === 'plan-mep') && dwgGeometry && Object.keys(dwgGeometry).length > 0 && (
+                <button
+                  onClick={() => {
+                    const proEndpoint = activeTab === 'plan-ba' ? '/generate-plans-structure-pro?format=dwg' : '/generate-plans-mep-pro?format=dwg'
+                    const dwgName = `TijanAI_${activeTab === 'plan-ba' ? 'PlansBA' : 'PlansMEP'}_${slug}_${today}.dwg`
+                    download(proEndpoint, dwgName, { dwg_geometry: dwgGeometry })
+                  }}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading && dlLoading.includes('format=dwg') ? '...' : 'DWG'}
+                </button>
+              )}
               {activeTab === 'boq-structure' && (
                 <button
                   onClick={() => download('/generate-boq-xlsx', `TijanAI_BOQ_Structure_${slug}_${today}.xlsx`)}
