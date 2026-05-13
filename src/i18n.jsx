@@ -356,7 +356,7 @@ const T = {
   pr_contact: { fr: 'Nous contacter', en: 'Contact us' },
   pr_redirection: { fr: 'Redirection vers le paiement...', en: 'Redirecting to payment...' },
   pr_moyens: { fr: 'Wave · Orange Money · Free Money · Carte bancaire', en: 'Wave · Orange Money · Free Money · Bank card' },
-  pr_extra_credit: { fr: 'Projet supplémentaire : 75 000 FCFA', en: 'Additional project: 75,000 FCFA' },
+  pr_extra_credit: { fr: 'Projet supplémentaire : 500 000 FCFA', en: 'Additional project: 500,000 FCFA' },
   pr_enterprise_features: { fr: 'Projets illimités · Accès API · Intégration custom · Support dédié', en: 'Unlimited projects · API access · Custom integration · Dedicated support' },
   pr_inclus_titre: { fr: 'Inclus dans chaque projet :', en: 'Included in every project:' },
   pr_incl_note_structure: { fr: 'Note de calcul structure (EC2/EC8)', en: 'Structural calculations (EC2/EC8)' },

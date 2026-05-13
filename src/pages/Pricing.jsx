@@ -1,4 +1,4 @@
-// Pricing.jsx — Page tarifs Tijan AI (abonnement mensuel unique)
+// Pricing.jsx — Page tarifs Tijan AI (prix unique 500 000 FCFA par projet)
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -7,8 +7,7 @@ import { VERT, BACKEND } from '../constants'
 import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
-const PRIX_MENSUEL = 250000 // FCFA TTC par mois — tarif beta lancement
-const PRIX_UNITE = 100000   // FCFA TTC — étude à l'unité
+const PRIX_PROJET = 500000 // FCFA TTC — prix unique par projet
 const TVA_RATE = 0.18
 
 function formatFCFA(n) {
@@ -27,14 +26,10 @@ export default function Pricing() {
   const { t } = useLang()
   const [payLoading, setPayLoading] = useState(false)
 
-  const totalHT = Math.round(PRIX_MENSUEL / (1 + TVA_RATE))
-  const totalTVA = PRIX_MENSUEL - totalHT
-
-  const [unitLoading, setUnitLoading] = useState(false)
   const [showPromo, setShowPromo] = useState(false)
   const [promoCode, setPromoCode] = useState('')
   const [promoLoading, setPromoLoading] = useState(false)
-  const [promoResult, setPromoResult] = useState(null) // { valid, discount_percent, monthly_price, duration_months, ... }
+  const [promoResult, setPromoResult] = useState(null)
   const [promoError, setPromoError] = useState('')
 
   // Auto-fill from URL param ?promo=TIJAN-XXX-YYYY
@@ -66,7 +61,7 @@ export default function Pricing() {
     }
   }
 
-  const effectivePrice = promoResult ? promoResult.monthly_price : PRIX_MENSUEL
+  const effectivePrice = promoResult ? promoResult.monthly_price : PRIX_PROJET
 
   const handlePay = async () => {
     if (!user) { navigate('/login'); return }
@@ -76,10 +71,10 @@ export default function Pricing() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          credits: 3,
+          credits: 1,
           prix: effectivePrice,
           user_id: user.id,
-          plan: 'cabinet_mensuel',
+          plan: 'projet_unique',
           promo_code: promoResult ? promoCode.trim().toUpperCase() : undefined,
         }),
       })
@@ -97,115 +92,101 @@ export default function Pricing() {
     }
   }
 
-  const handlePayUnit = async () => {
-    if (!user) { navigate('/login'); return }
-    setUnitLoading(true)
-    try {
-      const response = await fetch(`${BACKEND}/create-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          credits: 1,
-          prix: PRIX_UNITE,
-          user_id: user.id,
-          plan: 'etude_unitaire',
-        }),
-      })
-      const data = await response.json()
-      if (data.ok) {
-        window.location.href = data.url
-      } else {
-        alert(t('pricing_err') + ': ' + (data.error || t('pricing_retry')))
-      }
-    } catch (e) {
-      console.error('Payment error:', e)
-      alert(t('pricing_no_server'))
-    } finally {
-      setUnitLoading(false)
-    }
-  }
-
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAFA', fontFamily: "'DM Sans', sans-serif" }}>
       <Header />
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '40px 24px' }}>
+      <div style={{ maxWidth: 620, margin: '0 auto', padding: '40px 24px' }}>
 
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: '#E8F5E9', color: VERT, borderRadius: 20,
-            padding: '5px 16px', fontSize: 11, fontWeight: 700, marginBottom: 14,
-            border: `1px solid ${VERT}40`,
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: VERT, display: 'inline-block', boxShadow: `0 0 5px ${VERT}` }} />
-            Tarif Beta — Offre de lancement
-          </div>
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <h1 style={{ fontSize: 32, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
-            Lancez-vous au tarif fondateur
+            Un prix. Un projet. Tout inclus.
           </h1>
-          <p style={{ fontSize: 15, color: '#666', maxWidth: 500, margin: '0 auto' }}>
-            Profitez du tarif beta à 250 000 FCFA/mois — 3 études complètes, tous documents inclus.
+          <p style={{ fontSize: 15, color: '#666', maxWidth: 460, margin: '0 auto' }}>
+            Dossier technique complet — structure, MEP, EDGE — pour 10x moins qu'un bureau d'études.
           </p>
         </div>
 
-        {/* Carte abonnement unique */}
+        {/* Carte prix unique */}
         <div style={{
           background: '#fff',
           border: `2px solid ${VERT}`,
           borderRadius: 16,
-          padding: '32px 28px',
+          padding: '36px 28px',
           marginBottom: 32,
           boxShadow: `0 0 0 6px ${VERT}18`,
         }}>
           {/* Prix */}
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: VERT, letterSpacing: 1.5, marginBottom: 8, textTransform: 'uppercase' }}>
-              Offre Beta — Cabinet
-            </div>
             {promoResult ? (
               <>
-                <div style={{ fontSize: 24, color: '#999', textDecoration: 'line-through', lineHeight: 1 }}>
-                  {formatFCFA(PRIX_MENSUEL)}
+                <div style={{ fontSize: 22, color: '#999', textDecoration: 'line-through', lineHeight: 1 }}>
+                  {formatFCFA(PRIX_PROJET)}
                 </div>
-                <div style={{ fontSize: 48, fontWeight: 800, color: VERT, marginBottom: 4, lineHeight: 1 }}>
+                <div style={{ fontSize: 56, fontWeight: 800, color: VERT, marginBottom: 4, lineHeight: 1 }}>
                   {formatFCFA(promoResult.monthly_price)}
                 </div>
-                <div style={{ fontSize: 13, color: VERT, fontWeight: 600, marginTop: 6 }}>
-                  -{promoResult.discount_percent}% pendant {promoResult.duration_months} mois
-                </div>
-                <div style={{ fontSize: 12, color: '#999', marginTop: 4 }}>
-                  puis {formatFCFA(PRIX_MENSUEL)}/mois
+                <div style={{ fontSize: 13, color: VERT, fontWeight: 600, marginTop: 8 }}>
+                  -{promoResult.discount_percent}% avec le code {promoCode}
                 </div>
               </>
             ) : (
-              <div style={{ fontSize: 48, fontWeight: 800, color: NAVY, marginBottom: 4, lineHeight: 1 }}>
-                {formatFCFA(PRIX_MENSUEL)}
+              <div style={{ fontSize: 56, fontWeight: 800, color: NAVY, marginBottom: 4, lineHeight: 1 }}>
+                {formatFCFA(PRIX_PROJET)}
               </div>
             )}
-            <div style={{ fontSize: 14, color: '#666', marginTop: 6 }}>
-              par mois, TTC — sans engagement
+            <div style={{ fontSize: 15, color: '#666', marginTop: 10 }}>
+              par projet — TTC
             </div>
           </div>
 
-          {/* Inclus */}
+          {/* Comparaison BET */}
+          <div style={{
+            background: '#F0FFF4', borderRadius: 10, padding: '12px 16px',
+            marginBottom: 24, textAlign: 'center',
+            border: `1px solid ${VERT}30`,
+          }}>
+            <span style={{ fontSize: 13, color: '#333' }}>
+              Un BET facture <strong>3 à 5 millions FCFA</strong> pour la même étude.
+            </span>
+          </div>
+
+          {/* Ce qui est inclus */}
           <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: NAVY, letterSpacing: 1, marginBottom: 12, textTransform: 'uppercase' }}>
+              Inclus dans chaque projet
+            </div>
             {[
-              { icon: '📁', text: '3 études complètes par mois' },
-              { icon: '🚫', text: 'Sans watermark sur tous les documents' },
-              { icon: '🕐', text: 'Support prioritaire 24h' },
-              { icon: '📄', text: 'Tous formats — PDF, DWG, Excel, Word' },
-              { icon: '🌱', text: 'Certification EDGE incluse' },
+              { icon: '📄', text: 'Note de calcul structure (EC2/EC8)' },
+              { icon: '💰', text: 'BOQ Structure détaillé (7 lots)' },
+              { icon: '⚡', text: 'Note de calcul MEP complète' },
+              { icon: '📊', text: 'BOQ MEP 3 gammes de prix' },
+              { icon: '🔀', text: 'Schémas structure (coffrage + ferraillage)' },
+              { icon: '🔌', text: 'Schémas isométriques MEP' },
+              { icon: '🌱', text: 'Certification EDGE IFC v3' },
+              { icon: '📋', text: 'Rapport exécutif maître d\'ouvrage' },
+              { icon: '📑', text: 'Fiches techniques structure + MEP' },
+              { icon: '🏗️', text: 'Plans BA (coffrage + ferraillage)', comingSoon: true },
+              { icon: '📐', text: 'Plans MEP tous niveaux', comingSoon: true },
             ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < 4 ? '1px solid #F0F0F0' : 'none', fontSize: 14, color: '#333' }}>
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '8px 0',
+                borderBottom: i < 10 ? '1px solid #F0F0F0' : 'none',
+                fontSize: 14, color: item.comingSoon ? '#999' : '#333',
+              }}>
                 <span style={{ fontSize: 18 }}>{item.icon}</span>
-                <span>{item.text}</span>
-                <span style={{ marginLeft: 'auto', color: VERT, fontWeight: 700 }}>✓</span>
+                <span style={{ flex: 1 }}>{item.text}</span>
+                {item.comingSoon ? (
+                  <span style={{ fontSize: 9, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '1px 7px', fontWeight: 700 }}>Bientôt</span>
+                ) : (
+                  <span style={{ color: VERT, fontWeight: 700, fontSize: 15 }}>✓</span>
+                )}
               </div>
             ))}
           </div>
 
-          {/* Code promo toggle */}
+          {/* Code promo */}
           <div style={{ marginBottom: 16 }}>
             {!showPromo ? (
               <button onClick={() => setShowPromo(true)} style={{
@@ -242,7 +223,7 @@ export default function Pricing() {
                 {promoError && <div style={{ color: '#EF4444', fontSize: 12, marginTop: 6 }}>{promoError}</div>}
                 {promoResult && (
                   <div style={{ color: VERT, fontSize: 12, marginTop: 6, fontWeight: 600 }}>
-                    Code valide — {promoResult.discount_percent}% de remise pendant {promoResult.duration_months} mois
+                    Code valide — {promoResult.discount_percent}% de remise appliquée
                   </div>
                 )}
               </div>
@@ -263,11 +244,6 @@ export default function Pricing() {
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: NAVY, fontSize: 14, paddingTop: 8, borderTop: '1px solid #D0D0D0' }}>
               <span>Total TTC</span><span>{formatFCFA(effectivePrice)}</span>
             </div>
-            {promoResult && (
-              <div style={{ fontSize: 11, color: '#999', marginTop: 8, lineHeight: 1.5 }}>
-                À l'issue des {promoResult.duration_months} mois, votre abonnement passe automatiquement à {formatFCFA(PRIX_MENSUEL)}/mois.
-              </div>
-            )}
           </div>
 
           {/* CTA */}
@@ -282,84 +258,10 @@ export default function Pricing() {
               opacity: payLoading ? 0.7 : 1,
             }}
           >
-            {payLoading ? t('pr_redirection') : promoResult ? `S'abonner à ${formatFCFA(effectivePrice)}/mois →` : "S'abonner maintenant →"}
+            {payLoading ? t('pr_redirection') : `Lancer mon étude — ${formatFCFA(effectivePrice)} →`}
           </button>
           <div style={{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 10 }}>
-            Paiement sécurisé via Wave
-          </div>
-        </div>
-
-        {/* Étude à l'unité */}
-        <div style={{
-          background: '#fff',
-          border: '1px solid #E5E5E5',
-          borderRadius: 16,
-          padding: '24px 28px',
-          marginBottom: 32,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          flexWrap: 'wrap', gap: 16,
-        }}>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 4 }}>
-              Besoin d'une seule étude ?
-            </div>
-            <div style={{ fontSize: 13, color: '#666' }}>
-              1 projet complet — tous documents inclus, sans abonnement
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 24, fontWeight: 800, color: NAVY }}>{formatFCFA(PRIX_UNITE)}</div>
-              <div style={{ fontSize: 11, color: '#999' }}>TTC — paiement unique</div>
-            </div>
-            <button
-              onClick={handlePayUnit}
-              disabled={unitLoading}
-              style={{
-                background: NAVY, color: '#fff',
-                border: 'none', borderRadius: 10, padding: '12px 24px',
-                fontSize: 14, fontWeight: 600,
-                cursor: unitLoading ? 'not-allowed' : 'pointer',
-                opacity: unitLoading ? 0.7 : 1, whiteSpace: 'nowrap',
-              }}
-            >
-              {unitLoading ? '...' : 'Acheter →'}
-            </button>
-          </div>
-        </div>
-
-        {/* Inclus dans chaque étude */}
-        <div style={{
-          background: '#fff', border: '0.5px solid #E5E5E5',
-          borderRadius: 12, padding: '24px', marginBottom: 32,
-        }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 14 }}>
-            Inclus dans chaque étude
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }}>
-            {[
-              { icon: '📄', label: 'Note de calcul structure (EC2/EC8)' },
-              { icon: '💰', label: 'BOQ Structure détaillé (7 lots)' },
-              { icon: '⚡', label: 'Note de calcul MEP complète' },
-              { icon: '📊', label: 'BOQ MEP 3 gammes' },
-              { icon: '🔀', label: 'Schémas structure' },
-              { icon: '🔌', label: 'Schémas MEP' },
-              { icon: '🌱', label: 'Conformité EDGE IFC v3' },
-              { icon: '📋', label: 'Rapport exécutif maître ouvrage' },
-              { icon: '📑', label: 'Fiches techniques structure + MEP' },
-              { icon: '🏗️', label: 'Plans BA (coffrage + ferraillage)', comingSoon: true },
-              { icon: '📐', label: 'Plans MEP tous niveaux', comingSoon: true },
-            ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: item.comingSoon ? '#999' : '#444', padding: '4px 0' }}>
-                <span>{item.icon}</span>
-                <span style={{ flex: 1 }}>{item.label}</span>
-                {item.comingSoon ? (
-                  <span style={{ fontSize: 9, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '1px 7px', fontWeight: 700 }}>Bientôt</span>
-                ) : (
-                  <span style={{ marginLeft: 'auto', color: VERT, fontWeight: 700 }}>✓</span>
-                )}
-              </div>
-            ))}
+            Paiement sécurisé via Wave · Orange Money · Free Money
           </div>
         </div>
 
