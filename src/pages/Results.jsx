@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import ChatTijan from '../components/ChatTijan'
 import { useAuth } from '../context/AuthContext'
@@ -1052,6 +1052,72 @@ export default function Results() {
       )
     }
 
+    // ── PLANNING D'EXÉCUTION ──
+    if (activeTab === 'planning') {
+      return (
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{"Planning d'exécution"}</div>
+          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+            {"Diagramme de Gantt détaillé couvrant l'ensemble des tâches du projet, organisé par lot (Structure, MEP, Finitions). Inclut les durées, dépendances et le chemin critique."}
+          </p>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 12 }}>
+            <div style={{ background: GRIS1, borderRadius: 6, padding: '8px 14px', fontSize: 12 }}>
+              <span style={{ color: GRIS3 }}>{"Durée estimée"}</span>
+              <div style={{ fontWeight: 600 }}>{resultats?.boq?.duree_estimee_mois || Math.ceil((params.nb_niveaux || 5) * 2.5)} mois</div>
+            </div>
+            <div style={{ background: GRIS1, borderRadius: 6, padding: '8px 14px', fontSize: 12 }}>
+              <span style={{ color: GRIS3 }}>Lots</span>
+              <div style={{ fontWeight: 600 }}>Structure, MEP, Finitions</div>
+            </div>
+          </div>
+        </Card>
+      )
+    }
+
+    // ── TRÉSORERIE ──
+    if (activeTab === 'tresorerie') {
+      return (
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{"Planning des dépenses"}</div>
+          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+            {"Plan de trésorerie mensuel avec séparation matériaux / installation, courbe en S des dépenses cumulées, et tableau croisé Lot × Phase pour la ventilation budgétaire."}
+          </p>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 12 }}>
+            <div style={{ background: GRIS1, borderRadius: 6, padding: '8px 14px', fontSize: 12 }}>
+              <span style={{ color: GRIS3 }}>{"Coût total estimé"}</span>
+              <div style={{ fontWeight: 600 }}>{fmtFcfa((boq?.total_haut_fcfa || 0) + (mepData?.boq_mep?.hend_fcfa || 0), deviseInfo)}</div>
+            </div>
+          </div>
+        </Card>
+      )
+    }
+
+    // ── FICHES FINITIONS ──
+    if (activeTab === 'fiches-finitions') {
+      return (
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{"Fiches techniques — Finitions"}</div>
+          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+            {"Fiches détaillées pour chaque poste de finition : carrelage, menuiseries intérieures et extérieures, faux-plafonds, peinture et cuisines. Inclut spécifications, normes applicables et conseils de mise en œuvre."}
+          </p>
+        </Card>
+      )
+    }
+
+    // ── DAO (APPEL D'OFFRES) ──
+    if (activeTab?.startsWith('dao-')) {
+      const lotNames = { 'dao-structure': 'Structure — Gros Œuvre', 'dao-mep': "MEP — Corps d'état techniques", 'dao-finitions': 'Finitions — Second Œuvre' }
+      return (
+        <Card>
+          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{"Dossier d'Appel d'Offres"}</div>
+          <div style={{ fontSize: 14, color: VERT, fontWeight: 600, marginBottom: 12 }}>{lotNames[activeTab]}</div>
+          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+            {"Document contractuel pour consultation d'entreprises. Contient le bordereau des quantités (sans prix) et le Cahier des Clauses Techniques Particulières (CCTP) avec spécifications d'exécution."}
+          </p>
+        </Card>
+      )
+    }
+
     return null
   }
 
@@ -1069,14 +1135,15 @@ export default function Results() {
     'rapport-executif':   '/generate-rapport-executif',
     'fiches-structure':   '/generate-fiches-structure',
     'fiches-mep':         '/generate-fiches-mep',
+    'fiches-finitions':   '/generate-fiches-finitions',
     'schemas-ferraillage':'/generate-schemas-ferraillage',
     'schemas-mep':        '/generate-schemas-mep',
     'edge-assessment':    '/generate-edge-assessment',
     'plan-ba':            '/generate-plans-structure',
     'plan-mep':           '/generate-plans-mep',
     'finitions':          '/generate-boq-finitions',
-    'fiches-all':         '/generate-fiches-all',
     'planning':           '/generate-planning',
+    'tresorerie':         '/generate-planning-tresorerie',
     'dao-structure':      '/generate-dao?lot=structure',
     'dao-mep':            '/generate-dao?lot=mep',
     'dao-finitions':      '/generate-dao?lot=finitions',
@@ -1089,14 +1156,15 @@ export default function Results() {
     'rapport-executif':   `TijanAI_RapportExecutif_${slug}_${today}.pdf`,
     'fiches-structure':   `TijanAI_FichesStructure_${slug}_${today}.pdf`,
     'fiches-mep':         `TijanAI_FichesMEP_${slug}_${today}.pdf`,
+    'fiches-finitions':   `TijanAI_FichesFinitions_${slug}_${today}.pdf`,
     'schemas-ferraillage':`TijanAI_SchemasFerraillage_${slug}_${today}.pdf`,
     'schemas-mep':        `TijanAI_SchemasMEP_${slug}_${today}.pdf`,
     'edge-assessment':    `TijanAI_EdgeAssessment_${slug}_${today}.pdf`,
     'plan-ba':            `TijanAI_PlansBA_${slug}_${today}.pdf`,
     'plan-mep':           `TijanAI_PlansMEP_${slug}_${today}.pdf`,
     'finitions':          `TijanAI_BOQFinitions_${slug}_${today}.pdf`,
-    'fiches-all':         `TijanAI_FichesTechniques_${slug}_${today}.pdf`,
     'planning':           `TijanAI_Planning_${slug}_${today}.pdf`,
+    'tresorerie':         `TijanAI_Tresorerie_${slug}_${today}.pdf`,
     'dao-structure':      `TijanAI_DAO_Structure_${slug}_${today}.pdf`,
     'dao-mep':            `TijanAI_DAO_MEP_${slug}_${today}.pdf`,
     'dao-finitions':      `TijanAI_DAO_Finitions_${slug}_${today}.pdf`,
@@ -1124,22 +1192,30 @@ export default function Results() {
 
       <div style={{ display: 'flex', height: isMobile ? 'auto' : 'calc(100vh - 56px)', minHeight: isMobile ? '100vh' : 'auto', flexDirection: isMobile ? 'column' : 'row' }}>
         <div style={{ width: isMobile ? '100%' : 220, minWidth: isMobile ? 'unset' : 220, background: '#fff', borderRight: isMobile ? 'none' : `1px solid ${GRIS2}`, borderBottom: isMobile ? `1px solid ${GRIS2}` : 'none', padding: isMobile ? '8px 0' : '16px 0', overflowY: isMobile ? 'hidden' : 'auto', overflowX: isMobile ? 'auto' : 'hidden', flexShrink: 0, display: isMobile ? 'flex' : 'block', whiteSpace: isMobile ? 'nowrap' : 'normal' }}>
-          {TABS.map(tab => {
+          {TABS.map((tab, idx) => {
             const disabled = !tab.endpoint || tab.comingSoon
             const active = !disabled && activeTab === tab.id
+            const showGroupHeader = idx === 0 || TABS[idx - 1].group !== tab.group
             return (
-              <button key={tab.id} onClick={() => { if (!disabled) setActiveTab(tab.id) }} style={{
-                display: isMobile ? 'inline-block' : 'block', width: isMobile ? 'auto' : '100%', textAlign: 'left', padding: '10px 20px',
-                border: 'none', fontSize: 12, fontWeight: active ? 600 : 400,
-                color: disabled ? '#BBB' : active ? VERT : '#444',
-                background: active ? VERT_LIGHT : 'transparent',
-                borderLeft: active ? `3px solid ${VERT}` : '3px solid transparent',
-                transition: 'all 0.15s', cursor: disabled ? 'default' : 'pointer',
-                opacity: disabled ? 0.7 : 1,
-              }}>
-                {t(TAB_KEYS[tab.id]) || tab.label}
-                {disabled && <span style={{ marginLeft: 6, fontSize: 9, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '1px 6px', fontWeight: 600 }}>{t('res_bientot_badge')}</span>}
-              </button>
+              <React.Fragment key={tab.id}>
+                {showGroupHeader && !isMobile && (
+                  <div style={{ padding: '12px 20px 4px', fontSize: 9, fontWeight: 700, color: GRIS3, textTransform: 'uppercase', letterSpacing: 1 }}>
+                    {tab.group}
+                  </div>
+                )}
+                <button onClick={() => { if (!disabled) setActiveTab(tab.id) }} style={{
+                  display: isMobile ? 'inline-block' : 'block', width: isMobile ? 'auto' : '100%', textAlign: 'left', padding: '10px 20px',
+                  border: 'none', fontSize: 12, fontWeight: active ? 600 : 400,
+                  color: disabled ? '#BBB' : active ? VERT : '#444',
+                  background: active ? VERT_LIGHT : 'transparent',
+                  borderLeft: active ? `3px solid ${VERT}` : '3px solid transparent',
+                  transition: 'all 0.15s', cursor: disabled ? 'default' : 'pointer',
+                  opacity: disabled ? 0.7 : 1,
+                }}>
+                  {t(TAB_KEYS[tab.id]) || tab.label}
+                  {disabled && <span style={{ marginLeft: 6, fontSize: 9, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '1px 6px', fontWeight: 600 }}>{t('res_bientot_badge')}</span>}
+                </button>
+              </React.Fragment>
             )
           })}
         </div>
@@ -1227,6 +1303,15 @@ export default function Results() {
                 </button>
               )}
               {activeTab === 'planning' && (
+                <button
+                  onClick={() => download('/generate-planning-xlsx', `TijanAI_Planning_Tresorerie_${slug}_${today}.xlsx`)}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading === '/generate-planning-xlsx' ? '...' : 'Excel'}
+                </button>
+              )}
+              {activeTab === 'tresorerie' && (
                 <button
                   onClick={() => download('/generate-planning-xlsx', `TijanAI_Planning_Tresorerie_${slug}_${today}.xlsx`)}
                   disabled={!!dlLoading}

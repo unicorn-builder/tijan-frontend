@@ -10,25 +10,32 @@ export const ORANGE = '#E07B00'
 export const ORANGE_LT = '#FFF3E0'
 
 export const TABS = [
-  { id: 'structure',        label: 'Note de calcul structure',    endpoint: '/generate',                  filename: 'note_structure.pdf',   mep: false },
-  { id: 'boq-structure',    label: 'BOQ Structure',               endpoint: '/generate-boq',              filename: 'boq_structure.pdf',    mep: false },
-  { id: 'note-mep',         label: 'Note de calcul MEP',          endpoint: '/generate-note-mep',         filename: 'note_mep.pdf',         mep: true  },
-  { id: 'boq-mep',          label: 'BOQ MEP',                     endpoint: '/generate-boq-mep',          filename: 'boq_mep.pdf',          mep: true  },
-  { id: 'edge-assessment',  label: 'Conformité EDGE',             endpoint: '/generate-edge-assessment',  filename: 'edge_assessment.pdf',  mep: true  },
-  { id: 'rapport-executif', label: 'Rapport exécutif',            endpoint: '/generate-rapport-executif', filename: 'rapport_executif.pdf', mep: false },
-  { id: 'fiches-structure', label: 'Fiches techniques structure', endpoint: '/generate-fiches-structure', filename: 'fiches_structure.pdf', mep: false },
-  { id: 'fiches-mep',       label: 'Fiches techniques MEP',       endpoint: '/generate-fiches-mep',       filename: 'fiches_mep.pdf',       mep: true  },
-  { id: 'schemas-ferraillage', label: 'Schémas de ferraillage',   endpoint: '/generate-schemas-ferraillage', filename: 'schemas_ferraillage.pdf', mep: false },
-  { id: 'schemas-mep',      label: 'Schémas isométriques MEP',    endpoint: '/generate-schemas-mep',      filename: 'schemas_mep.pdf',      mep: true  },
-  { id: 'finitions',        label: 'BOQ Finitions',                 endpoint: '/generate-boq-finitions',   filename: 'boq_finitions.pdf',    mep: false },
-  { id: 'fiches-all',       label: 'Fiches techniques complètes', endpoint: '/generate-fiches-all',       filename: 'fiches_techniques.pdf', mep: false },
-  { id: 'planning',         label: "Planning d'exécution",        endpoint: '/generate-planning',         filename: 'planning_execution.pdf', mep: false },
-  { id: 'dao-structure',    label: "DAO Lot Structure",           endpoint: '/generate-dao?lot=structure', filename: 'dao_structure.pdf',     mep: false },
-  { id: 'dao-mep',          label: 'DAO Lot MEP',                 endpoint: '/generate-dao?lot=mep',       filename: 'dao_mep.pdf',          mep: true  },
-  { id: 'dao-finitions',    label: 'DAO Lot Finitions',           endpoint: '/generate-dao?lot=finitions', filename: 'dao_finitions.pdf',    mep: false },
-  { id: 'chat', label: 'Discuter avec Tijan', endpoint: 'chat', filename: '', mep: false },
-  { id: 'plan-ba',          label: 'Plans BA',                    endpoint: '/generate-plans-structure',  filename: 'plans_structure.pdf',  mep: false, dwgRequired: true },
-  { id: 'plan-mep',         label: 'Plans MEP',                   endpoint: '/generate-plans-mep',        filename: 'plans_mep.pdf',        mep: true,  dwgRequired: true },
+  // ── Structure ──
+  { id: 'structure',           label: 'Note de calcul structure',    endpoint: '/generate',                     filename: 'note_structure.pdf',      mep: false, group: 'Structure' },
+  { id: 'boq-structure',       label: 'BOQ Structure',               endpoint: '/generate-boq',                 filename: 'boq_structure.pdf',       mep: false, group: 'Structure' },
+  { id: 'fiches-structure',    label: 'Fiches techniques structure', endpoint: '/generate-fiches-structure',    filename: 'fiches_structure.pdf',    mep: false, group: 'Structure' },
+  { id: 'schemas-ferraillage', label: 'Schémas de ferraillage',      endpoint: '/generate-schemas-ferraillage', filename: 'schemas_ferraillage.pdf', mep: false, group: 'Structure' },
+  { id: 'dao-structure',       label: 'DAO Lot Structure',           endpoint: '/generate-dao?lot=structure',   filename: 'dao_structure.pdf',       mep: false, group: 'Structure' },
+  // ── MEP ──
+  { id: 'note-mep',            label: 'Note de calcul MEP',          endpoint: '/generate-note-mep',            filename: 'note_mep.pdf',            mep: true,  group: 'MEP' },
+  { id: 'boq-mep',             label: 'BOQ MEP',                     endpoint: '/generate-boq-mep',             filename: 'boq_mep.pdf',             mep: true,  group: 'MEP' },
+  { id: 'fiches-mep',          label: 'Fiches techniques MEP',       endpoint: '/generate-fiches-mep',          filename: 'fiches_mep.pdf',          mep: true,  group: 'MEP' },
+  { id: 'schemas-mep',         label: 'Schémas isométriques MEP',    endpoint: '/generate-schemas-mep',         filename: 'schemas_mep.pdf',         mep: true,  group: 'MEP' },
+  { id: 'dao-mep',             label: 'DAO Lot MEP',                 endpoint: '/generate-dao?lot=mep',         filename: 'dao_mep.pdf',             mep: true,  group: 'MEP' },
+  // ── Finitions ──
+  { id: 'finitions',           label: 'BOQ Finitions',               endpoint: '/generate-boq-finitions',       filename: 'boq_finitions.pdf',       mep: false, group: 'Finitions' },
+  { id: 'fiches-finitions',    label: 'Fiches techniques finitions', endpoint: '/generate-fiches-finitions',    filename: 'fiches_finitions.pdf',    mep: false, group: 'Finitions' },
+  { id: 'dao-finitions',       label: 'DAO Lot Finitions',           endpoint: '/generate-dao?lot=finitions',   filename: 'dao_finitions.pdf',       mep: false, group: 'Finitions' },
+  // ── Synthèse ──
+  { id: 'rapport-executif',    label: 'Rapport exécutif',            endpoint: '/generate-rapport-executif',    filename: 'rapport_executif.pdf',    mep: false, group: 'Synthèse' },
+  { id: 'edge-assessment',     label: 'Conformité EDGE',             endpoint: '/generate-edge-assessment',     filename: 'edge_assessment.pdf',     mep: true,  group: 'Synthèse' },
+  { id: 'planning',            label: "Planning d'exécution",        endpoint: '/generate-planning',            filename: 'planning_execution.pdf',  mep: false, group: 'Synthèse' },
+  { id: 'tresorerie',          label: 'Planning des dépenses',       endpoint: '/generate-planning-tresorerie', filename: 'planning_tresorerie.pdf', mep: false, group: 'Synthèse' },
+  // ── Plans ──
+  { id: 'plan-ba',             label: 'Plans BA',                    endpoint: '/generate-plans-structure',     filename: 'plans_structure.pdf',     mep: false, group: 'Plans', dwgRequired: true },
+  { id: 'plan-mep',            label: 'Plans MEP',                   endpoint: '/generate-plans-mep',           filename: 'plans_mep.pdf',           mep: true,  group: 'Plans', dwgRequired: true },
+  // ── Assistant ──
+  { id: 'chat',                label: 'Discuter avec Tijan',         endpoint: 'chat',                          filename: '',                        mep: false, group: 'Assistant' },
 ]
 
 // Helpers formatage
