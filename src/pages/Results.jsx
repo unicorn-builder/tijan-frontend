@@ -355,9 +355,10 @@ export default function Results() {
   }
 
   const MEP_TABS = ['note-mep', 'boq-mep', 'edge-assessment', 'fiches-mep', 'schemas-mep', 'plan-mep']
+  const NEEDS_MEP = [...MEP_TABS, 'rapport-executif', 'planning', 'tresorerie']
 
   useEffect(() => {
-    if (MEP_TABS.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom && params?.portee_max_m) {
+    if (NEEDS_MEP.includes(activeTab) && !mepData && !mepLoading && !mepError && params?.nom && params?.portee_max_m) {
       // D'abord essayer de charger depuis Supabase
       if (supabase && user && state?.resultats_mep) {
         setMepData(state.resultats_mep)
@@ -995,68 +996,143 @@ export default function Results() {
             </div>
           </Card>
           <SectionTitle>{t('r_budget_global')}</SectionTitle>
-          <Card>
-            {(() => {
-              const boqm = mepData?.boq_mep || {}
-              const structHaut = boq.total_haut_fcfa || 0
-              const mepHaut = boqm.hend_fcfa || 0
-              const sBatie = boq.surface_batie_m2 || (surf * niv)
-              // Finitions: use high_end tier as reference
-              const finHaut = finitionsData?.high_end?.total || 0
-              const totalHaut = structHaut + mepHaut + finHaut
-              const structM2 = sBatie > 0 ? Math.round(structHaut / sBatie) : 0
-              const mepM2 = sBatie > 0 ? Math.round(mepHaut / sBatie) : 0
-              const finM2 = sBatie > 0 ? Math.round(finHaut / sBatie) : 0
-              const totalM2 = sBatie > 0 ? Math.round(totalHaut / sBatie) : 0
-              const structPct = totalHaut > 0 ? Math.round(structHaut / totalHaut * 100) : 0
-              const mepPct = totalHaut > 0 ? Math.round(mepHaut / totalHaut * 100) : 0
-              const finPct = totalHaut > 0 ? Math.round(finHaut / totalHaut * 100) : 0
-              const devise = deviseInfo?.symbole || 'FCFA'
-              return (
-                <>
-                  <DataTable
-                    headers={['Lot', 'Montant estimé', 'Ratio /m²', '% du total']}
-                    colWidths={['30%', '30%', '22%', '18%']}
-                    rows={[
-                      [
-                        <span style={{ fontWeight: 600, color: VERT }}>Structure</span>,
-                        fmtFcfa(structHaut, deviseInfo),
-                        `${fmt(structM2)} ${devise}/m²`,
-                        `${structPct}%`,
-                      ],
-                      [
-                        <span style={{ fontWeight: 600, color: '#1565C0' }}>MEP</span>,
-                        mepData ? fmtFcfa(mepHaut, deviseInfo) : <span style={{ color: ORANGE, fontSize: 11 }}>Non chargé</span>,
-                        mepData ? `${fmt(mepM2)} ${devise}/m²` : '—',
-                        mepData ? `${mepPct}%` : '—',
-                      ],
-                      [
-                        <span style={{ fontWeight: 600, color: ORANGE }}>Finitions</span>,
-                        finitionsData ? fmtFcfa(finHaut, deviseInfo) : <Spinner text="" />,
-                        finitionsData ? `${fmt(finM2)} ${devise}/m²` : '—',
-                        finitionsData ? `${finPct}%` : '—',
-                      ],
-                    ]}
-                  />
-                  <div style={{ marginTop: 16, paddingTop: 12, borderTop: `2px solid ${VERT}`, display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'baseline' }}>
-                    <div>
-                      <div style={{ fontSize: 11, color: GRIS3 }}>COÛT TOTAL ESTIMÉ (Structure + MEP + Finitions)</div>
-                      <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(totalHaut, deviseInfo)}</div>
+          {(() => {
+            const boqm = mepData?.boq_mep || {}
+            const sBatie = boq.surface_batie_m2 || (surf * niv)
+            const devise = deviseInfo?.symbole || 'FCFA'
+            const m2 = (v) => sBatie > 0 ? `${fmt(Math.round(v / sBatie))} ${devise}/m²` : '—'
+
+            // Structure
+            const strBas = boq.total_bas_fcfa || 0
+            const strHaut = boq.total_haut_fcfa || 0
+
+            // MEP
+            const mepBas = boqm.basic_fcfa || 0
+            const mepHaut = boqm.hend_fcfa || 0
+            const mepOk = mepData?.ok
+
+            // Finitions 3 gammes
+            const finBasic = finitionsData?.basic?.total || 0
+            const finHE = finitionsData?.high_end?.total || 0
+            const finLux = finitionsData?.luxury?.total || 0
+            const finOk = !!finitionsData
+
+            // Totaux fourchette
+            const totalBas = strBas + mepBas + finBasic
+            const totalHaut = strHaut + mepHaut + finLux
+            const totalRef = strHaut + mepHaut + finHE // référence High-End
+
+            return (
+              <>
+                {/* ── STRUCTURE ── */}
+                <Card>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 4, height: 24, background: VERT, borderRadius: 2 }} />
+                      <span style={{ fontWeight: 700, fontSize: 14, color: '#111' }}>Structure — Gros Œuvre</span>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
-                      <div style={{ fontWeight: 700, fontSize: 16 }}>{fmt(totalM2)} {devise}/m²</div>
+                    <span style={{ fontSize: 11, color: GRIS3 }}>{totalRef > 0 ? Math.round(strHaut / totalRef * 100) : '—'}% du budget</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 140, background: GRIS1, borderRadius: 6, padding: '8px 12px' }}>
+                      <div style={{ fontSize: 10, color: GRIS3 }}>Fourchette basse</div>
+                      <div style={{ fontWeight: 600, fontSize: 15 }}>{fmtFcfa(strBas, deviseInfo)}</div>
+                      <div style={{ fontSize: 10, color: GRIS3 }}>{m2(strBas)}</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 140, background: '#F0FFF4', border: `1px solid ${VERT}`, borderRadius: 6, padding: '8px 12px' }}>
+                      <div style={{ fontSize: 10, color: VERT }}>Fourchette haute</div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: VERT }}>{fmtFcfa(strHaut, deviseInfo)}</div>
+                      <div style={{ fontSize: 10, color: VERT }}>{m2(strHaut)}</div>
                     </div>
                   </div>
-                  {finitionsData && (
-                    <div style={{ marginTop: 8, fontSize: 11, color: GRIS3 }}>
-                      Finitions estimées en gamme High-End. Gammes Basic ({fmtFcfa(finitionsData?.basic?.total || 0, deviseInfo)}) et Luxury ({fmtFcfa(finitionsData?.luxury?.total || 0, deviseInfo)}) disponibles dans l'onglet BOQ Finitions.
+                </Card>
+
+                {/* ── MEP ── */}
+                <Card>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 4, height: 24, background: '#1565C0', borderRadius: 2 }} />
+                      <span style={{ fontWeight: 700, fontSize: 14, color: '#111' }}>MEP — Corps d'état techniques</span>
+                    </div>
+                    <span style={{ fontSize: 11, color: GRIS3 }}>{mepOk && totalRef > 0 ? Math.round(mepHaut / totalRef * 100) : '—'}% du budget</span>
+                  </div>
+                  {mepOk ? (
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 140, background: GRIS1, borderRadius: 6, padding: '8px 12px' }}>
+                        <div style={{ fontSize: 10, color: GRIS3 }}>Fourchette basse</div>
+                        <div style={{ fontWeight: 600, fontSize: 15 }}>{fmtFcfa(mepBas, deviseInfo)}</div>
+                        <div style={{ fontSize: 10, color: GRIS3 }}>{m2(mepBas)}</div>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 140, background: '#E3F2FD', border: '1px solid #1565C0', borderRadius: 6, padding: '8px 12px' }}>
+                        <div style={{ fontSize: 10, color: '#1565C0' }}>Fourchette haute</div>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: '#1565C0' }}>{fmtFcfa(mepHaut, deviseInfo)}</div>
+                        <div style={{ fontSize: 10, color: '#1565C0' }}>{m2(mepHaut)}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ background: '#FFF8E1', borderRadius: 6, padding: '10px 14px', fontSize: 12, color: '#B8860B' }}>
+                      <Spinner text="Chargement du calcul MEP..." />
                     </div>
                   )}
-                </>
-              )
-            })()}
-          </Card>
+                </Card>
+
+                {/* ── FINITIONS ── */}
+                <Card>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 4, height: 24, background: ORANGE, borderRadius: 2 }} />
+                      <span style={{ fontWeight: 700, fontSize: 14, color: '#111' }}>Finitions — Second Œuvre</span>
+                    </div>
+                    <span style={{ fontSize: 11, color: GRIS3 }}>{finOk && totalRef > 0 ? Math.round(finHE / totalRef * 100) : '—'}% du budget</span>
+                  </div>
+                  {finOk ? (
+                    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 120, background: GRIS1, borderRadius: 6, padding: '8px 12px' }}>
+                        <div style={{ fontSize: 10, color: GRIS3 }}>Basic</div>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{fmtFcfa(finBasic, deviseInfo)}</div>
+                        <div style={{ fontSize: 10, color: GRIS3 }}>{m2(finBasic)}</div>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 120, background: ORANGE_LT, border: `1px solid ${ORANGE}`, borderRadius: 6, padding: '8px 12px' }}>
+                        <div style={{ fontSize: 10, color: ORANGE }}>High-End</div>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: ORANGE }}>{fmtFcfa(finHE, deviseInfo)}</div>
+                        <div style={{ fontSize: 10, color: ORANGE }}>{m2(finHE)}</div>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 120, background: '#FFF8E1', border: '1px solid #F59E0B', borderRadius: 6, padding: '8px 12px' }}>
+                        <div style={{ fontSize: 10, color: '#B8860B' }}>Luxury</div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: '#B8860B' }}>{fmtFcfa(finLux, deviseInfo)}</div>
+                        <div style={{ fontSize: 10, color: '#B8860B' }}>{m2(finLux)}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <Spinner text="Calcul des finitions..." />
+                  )}
+                </Card>
+
+                {/* ── TOTAL ── */}
+                <Card style={{ background: '#F0FFF4', border: `2px solid ${VERT}` }}>
+                  <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>COÛT TOTAL PROJET (Structure + MEP + Finitions)</div>
+                  <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                    <div>
+                      <div style={{ fontSize: 11, color: GRIS3 }}>Fourchette</div>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>
+                        {fmtFcfa(totalBas, deviseInfo)} — {fmtFcfa(totalHaut, deviseInfo)}
+                      </div>
+                    </div>
+                    <div style={{ borderLeft: `1px solid ${GRIS2}`, paddingLeft: 16 }}>
+                      <div style={{ fontSize: 11, color: GRIS3 }}>Référence (High-End)</div>
+                      <div style={{ fontSize: 18, fontWeight: 700 }}>{fmtFcfa(totalRef, deviseInfo)}</div>
+                      <div style={{ fontSize: 11, color: GRIS3 }}>{m2(totalRef)}</div>
+                    </div>
+                  </div>
+                  {(!mepOk || !finOk) && (
+                    <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>
+                      {!mepOk && 'MEP en cours de chargement. '}{!finOk && 'Finitions en cours de chargement. '}Le total sera mis à jour automatiquement.
+                    </div>
+                  )}
+                </Card>
+              </>
+            )
+          })()}
           {analyse.note_ingenieur && (
             <>
               <SectionTitle>{t('r_note_ingenieur')}</SectionTitle>
