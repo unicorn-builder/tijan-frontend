@@ -1054,67 +1054,155 @@ export default function Results() {
 
     // ── PLANNING D'EXÉCUTION ──
     if (activeTab === 'planning') {
+      const durEst = resultats?.boq?.duree_estimee_mois || Math.ceil((params.nb_niveaux || 5) * 2.5)
+      const coutStr = fmtFcfa(boq?.total_haut_fcfa || 0, deviseInfo)
+      const coutMep = fmtFcfa(mepData?.boq_mep?.hend_fcfa || 0, deviseInfo)
       return (
-        <Card>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{"Planning d'exécution"}</div>
-          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
-            {"Diagramme de Gantt détaillé couvrant l'ensemble des tâches du projet, organisé par lot (Structure, MEP, Finitions). Inclut les durées, dépendances et le chemin critique."}
-          </p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 12 }}>
-            <div style={{ background: GRIS1, borderRadius: 6, padding: '8px 14px', fontSize: 12 }}>
-              <span style={{ color: GRIS3 }}>{"Durée estimée"}</span>
-              <div style={{ fontWeight: 600 }}>{resultats?.boq?.duree_estimee_mois || Math.ceil((params.nb_niveaux || 5) * 2.5)} mois</div>
+        <>
+          <Card>
+            <SectionTitle>{"Planning d'exécution des travaux"}</SectionTitle>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>Projet</div>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>{params.nom}</div>
+                <div style={{ fontSize: 12, color: '#555' }}>{params.ville} — R+{(params.nb_niveaux||1)-1}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>Durée estimée</div>
+                <div style={{ fontWeight: 700, fontSize: 18, color: VERT }}>{durEst} mois</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>Surface bâtie</div>
+                <div style={{ fontWeight: 600 }}>{fmt(surf_batie, 'm²')}</div>
+              </div>
             </div>
-            <div style={{ background: GRIS1, borderRadius: 6, padding: '8px 14px', fontSize: 12 }}>
-              <span style={{ color: GRIS3 }}>Lots</span>
-              <div style={{ fontWeight: 600 }}>Structure, MEP, Finitions</div>
+          </Card>
+          <SectionTitle>Phases principales</SectionTitle>
+          <DataTable
+            headers={['Phase', 'Lot', 'Durée estimée']}
+            rows={[
+              ['Préparation du chantier', 'Structure', '~1 mois'],
+              ['Fondations', 'Structure', `~${Math.ceil(niv * 0.3)} mois`],
+              ['Gros œuvre (Structure BA)', 'Structure', `~${Math.ceil(niv * 1.0)} mois`],
+              ['Maçonnerie', 'Structure', `~${Math.ceil(niv * 0.7)} mois`],
+              ['Corps d\'état techniques (MEP)', 'MEP', `~${Math.ceil(niv * 0.8)} mois`],
+              ['Finitions et aménagements', 'Finitions', `~${Math.ceil(niv * 0.6)} mois`],
+            ]}
+          />
+          <Card style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: '#555', lineHeight: 1.6 }}>
+              Le PDF contient le diagramme de Gantt complet avec toutes les tâches, dépendances et le chemin critique. Format paysage pour une meilleure lisibilité.
             </div>
-          </div>
-        </Card>
+          </Card>
+        </>
       )
     }
 
     // ── TRÉSORERIE ──
     if (activeTab === 'tresorerie') {
+      const totalStruct = boq?.total_haut_fcfa || 0
+      const totalMep = mepData?.boq_mep?.hend_fcfa || 0
+      const totalGlobal = totalStruct + totalMep
+      const finEst = Math.round((params.surface_emprise_m2 || 300) * (params.nb_niveaux || 5) * 55000)
+      const grandTotal = totalGlobal + finEst
       return (
-        <Card>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{"Planning des dépenses"}</div>
-          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
-            {"Plan de trésorerie mensuel avec séparation matériaux / installation, courbe en S des dépenses cumulées, et tableau croisé Lot × Phase pour la ventilation budgétaire."}
-          </p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 12 }}>
-            <div style={{ background: GRIS1, borderRadius: 6, padding: '8px 14px', fontSize: 12 }}>
-              <span style={{ color: GRIS3 }}>{"Coût total estimé"}</span>
-              <div style={{ fontWeight: 600 }}>{fmtFcfa((boq?.total_haut_fcfa || 0) + (mepData?.boq_mep?.hend_fcfa || 0), deviseInfo)}</div>
+        <>
+          <Card>
+            <SectionTitle>Planning des dépenses (Trésorerie)</SectionTitle>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>Projet</div>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>{params.nom}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: GRIS3 }}>Budget global estimé</div>
+                <div style={{ fontWeight: 700, fontSize: 18, color: VERT }}>{fmtFcfa(grandTotal, deviseInfo)}</div>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+          <SectionTitle>Ventilation budgétaire par lot</SectionTitle>
+          <DataTable
+            headers={['Lot', 'Montant estimé', '% du total']}
+            rows={[
+              ['Structure (Gros œuvre)', fmtFcfa(totalStruct, deviseInfo), grandTotal > 0 ? `${Math.round(totalStruct/grandTotal*100)}%` : '—'],
+              ['MEP (Corps d\'état techniques)', fmtFcfa(totalMep, deviseInfo), grandTotal > 0 ? `${Math.round(totalMep/grandTotal*100)}%` : '—'],
+              ['Finitions (estimation)', fmtFcfa(finEst, deviseInfo), grandTotal > 0 ? `${Math.round(finEst/grandTotal*100)}%` : '—'],
+            ]}
+          />
+          <Card style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: '#555', lineHeight: 1.6 }}>
+              Le PDF contient le plan de trésorerie mensuel complet, la courbe en S des dépenses cumulées, et le tableau croisé Lot × Phase.
+            </div>
+          </Card>
+        </>
       )
     }
 
     // ── FICHES FINITIONS ──
     if (activeTab === 'fiches-finitions') {
+      const fichesItems = [
+        { code: 'FIN-01', titre: 'Carrelage et revêtements de sol', norme: 'NF EN 14411 / DTU 52.1' },
+        { code: 'FIN-02', titre: 'Menuiserie intérieure (bois)', norme: 'NF EN 14351-1 / DTU 36.1' },
+        { code: 'FIN-03', titre: 'Menuiserie extérieure (aluminium)', norme: 'NF EN 14351-1 / DTU 36.5' },
+        { code: 'FIN-04', titre: 'Faux-plafonds', norme: 'NF EN 13964 / DTU 58.1' },
+        { code: 'FIN-05', titre: 'Peinture et enduits de finition', norme: 'NF EN 13300 / DTU 59.1' },
+        { code: 'FIN-06', titre: 'Cuisine équipée', norme: 'NF EN 1116 / NF D 60-030' },
+      ]
       return (
-        <Card>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{"Fiches techniques — Finitions"}</div>
-          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
-            {"Fiches détaillées pour chaque poste de finition : carrelage, menuiseries intérieures et extérieures, faux-plafonds, peinture et cuisines. Inclut spécifications, normes applicables et conseils de mise en œuvre."}
-          </p>
-        </Card>
+        <>
+          <Card>
+            <SectionTitle>Fiches techniques — Finitions</SectionTitle>
+            <div style={{ fontSize: 12, color: '#555', lineHeight: 1.6, marginBottom: 12 }}>
+              6 fiches détaillées couvrant tous les postes de finition. Chaque fiche inclut les spécifications techniques, normes applicables, et conseils de mise en œuvre.
+            </div>
+          </Card>
+          <DataTable
+            headers={['Code', 'Poste', 'Norme de référence']}
+            rows={fichesItems.map(f => [f.code, f.titre, f.norme])}
+            colWidths={['12%', '48%', '40%']}
+          />
+        </>
       )
     }
 
     // ── DAO (APPEL D'OFFRES) ──
     if (activeTab?.startsWith('dao-')) {
-      const lotNames = { 'dao-structure': 'Structure — Gros Œuvre', 'dao-mep': "MEP — Corps d'état techniques", 'dao-finitions': 'Finitions — Second Œuvre' }
+      const lotConfig = {
+        'dao-structure': {
+          titre: 'Structure — Gros Œuvre',
+          postes: ['Installation de chantier', 'Terrassement', 'Fondations', 'Béton armé (poteaux, poutres, dalles)', 'Maçonnerie', 'Étanchéité'],
+        },
+        'dao-mep': {
+          titre: "MEP — Corps d'état techniques",
+          postes: ['Plomberie / Alimentation eau', 'Évacuation / Assainissement', 'Électricité courants forts', 'Électricité courants faibles', 'CVC / Climatisation', 'Sécurité incendie'],
+        },
+        'dao-finitions': {
+          titre: 'Finitions — Second Œuvre',
+          postes: ['Carrelage / Revêtements sol', 'Menuiserie intérieure', 'Menuiserie extérieure (alu)', 'Faux-plafonds', 'Peinture / Enduits', 'Cuisine équipée'],
+        },
+      }
+      const cfg = lotConfig[activeTab] || { titre: 'DAO', postes: [] }
       return (
-        <Card>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{"Dossier d'Appel d'Offres"}</div>
-          <div style={{ fontSize: 14, color: VERT, fontWeight: 600, marginBottom: 12 }}>{lotNames[activeTab]}</div>
-          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
-            {"Document contractuel pour consultation d'entreprises. Contient le bordereau des quantités (sans prix) et le Cahier des Clauses Techniques Particulières (CCTP) avec spécifications d'exécution."}
-          </p>
-        </Card>
+        <>
+          <Card>
+            <SectionTitle>{"Dossier d'Appel d'Offres"}</SectionTitle>
+            <div style={{ fontSize: 14, color: VERT, fontWeight: 600, marginBottom: 8 }}>{cfg.titre}</div>
+            <div style={{ fontSize: 12, color: '#555', lineHeight: 1.6 }}>
+              Bordereau des quantités (sans prix) + CCTP avec spécifications d'exécution. Document prêt pour consultation d'entreprises.
+            </div>
+          </Card>
+          <SectionTitle>Postes du bordereau</SectionTitle>
+          <DataTable
+            headers={['N°', 'Désignation', 'Quantités', 'Unité', 'Observations']}
+            rows={cfg.postes.map((p, i) => [String(i+1), p, '—', '—', 'Voir PDF'])}
+            colWidths={['8%', '40%', '18%', '14%', '20%']}
+          />
+          <Card style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: '#555' }}>
+              Le PDF contient le bordereau complet avec toutes les quantités calculées, sans montants (à compléter par l'entreprise soumissionnaire).
+            </div>
+          </Card>
+        </>
       )
     }
 
@@ -1199,7 +1287,17 @@ export default function Results() {
             return (
               <React.Fragment key={tab.id}>
                 {showGroupHeader && !isMobile && (
-                  <div style={{ padding: '12px 20px 4px', fontSize: 9, fontWeight: 700, color: GRIS3, textTransform: 'uppercase', letterSpacing: 1 }}>
+                  <div style={{
+                    padding: '10px 20px 6px',
+                    fontSize: 10,
+                    fontWeight: 800,
+                    color: VERT_DARK,
+                    textTransform: 'uppercase',
+                    letterSpacing: 1.2,
+                    borderTop: idx === 0 ? 'none' : `2px solid ${GRIS2}`,
+                    marginTop: idx === 0 ? 0 : 8,
+                    background: VERT_LIGHT,
+                  }}>
                     {tab.group}
                   </div>
                 )}
@@ -1336,6 +1434,45 @@ export default function Results() {
                   style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
                 >
                   {dlLoading === '/generate-rapport-docx' ? '...' : 'Word'}
+                </button>
+              )}
+              {activeTab === 'planning' && (
+                <button
+                  onClick={() => download('/generate-planning-docx', `TijanAI_Planning_${slug}_${today}.docx`)}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading === '/generate-planning-docx' ? '...' : 'Word'}
+                </button>
+              )}
+              {activeTab === 'tresorerie' && (
+                <button
+                  onClick={() => download('/generate-tresorerie-docx', `TijanAI_Tresorerie_${slug}_${today}.docx`)}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading === '/generate-tresorerie-docx' ? '...' : 'Word'}
+                </button>
+              )}
+              {activeTab?.startsWith('dao-') && (
+                <button
+                  onClick={() => {
+                    const lot = activeTab.replace('dao-', '')
+                    download(`/generate-dao-docx?lot=${lot}`, `TijanAI_DAO_${lot}_${slug}_${today}.docx`)
+                  }}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading?.includes('/generate-dao-docx') ? '...' : 'Word'}
+                </button>
+              )}
+              {activeTab === 'fiches-finitions' && (
+                <button
+                  onClick={() => download('/generate-fiches-finitions-docx', `TijanAI_FichesFinitions_${slug}_${today}.docx`)}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading === '/generate-fiches-finitions-docx' ? '...' : 'Word'}
                 </button>
               )}
             </div>
