@@ -1216,6 +1216,15 @@ export default function Results() {
                   {dlLoading === '/generate-boq-mep-xlsx' ? '...' : 'Excel'}
                 </button>
               )}
+              {activeTab === 'planning' && (
+                <button
+                  onClick={() => download('/generate-planning-xlsx', `TijanAI_Planning_Tresorerie_${slug}_${today}.xlsx`)}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                >
+                  {dlLoading === '/generate-planning-xlsx' ? '...' : 'Excel'}
+                </button>
+              )}
               {activeTab === 'structure' && (
                 <button
                   onClick={() => download('/generate-note-docx', `TijanAI_NoteStructure_${slug}_${today}.docx`)}
