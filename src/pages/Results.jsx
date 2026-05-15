@@ -961,6 +961,14 @@ export default function Results() {
 
     // ── RAPPORT EXÉCUTIF ──
     if (activeTab === 'rapport-executif') {
+      // Auto-load finitions data if not yet fetched
+      if (!finitionsData && params?.surface_emprise_m2) {
+        fetch(`${BACKEND}/calculate-finitions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params),
+        }).then(r => r.json()).then(d => { if (d.ok) setFinitionsData(d.finitions) }).catch(() => {})
+      }
       const boq = resultats.boq || {}
       const analyse = resultats.analyse || {}
       return (
@@ -990,42 +998,64 @@ export default function Results() {
           <Card>
             {(() => {
               const boqm = mepData?.boq_mep || {}
-              const structBas = boq.total_bas_fcfa || 0
               const structHaut = boq.total_haut_fcfa || 0
-              const mepBas = boqm.basic_fcfa || 0
               const mepHaut = boqm.hend_fcfa || 0
-              const totalBas = structBas + mepBas
-              const totalHaut = structHaut + mepHaut
               const sBatie = boq.surface_batie_m2 || (surf * niv)
-              const coutM2 = sBatie > 0 ? Math.round(totalHaut / sBatie) : 0
+              // Finitions: use high_end tier as reference
+              const finHaut = finitionsData?.high_end?.total || 0
+              const totalHaut = structHaut + mepHaut + finHaut
+              const structM2 = sBatie > 0 ? Math.round(structHaut / sBatie) : 0
+              const mepM2 = sBatie > 0 ? Math.round(mepHaut / sBatie) : 0
+              const finM2 = sBatie > 0 ? Math.round(finHaut / sBatie) : 0
+              const totalM2 = sBatie > 0 ? Math.round(totalHaut / sBatie) : 0
+              const structPct = totalHaut > 0 ? Math.round(structHaut / totalHaut * 100) : 0
+              const mepPct = totalHaut > 0 ? Math.round(mepHaut / totalHaut * 100) : 0
+              const finPct = totalHaut > 0 ? Math.round(finHaut / totalHaut * 100) : 0
+              const devise = deviseInfo?.symbole || 'FCFA'
               return (
                 <>
-                  <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+                  <DataTable
+                    headers={['Lot', 'Montant estimé', 'Ratio /m²', '% du total']}
+                    colWidths={['30%', '30%', '22%', '18%']}
+                    rows={[
+                      [
+                        <span style={{ fontWeight: 600, color: VERT }}>Structure</span>,
+                        fmtFcfa(structHaut, deviseInfo),
+                        `${fmt(structM2)} ${devise}/m²`,
+                        `${structPct}%`,
+                      ],
+                      [
+                        <span style={{ fontWeight: 600, color: '#1565C0' }}>MEP</span>,
+                        mepData ? fmtFcfa(mepHaut, deviseInfo) : <span style={{ color: ORANGE, fontSize: 11 }}>Non chargé</span>,
+                        mepData ? `${fmt(mepM2)} ${devise}/m²` : '—',
+                        mepData ? `${mepPct}%` : '—',
+                      ],
+                      [
+                        <span style={{ fontWeight: 600, color: ORANGE }}>Finitions</span>,
+                        finitionsData ? fmtFcfa(finHaut, deviseInfo) : <Spinner text="" />,
+                        finitionsData ? `${fmt(finM2)} ${devise}/m²` : '—',
+                        finitionsData ? `${finPct}%` : '—',
+                      ],
+                    ]}
+                  />
+                  <div style={{ marginTop: 16, paddingTop: 12, borderTop: `2px solid ${VERT}`, display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'baseline' }}>
                     <div>
-                      <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_structure_bas')} / {t('r_structure_haut')}</div>
-                      <div style={{ fontSize: 18, fontWeight: 700 }}>{fmtFcfa(structBas, deviseInfo)} — {fmtFcfa(structHaut, deviseInfo)}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 11, color: GRIS3 }}>MEP & Automation</div>
-                      <div style={{ fontSize: 18, fontWeight: 700 }}>{fmtFcfa(mepBas, deviseInfo)} — {fmtFcfa(mepHaut, deviseInfo)}</div>
-                      {!mepData && <div style={{ fontSize: 10, color: ORANGE }}>Calcul MEP non chargé — consultez l'onglet MEP</div>}
-                    </div>
-                  </div>
-                  <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${GRIS2}`, display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-                    <div>
-                      <div style={{ fontSize: 11, color: GRIS3 }}>COÛT TOTAL ESTIMÉ</div>
-                      <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(totalBas, deviseInfo)} — {fmtFcfa(totalHaut, deviseInfo)}</div>
+                      <div style={{ fontSize: 11, color: GRIS3 }}>COÛT TOTAL ESTIMÉ (Structure + MEP + Finitions)</div>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: VERT }}>{fmtFcfa(totalHaut, deviseInfo)}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
-                      <div style={{ fontWeight: 600 }}>{fmt(coutM2)} {deviseInfo?.symbole || 'FCFA'}/m²</div>
-                      <div style={{ fontSize: 10, color: GRIS3 }}>Structure + MEP</div>
+                      <div style={{ fontWeight: 700, fontSize: 16 }}>{fmt(totalM2)} {devise}/m²</div>
                     </div>
                   </div>
+                  {finitionsData && (
+                    <div style={{ marginTop: 8, fontSize: 11, color: GRIS3 }}>
+                      Finitions estimées en gamme High-End. Gammes Basic ({fmtFcfa(finitionsData?.basic?.total || 0, deviseInfo)}) et Luxury ({fmtFcfa(finitionsData?.luxury?.total || 0, deviseInfo)}) disponibles dans l'onglet BOQ Finitions.
+                    </div>
+                  )}
                 </>
               )
             })()}
-            <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>{t('r_estimation_hors')}</div>
           </Card>
           {analyse.note_ingenieur && (
             <>
