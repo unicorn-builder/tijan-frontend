@@ -1075,6 +1075,11 @@ export default function Results() {
     'plan-ba':            '/generate-plans-structure',
     'plan-mep':           '/generate-plans-mep',
     'finitions':          '/generate-boq-finitions',
+    'fiches-all':         '/generate-fiches-all',
+    'planning':           '/generate-planning',
+    'dao-structure':      '/generate-dao?lot=structure',
+    'dao-mep':            '/generate-dao?lot=mep',
+    'dao-finitions':      '/generate-dao?lot=finitions',
   }
   const FILENAME_MAP = {
     'structure':          `TijanAI_NoteStructure_${slug}_${today}.pdf`,
@@ -1090,6 +1095,11 @@ export default function Results() {
     'plan-ba':            `TijanAI_PlansBA_${slug}_${today}.pdf`,
     'plan-mep':           `TijanAI_PlansMEP_${slug}_${today}.pdf`,
     'finitions':          `TijanAI_BOQFinitions_${slug}_${today}.pdf`,
+    'fiches-all':         `TijanAI_FichesTechniques_${slug}_${today}.pdf`,
+    'planning':           `TijanAI_Planning_${slug}_${today}.pdf`,
+    'dao-structure':      `TijanAI_DAO_Structure_${slug}_${today}.pdf`,
+    'dao-mep':            `TijanAI_DAO_MEP_${slug}_${today}.pdf`,
+    'dao-finitions':      `TijanAI_DAO_Finitions_${slug}_${today}.pdf`,
   }
 
   const endpoint = activeTab === 'chat' ? null : ENDPOINT_MAP[activeTab]
