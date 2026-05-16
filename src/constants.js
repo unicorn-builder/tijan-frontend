@@ -13,18 +13,15 @@ export const TABS = [
   // ── Structure ──
   { id: 'structure',           label: 'Note de calcul structure',    endpoint: '/generate',                     filename: 'note_structure.pdf',      mep: false, group: 'Structure' },
   { id: 'boq-structure',       label: 'BOQ Structure',               endpoint: '/generate-boq',                 filename: 'boq_structure.pdf',       mep: false, group: 'Structure' },
-  { id: 'fiches-structure',    label: 'Fiches techniques structure', endpoint: '/generate-fiches-structure',    filename: 'fiches_structure.pdf',    mep: false, group: 'Structure' },
   { id: 'schemas-ferraillage', label: 'Schémas de ferraillage',      endpoint: '/generate-schemas-ferraillage', filename: 'schemas_ferraillage.pdf', mep: false, group: 'Structure' },
   { id: 'dao-structure',       label: 'DAO Lot Structure',           endpoint: '/generate-dao?lot=structure',   filename: 'dao_structure.pdf',       mep: false, group: 'Structure' },
   // ── MEP ──
   { id: 'note-mep',            label: 'Note de calcul MEP',          endpoint: '/generate-note-mep',            filename: 'note_mep.pdf',            mep: true,  group: 'MEP' },
   { id: 'boq-mep',             label: 'BOQ MEP',                     endpoint: '/generate-boq-mep',             filename: 'boq_mep.pdf',             mep: true,  group: 'MEP' },
-  { id: 'fiches-mep',          label: 'Fiches techniques MEP',       endpoint: '/generate-fiches-mep',          filename: 'fiches_mep.pdf',          mep: true,  group: 'MEP' },
   { id: 'schemas-mep',         label: 'Schémas isométriques MEP',    endpoint: '/generate-schemas-mep',         filename: 'schemas_mep.pdf',         mep: true,  group: 'MEP' },
   { id: 'dao-mep',             label: 'DAO Lot MEP',                 endpoint: '/generate-dao?lot=mep',         filename: 'dao_mep.pdf',             mep: true,  group: 'MEP' },
   // ── Finitions ──
   { id: 'finitions',           label: 'BOQ Finitions',               endpoint: '/generate-boq-finitions',       filename: 'boq_finitions.pdf',       mep: false, group: 'Finitions' },
-  { id: 'fiches-finitions',    label: 'Fiches techniques finitions', endpoint: '/generate-fiches-finitions',    filename: 'fiches_finitions.pdf',    mep: false, group: 'Finitions' },
   { id: 'dao-finitions',       label: 'DAO Lot Finitions',           endpoint: '/generate-dao?lot=finitions',   filename: 'dao_finitions.pdf',       mep: false, group: 'Finitions' },
   // ── Synthèse ──
   { id: 'rapport-executif',    label: 'Rapport exécutif',            endpoint: '/generate-rapport-executif',    filename: 'rapport_executif.pdf',    mep: false, group: 'Synthèse' },

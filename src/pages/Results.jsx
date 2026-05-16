@@ -354,7 +354,7 @@ export default function Results() {
     finally { setEdgeLoading(false) }
   }
 
-  const MEP_TABS = ['note-mep', 'boq-mep', 'edge-assessment', 'fiches-mep', 'schemas-mep', 'plan-mep']
+  const MEP_TABS = ['note-mep', 'boq-mep', 'edge-assessment', 'schemas-mep', 'plan-mep']
   const NEEDS_MEP = [...MEP_TABS, 'rapport-executif', 'planning', 'tresorerie']
 
   useEffect(() => {
@@ -563,6 +563,16 @@ export default function Results() {
 
     // ── BOQ STRUCTURE ──
     if (activeTab === 'boq-structure') {
+      const lots = [
+        [lang === 'en' ? 'Earthworks' : 'Terrassement', boq.cout_terr_fcfa, 'm³', boq.terrassement_m3],
+        [lang === 'en' ? 'Foundations' : 'Fondations', boq.cout_fond_fcfa, 'm³', boq.beton_fondation_m3],
+        [lang === 'en' ? 'Concrete (BA)' : 'Béton armé (BA)', boq.cout_beton_fcfa, 'm³', boq.beton_structure_m3],
+        [lang === 'en' ? 'Reinforcing steel' : 'Acier HA', boq.cout_acier_fcfa, 'kg', boq.acier_kg],
+        [lang === 'en' ? 'Formwork' : 'Coffrage', boq.cout_coffrage_fcfa, 'm²', boq.coffrage_m2],
+        [lang === 'en' ? 'Masonry' : 'Maçonnerie', boq.cout_maco_fcfa, 'm²', boq.maconnerie_m2],
+        [lang === 'en' ? 'Waterproofing' : 'Étanchéité', boq.cout_etanch_fcfa, 'm²', boq.etancheite_m2],
+        [lang === 'en' ? 'Miscellaneous' : 'Divers', boq.cout_divers_fcfa, 'fft', ''],
+      ].filter(r => r[1])
       return (
         <>
           <Card>
@@ -587,6 +597,22 @@ export default function Results() {
             </div>
             <div style={{ marginTop: 8, fontSize: 11, color: ORANGE }}>{t('r_estimation_note')}</div>
           </Card>
+          {lots.length > 0 && (
+            <>
+              <SectionTitle>{lang === 'en' ? 'Cost breakdown by lot' : 'Récapitulatif par lot'}</SectionTitle>
+              <DataTable
+                headers={[lang === 'en' ? 'Lot' : 'Poste', lang === 'en' ? 'Qty' : 'Qté', lang === 'en' ? 'Unit' : 'Unité', lang === 'en' ? 'Amount' : 'Montant', '% Total']}
+                rows={lots.map(([label, cost, unit, qty]) => [
+                  label,
+                  qty ? fmt(qty, '', qty > 1000 ? 0 : 1) : '—',
+                  unit,
+                  fmtFcfa(cost, deviseInfo),
+                  boq.total_haut_fcfa > 0 ? `${Math.round(cost / boq.total_haut_fcfa * 100)}%` : '—',
+                ])}
+                colWidths={['28%', '14%', '10%', '28%', '12%']}
+              />
+            </>
+          )}
         </>
       )
     }
@@ -663,6 +689,17 @@ export default function Results() {
       const boqm = mepData.boq_mep || {}
       const ratio_b = surf_batie ? Math.round((boqm.basic_fcfa || 0) / surf_batie) : 0
       const ratio_h = surf_batie ? Math.round((boqm.hend_fcfa || 0) / surf_batie) : 0
+      // Build lot breakdown from MEP data
+      const el = mepData.electrique || {}
+      const pl = mepData.plomberie || {}
+      const cv = mepData.cvc || {}
+      const mepLots = [
+        [lang === 'en' ? 'Electrical' : 'Électricité', boqm.elec_basic_fcfa || boqm.lot_elec_basic, boqm.elec_hend_fcfa || boqm.lot_elec_hend],
+        [lang === 'en' ? 'Plumbing' : 'Plomberie', boqm.plomb_basic_fcfa || boqm.lot_plomb_basic, boqm.plomb_hend_fcfa || boqm.lot_plomb_hend],
+        [lang === 'en' ? 'HVAC' : 'CVC / Climatisation', boqm.cvc_basic_fcfa || boqm.lot_cvc_basic, boqm.cvc_hend_fcfa || boqm.lot_cvc_hend],
+        [lang === 'en' ? 'Fire Safety' : 'Sécurité incendie', boqm.ssi_basic_fcfa || boqm.lot_ssi_basic, boqm.ssi_hend_fcfa || boqm.lot_ssi_hend],
+        [lang === 'en' ? 'Low Voltage' : 'Courants faibles', boqm.cf_basic_fcfa || boqm.lot_cf_basic, boqm.cf_hend_fcfa || boqm.lot_cf_hend],
+      ].filter(r => r[1] || r[2])
       return (
         <>
           <Card>
@@ -677,7 +714,6 @@ export default function Results() {
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${GRIS2}` }}>
               <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_boq_mep_m2')}</div>
               <div style={{ fontWeight: 600 }}>{fmt(ratio_b)} — {fmt(ratio_h)} {deviseInfo?.symbole || 'FCFA'}/m² <span style={{ fontSize: 11, color: GRIS3 }}>(basic → high-end)</span></div>
-              <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }}>{t('r_detail_pdf')}</div>
             </div>
             {boqm.recommandation && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: VERT_LIGHT, borderRadius: 6, fontSize: 12, color: '#2d7a3a' }}>
@@ -685,6 +721,20 @@ export default function Results() {
               </div>
             )}
           </Card>
+          {mepLots.length > 0 && (
+            <>
+              <SectionTitle>{lang === 'en' ? 'Cost breakdown by trade' : 'Récapitulatif par lot technique'}</SectionTitle>
+              <DataTable
+                headers={['Lot', 'Basic', 'High-End']}
+                rows={mepLots.map(([label, basic, hend]) => [
+                  label,
+                  fmtFcfa(basic, deviseInfo),
+                  fmtFcfa(hend, deviseInfo),
+                ])}
+                colWidths={['40%', '30%', '30%']}
+              />
+            </>
+          )}
         </>
       )
     }
@@ -810,68 +860,7 @@ export default function Results() {
       )
     }
 
-    // ── FICHES STRUCTURE ──
-    if (activeTab === 'fiches-structure') {
-      return (
-        <>
-          <Card>
-            <SectionTitle>{t('r_fiche_beton')}</SectionTitle>
-            {poteaux.length > 0 ? (
-              <DataTable
-                headers={[t('r_niveau'), t('r_section'), t('r_armatures'), t('r_cadres'), t('r_beton')]}
-                rows={poteaux.map(p => [
-                  p.niveau || p.label,
-                  `${p.section_mm}×${p.section_mm} mm`,
-                  `${p.nb_barres}HA${p.diametre_mm}`,
-                  `HA${p.cadre_diam_mm} e=${p.espacement_cadres_mm}mm`,
-                  resultats.classe_beton || params.classe_beton || 'C30/37',
-                ])}
-              />
-            ) : <div style={{ fontSize: 12, color: GRIS3 }}>{t('r_donnees_non_dispo')}</div>}
-          </Card>
-          {fondation.type && (
-            <Card>
-              <SectionTitle>{t('r_fiche_fondations')}</SectionTitle>
-              <DataTable headers={[t('r_type'), t('r_diametre'), t('r_longueur'), t('r_armatures'), t('r_nb_pieux')]} rows={[[
-                fondation.type,
-                fondation.diam_pieu_mm ? `Ø${fondation.diam_pieu_mm} mm` : '—',
-                fondation.longueur_pieu_m ? `${fondation.longueur_pieu_m} m` : '—',
-                fondation.As_cm2 ? `As = ${fondation.As_cm2} cm²` : '—',
-                fondation.nb_pieux || '—',
-              ]]} />
-            </Card>
-          )}
-          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>{t('r_telecharger_complet')}</div>
-        </>
-      )
-    }
-
-    // ── FICHES MEP ──
-    if (activeTab === 'fiches-mep' && mepData) {
-      const el = mepData.electrique || {}
-      const pl = mepData.plomberie || {}
-      return (
-        <>
-          <Card>
-            <SectionTitle>{t('r_fiche_elec')}</SectionTitle>
-            <DataTable headers={[t('r_parametre'), t('r_valeur'), t('r_parametre'), t('r_valeur')]} rows={[
-              [t('r_puissance_totale'), fmt(el.puissance_totale_kva, 'kVA'), t('r_transfo'), fmt(el.transfo_kva, 'kVA')],
-              [t('r_groupe_elec'), fmt(el.groupe_electrogene_kva, 'kVA'), t('r_nb_compteurs'), fmt(el.nb_compteurs)],
-              [t('r_conso_annuelle'), fmt(el.conso_annuelle_kwh, 'kWh/an'), 'Facture', fmtFcfa(el.facture_annuelle_fcfa, deviseInfo)],
-            ]} />
-          </Card>
-          <Card>
-            <SectionTitle>{t('r_fiche_plomb')}</SectionTitle>
-            <DataTable headers={[t('r_parametre'), t('r_valeur'), t('r_parametre'), t('r_valeur')]} rows={[
-              [t('r_nb_logements'), fmt(pl.nb_logements), t('r_besoin_eau_jour'), fmt(pl.besoin_total_m3_j, 'm³/j', 2)],
-              [t('r_volume_citerne'), fmt(pl.volume_citerne_m3, 'm³'), t('r_surpresseur'), fmt(pl.debit_surpresseur_m3h, 'm³/h', 1)],
-              [t('r_cesi'), fmt(pl.nb_chauffe_eau_solaire, 'unités'), t('r_facture_eau'), fmtFcfa(pl.facture_eau_fcfa, deviseInfo)],
-            ]} />
-          </Card>
-          <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>{t('r_telecharger_complet')}</div>
-        </>
-      )
-    }
+    // (Fiches techniques removed from sidebar)
 
 
     // ── BOQ FINITIONS ──
@@ -1244,68 +1233,69 @@ export default function Results() {
       )
     }
 
-    // ── FICHES FINITIONS ──
-    if (activeTab === 'fiches-finitions') {
-      const fichesItems = [
-        { code: 'FIN-01', titre: 'Carrelage et revêtements de sol', norme: 'NF EN 14411 / DTU 52.1' },
-        { code: 'FIN-02', titre: 'Menuiserie intérieure (bois)', norme: 'NF EN 14351-1 / DTU 36.1' },
-        { code: 'FIN-03', titre: 'Menuiserie extérieure (aluminium)', norme: 'NF EN 14351-1 / DTU 36.5' },
-        { code: 'FIN-04', titre: 'Faux-plafonds', norme: 'NF EN 13964 / DTU 58.1' },
-        { code: 'FIN-05', titre: 'Peinture et enduits de finition', norme: 'NF EN 13300 / DTU 59.1' },
-        { code: 'FIN-06', titre: 'Cuisine équipée', norme: 'NF EN 1116 / NF D 60-030' },
-      ]
-      return (
-        <>
-          <Card>
-            <SectionTitle>Fiches techniques — Finitions</SectionTitle>
-            <div style={{ fontSize: 12, color: '#555', lineHeight: 1.6, marginBottom: 12 }}>
-              6 fiches détaillées couvrant tous les postes de finition. Chaque fiche inclut les spécifications techniques, normes applicables, et conseils de mise en œuvre.
-            </div>
-          </Card>
-          <DataTable
-            headers={['Code', 'Poste', 'Norme de référence']}
-            rows={fichesItems.map(f => [f.code, f.titre, f.norme])}
-            colWidths={['12%', '48%', '40%']}
-          />
-        </>
-      )
-    }
+    // (Fiches finitions removed from sidebar)
 
     // ── DAO (APPEL D'OFFRES) ──
     if (activeTab?.startsWith('dao-')) {
       const lotConfig = {
         'dao-structure': {
-          titre: 'Structure — Gros Œuvre',
-          postes: ['Installation de chantier', 'Terrassement', 'Fondations', 'Béton armé (poteaux, poutres, dalles)', 'Maçonnerie', 'Étanchéité'],
+          titre: lang === 'en' ? 'Structure — Main Works' : 'Structure — Gros Œuvre',
+          postes: [
+            ['S.1', lang === 'en' ? 'Site preparation' : 'Installation de chantier', 'fft', 1],
+            ['S.2', lang === 'en' ? 'Earthworks' : 'Terrassement', 'm³', boq.terrassement_m3 ? Math.round(boq.terrassement_m3) : '—'],
+            ['S.3', lang === 'en' ? 'Foundations' : 'Fondations', 'm³', boq.beton_fondation_m3 ? Math.round(boq.beton_fondation_m3) : '—'],
+            ['S.4', lang === 'en' ? 'Reinforced concrete (columns, beams, slabs)' : 'Béton armé (poteaux, poutres, dalles)', 'm³', boq.beton_structure_m3 ? Math.round(boq.beton_structure_m3) : '—'],
+            ['S.5', lang === 'en' ? 'Reinforcing steel' : 'Acier HA', 'kg', boq.acier_kg ? Math.round(boq.acier_kg).toLocaleString('fr-FR') : '—'],
+            ['S.6', lang === 'en' ? 'Formwork' : 'Coffrage', 'm²', boq.coffrage_m2 ? Math.round(boq.coffrage_m2) : '—'],
+            ['S.7', lang === 'en' ? 'Masonry' : 'Maçonnerie', 'm²', boq.maconnerie_m2 ? Math.round(boq.maconnerie_m2) : '—'],
+            ['S.8', lang === 'en' ? 'Waterproofing' : 'Étanchéité', 'm²', boq.etancheite_m2 ? Math.round(boq.etancheite_m2) : '—'],
+          ],
         },
         'dao-mep': {
-          titre: "MEP — Corps d'état techniques",
-          postes: ['Plomberie / Alimentation eau', 'Évacuation / Assainissement', 'Électricité courants forts', 'Électricité courants faibles', 'CVC / Climatisation', 'Sécurité incendie'],
+          titre: lang === 'en' ? "MEP — Technical Trades" : "MEP — Corps d'état techniques",
+          postes: [
+            ['E', lang === 'en' ? 'Electrical (HV/LV)' : 'Électricité courants forts', 'fft', 1],
+            ['P', lang === 'en' ? 'Plumbing / Water supply' : 'Plomberie / Alimentation eau', 'fft', 1],
+            ['C', lang === 'en' ? 'HVAC / Air conditioning' : 'CVC / Climatisation', 'fft', 1],
+            ['SSI', lang === 'en' ? 'Fire safety' : 'Sécurité incendie', 'fft', 1],
+            ['CF', lang === 'en' ? 'Low voltage / Data' : 'Courants faibles / Data', 'fft', 1],
+          ],
         },
         'dao-finitions': {
-          titre: 'Finitions — Second Œuvre',
-          postes: ['Carrelage / Revêtements sol', 'Menuiserie intérieure', 'Menuiserie extérieure (alu)', 'Faux-plafonds', 'Peinture / Enduits', 'Cuisine équipée'],
+          titre: lang === 'en' ? 'Finishes — Secondary Works' : 'Finitions — Second Œuvre',
+          postes: [
+            ['F.1', lang === 'en' ? 'Floor tiles / coverings' : 'Carrelage / Revêtements sol', 'm²', surf_batie ? Math.round(surf_batie * 0.85) : '—'],
+            ['F.2', lang === 'en' ? 'Interior joinery' : 'Menuiserie intérieure', 'U', '—'],
+            ['F.3', lang === 'en' ? 'Exterior joinery (alu)' : 'Menuiserie extérieure (alu)', 'm²', '—'],
+            ['F.4', lang === 'en' ? 'Suspended ceilings' : 'Faux-plafonds', 'm²', surf_batie ? Math.round(surf_batie * 0.70) : '—'],
+            ['F.5', lang === 'en' ? 'Paint / Finishes' : 'Peinture / Enduits', 'm²', surf_batie ? Math.round(surf_batie * 2.5) : '—'],
+            ['F.6', lang === 'en' ? 'Fitted kitchen' : 'Cuisine équipée', 'U', '—'],
+          ],
         },
       }
       const cfg = lotConfig[activeTab] || { titre: 'DAO', postes: [] }
       return (
         <>
           <Card>
-            <SectionTitle>{"Dossier d'Appel d'Offres"}</SectionTitle>
+            <SectionTitle>{lang === 'en' ? 'Tender Document' : "Dossier d'Appel d'Offres"}</SectionTitle>
             <div style={{ fontSize: 14, color: VERT, fontWeight: 600, marginBottom: 8 }}>{cfg.titre}</div>
             <div style={{ fontSize: 12, color: '#555', lineHeight: 1.6 }}>
-              Bordereau des quantités (sans prix) + CCTP avec spécifications d'exécution. Document prêt pour consultation d'entreprises.
+              {lang === 'en'
+                ? 'Bill of quantities with unit prices to be completed by the contractor. Includes CCTP technical specifications.'
+                : "Bordereau des quantités avec prix unitaires à compléter par l'entreprise. Inclut le CCTP avec spécifications d'exécution."}
             </div>
           </Card>
-          <SectionTitle>Postes du bordereau</SectionTitle>
+          <SectionTitle>{lang === 'en' ? 'Bill of Quantities' : 'Postes du bordereau'}</SectionTitle>
           <DataTable
-            headers={['N°', 'Désignation', 'Quantités', 'Unité', 'Observations']}
-            rows={cfg.postes.map((p, i) => [String(i+1), p, '—', '—', 'Voir PDF'])}
-            colWidths={['8%', '40%', '18%', '14%', '20%']}
+            headers={['N°', lang === 'en' ? 'Description' : 'Désignation', lang === 'en' ? 'Qty' : 'Qté', lang === 'en' ? 'Unit' : 'Unité', 'PU (HT)', lang === 'en' ? 'Amount (excl.)' : 'Montant (HT)']}
+            rows={cfg.postes.map(([no, label, unit, qty]) => [no, label, String(qty), unit, '', ''])}
+            colWidths={['8%', '34%', '12%', '8%', '18%', '20%']}
           />
           <Card style={{ marginTop: 12 }}>
             <div style={{ fontSize: 12, color: '#555' }}>
-              Le PDF contient le bordereau complet avec toutes les quantités calculées, sans montants (à compléter par l'entreprise soumissionnaire).
+              {lang === 'en'
+                ? 'The PDF contains the complete bill with all calculated quantities. Unit prices and amounts are to be completed by the bidding contractor.'
+                : "Le PDF contient le bordereau complet avec toutes les quantités calculées. Les prix unitaires et montants sont à compléter par l'entreprise soumissionnaire."}
             </div>
           </Card>
         </>
@@ -1327,9 +1317,6 @@ export default function Results() {
     'note-mep':           '/generate-note-mep',
     'boq-mep':            '/generate-boq-mep',
     'rapport-executif':   '/generate-rapport-executif',
-    'fiches-structure':   '/generate-fiches-structure',
-    'fiches-mep':         '/generate-fiches-mep',
-    'fiches-finitions':   '/generate-fiches-finitions',
     'schemas-ferraillage':'/generate-schemas-ferraillage',
     'schemas-mep':        '/generate-schemas-mep',
     'edge-assessment':    '/generate-edge-assessment',
@@ -1348,9 +1335,6 @@ export default function Results() {
     'note-mep':           `TijanAI_NoteMEP_${slug}_${today}.pdf`,
     'boq-mep':            `TijanAI_BOQMEP_${slug}_${today}.pdf`,
     'rapport-executif':   `TijanAI_RapportExecutif_${slug}_${today}.pdf`,
-    'fiches-structure':   `TijanAI_FichesStructure_${slug}_${today}.pdf`,
-    'fiches-mep':         `TijanAI_FichesMEP_${slug}_${today}.pdf`,
-    'fiches-finitions':   `TijanAI_FichesFinitions_${slug}_${today}.pdf`,
     'schemas-ferraillage':`TijanAI_SchemasFerraillage_${slug}_${today}.pdf`,
     'schemas-mep':        `TijanAI_SchemasMEP_${slug}_${today}.pdf`,
     'edge-assessment':    `TijanAI_EdgeAssessment_${slug}_${today}.pdf`,
@@ -1570,15 +1554,6 @@ export default function Results() {
                   style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
                 >
                   {dlLoading?.includes('/generate-dao-docx') ? '...' : 'Word'}
-                </button>
-              )}
-              {activeTab === 'fiches-finitions' && (
-                <button
-                  onClick={() => download('/generate-fiches-finitions-docx', `TijanAI_FichesFinitions_${slug}_${today}.docx`)}
-                  disabled={!!dlLoading}
-                  style={{ background: '#fff', color: VERT, border: `1.5px solid ${VERT}`, borderRadius: 6, padding: '11px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
-                >
-                  {dlLoading === '/generate-fiches-finitions-docx' ? '...' : 'Word'}
                 </button>
               )}
             </div>
