@@ -1,3 +1,7 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/taslim", "destination": "https://taslim-six.vercel.app/" },
+    { "source": "/taslim/(.*)", "destination": "https://taslim-six.vercel.app/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
