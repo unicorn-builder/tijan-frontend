@@ -21,6 +21,7 @@ export default function NewProject() {
     'Maroc': ['Casablanca', 'Rabat', 'Fès', 'Marrakech', 'Agadir', 'Tanger', 'Meknès', 'Oujda', 'Kenitra', 'Tétouan', 'Mohammedia'],
     'Nigeria': ['Lagos', 'Abuja', 'Kano', 'Ibadan', 'Port Harcourt', 'Benin City', 'Jos', 'Enugu', 'Kaduna', 'Calabar', 'Warri', 'Owerri'],
     'Ghana': ['Accra', 'Kumasi', 'Tamale', 'Takoradi', 'Cape Coast', 'Tema'],
+    'Mauritanie': ['Nouakchott', 'Nouadhibou'],
   }
   const [surfaceTerrain, setSurfaceTerrain] = useState('')
   const [mainFile, setMainFile] = useState(null)

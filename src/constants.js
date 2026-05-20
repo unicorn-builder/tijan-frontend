@@ -42,15 +42,29 @@ export const fmt = (v, unit = '', dec = 0) => {
   return unit ? `${n} ${unit}` : n
 }
 
+const _fmtLocal = (local, sym) => {
+  if (local >= 1e9) return (local / 1e9).toFixed(2) + ' B ' + sym
+  if (local >= 1e6) return (local / 1e6).toFixed(1) + ' M ' + sym
+  if (local >= 1e3) return (local / 1e3).toFixed(0) + 'k ' + sym
+  return Math.round(local).toLocaleString('en') + ' ' + sym
+}
+
+const _fmtFcfaOnly = (v) => {
+  if (v >= 1e9) return (v / 1e9).toFixed(2) + ' Mds FCFA'
+  if (v >= 1e6) return (v / 1e6).toFixed(1) + ' M FCFA'
+  if (v >= 1e3) return (v / 1e3).toFixed(0) + 'k FCFA'
+  return Math.round(v).toLocaleString('fr-FR') + ' FCFA'
+}
+
 export const fmtFcfa = (v, deviseInfo = null) => {
   if (!v || isNaN(v)) return '—'
   if (deviseInfo && deviseInfo.devise !== 'XOF' && deviseInfo.taux_depuis_fcfa) {
     const local = v * deviseInfo.taux_depuis_fcfa
     const sym = deviseInfo.symbole || deviseInfo.devise
-    if (local >= 1e9) return (local / 1e9).toFixed(2) + ' B ' + sym
-    if (local >= 1e6) return (local / 1e6).toFixed(1) + ' M ' + sym
-    if (local >= 1e3) return (local / 1e3).toFixed(0) + 'k ' + sym
-    return Math.round(local).toLocaleString('en') + ' ' + sym
+    const localStr = _fmtLocal(local, sym)
+    // Double display for MRU: "14.6k MRU (241k FCFA)"
+    if (deviseInfo.devise === 'MRU') return `${localStr} (${_fmtFcfaOnly(v)})`
+    return localStr
   }
   if (v >= 1e9) return (v / 1e9).toFixed(2) + ' Mds FCFA'
   if (v >= 1e6) return (v / 1e6).toFixed(1) + ' M FCFA'
