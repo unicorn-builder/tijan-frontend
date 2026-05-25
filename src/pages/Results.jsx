@@ -587,7 +587,13 @@ export default function Results() {
               </div>
               <div>
                 <div style={{ fontSize: 11, color: GRIS3 }}>{t('r_cout_m2')}</div>
-                <div style={{ fontWeight: 600 }}>{fmt(boq.ratio_fcfa_m2_bati)} — {fmt(boq.ratio_fcfa_m2_habitable)} {deviseInfo?.symbole || 'FCFA'}/m²</div>
+                <div style={{ fontWeight: 600 }}>{(() => {
+                  const tx = deviseInfo?.taux_depuis_fcfa || 1.0
+                  const sym = deviseInfo?.symbole || 'FCFA'
+                  const bati = Math.round((boq.ratio_fcfa_m2_bati || 0) * tx)
+                  const hab = Math.round((boq.ratio_fcfa_m2_habitable || 0) * tx)
+                  return `${fmt(bati)} — ${fmt(hab)} ${sym}/m²`
+                })()}</div>
                 <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_structure_seule')}</div>
               </div>
               <div>
@@ -713,7 +719,11 @@ export default function Results() {
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${GRIS2}` }}>
               <div style={{ fontSize: 11, color: GRIS3, marginBottom: 4 }}>{t('r_boq_mep_m2')}</div>
-              <div style={{ fontWeight: 600 }}>{fmt(ratio_b)} — {fmt(ratio_h)} {deviseInfo?.symbole || 'FCFA'}/m² <span style={{ fontSize: 11, color: GRIS3 }}>(basic → high-end)</span></div>
+              <div style={{ fontWeight: 600 }}>{(() => {
+                const tx = deviseInfo?.taux_depuis_fcfa || 1.0
+                const sym = deviseInfo?.symbole || 'FCFA'
+                return `${fmt(Math.round(ratio_b * tx))} — ${fmt(Math.round(ratio_h * tx))} ${sym}/m²`
+              })()} <span style={{ fontSize: 11, color: GRIS3 }}>(basic → high-end)</span></div>
             </div>
             {boqm.recommandation && (
               <div style={{ marginTop: 12, padding: '8px 12px', background: VERT_LIGHT, borderRadius: 6, fontSize: 12, color: '#2d7a3a' }}>
@@ -989,7 +999,14 @@ export default function Results() {
             const boqm = mepData?.boq_mep || {}
             const sBatie = boq.surface_batie_m2 || (surf * niv)
             const devise = deviseInfo?.symbole || 'FCFA'
-            const m2 = (v) => sBatie > 0 ? `${fmt(Math.round(v / sBatie))} ${devise}/m²` : '—'
+            const taux = deviseInfo?.taux_depuis_fcfa || 1.0
+            const m2 = (v) => {
+              if (sBatie <= 0) return '—'
+              const fcfaM2 = v / sBatie
+              const localM2 = Math.round(fcfaM2 * taux)
+              if (deviseInfo?.devise === 'MRU') return `${fmt(localM2)} ${devise}/m² (${fmt(Math.round(fcfaM2))} FCFA/m²)`
+              return `${fmt(localM2)} ${devise}/m²`
+            }
 
             // Structure
             const strBas = boq.total_bas_fcfa || 0
