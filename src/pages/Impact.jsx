@@ -117,6 +117,72 @@ export default function Impact() {
         </div>
       </section>
 
+      {/* ── CARBON PROJECTION — 2,000 projects/year ── */}
+      <section style={{ padding: '56px 24px', background: '#fff' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 36 }}>
+            <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
+              {t('impact_carbon_title')}
+            </h2>
+            <p style={{ fontSize: 14, color: '#666', maxWidth: 640, margin: '0 auto' }}>
+              {t('impact_carbon_subtitle')}
+            </p>
+          </div>
+
+          {/* Big number */}
+          <div style={{
+            textAlign: 'center', padding: '36px 24px', marginBottom: 32,
+            background: 'linear-gradient(135deg, #F0FFF4 0%, #E8F5E9 100%)',
+            borderRadius: 16, border: `2px solid ${VERT}`,
+          }}>
+            <div style={{ fontSize: 'clamp(40px, 8vw, 72px)', fontWeight: 900, color: VERT, lineHeight: 1 }}>
+              <Counter target={40000} suffix=" t" />
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: NAVY, marginTop: 8 }}>
+              {t('impact_carbon_big_label')}
+            </div>
+            <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
+              {t('impact_carbon_big_equiv')}
+            </div>
+          </div>
+
+          {/* Breakdown cards */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 16, marginBottom: 24,
+          }}>
+            {[
+              { value: 2000, suffix: '', label: 'impact_carbon_projects', icon: '🏗️' },
+              { value: 96000, suffix: ' m³', label: 'impact_carbon_concrete', icon: '🧱' },
+              { value: 9600, suffix: ' t', label: 'impact_carbon_steel', icon: '⚙️' },
+              { value: 20, suffix: ' t', label: 'impact_carbon_per_project', icon: '🌱' },
+            ].map((item, i) => (
+              <div key={i} style={{
+                background: '#FAFAFA', borderRadius: 12, padding: '20px 16px', textAlign: 'center',
+                border: '1px solid #E5E5E5',
+              }}>
+                <div style={{ fontSize: 28, marginBottom: 6 }}>{item.icon}</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: NAVY }}>
+                  <Counter target={item.value} suffix={item.suffix} />
+                </div>
+                <div style={{ fontSize: 11, color: '#888', marginTop: 4, lineHeight: 1.4 }}>
+                  {t(item.label)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Methodology note */}
+          <div style={{
+            background: '#FAFAFA', borderRadius: 8, padding: '16px 20px',
+            border: '1px solid #E5E5E5', fontSize: 11, color: '#888', lineHeight: 1.6,
+          }}>
+            <span style={{ fontWeight: 600, color: '#666' }}>{t('impact_carbon_method_title')}</span>{' '}
+            {t('impact_carbon_method_desc')}
+          </div>
+        </div>
+      </section>
+
       {/* ── VISION ── */}
       <section style={{ padding: '48px 24px' }}>
         <div style={{
