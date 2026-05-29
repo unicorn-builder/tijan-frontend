@@ -595,6 +595,52 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ── CARBON IMPACT BANNER ── */}
+      <section style={{
+        padding: '48px 24px', background: NAVY, textAlign: 'center',
+      }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 12, textTransform: 'uppercase' }}>
+            {t('landing_carbon_label')}
+          </div>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 'clamp(16px, 4vw, 40px)', flexWrap: 'wrap', marginBottom: 16,
+          }}>
+            <div>
+              <div style={{ fontSize: 'clamp(36px, 8vw, 64px)', fontWeight: 900, color: VERT, lineHeight: 1 }}>
+                240 000 t
+              </div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginTop: 6 }}>
+                {t('landing_carbon_co2')}
+              </div>
+            </div>
+            <div style={{ width: 1, height: 60, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+            <div style={{ textAlign: 'left' }}>
+              {[
+                { icon: '🏗️', text: t('landing_carbon_stat1') },
+                { icon: '🧱', text: t('landing_carbon_stat2') },
+                { icon: '🚗', text: t('landing_carbon_stat3') },
+              ].map((s, i) => (
+                <div key={i} style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>{s.icon}</span> {s.text}
+                </div>
+              ))}
+            </div>
+          </div>
+          <button onClick={() => navigate('/impact')} style={{
+            background: 'transparent', border: `1px solid ${VERT}`, color: VERT,
+            borderRadius: 8, padding: '10px 28px', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { e.target.style.background = VERT; e.target.style.color = '#fff' }}
+          onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = VERT }}
+          >
+            {t('landing_carbon_cta')}
+          </button>
+        </div>
+      </section>
+
       {/* ── CTA FINAL ── */}
       <section style={{
         padding: '56px 24px', textAlign: 'center',

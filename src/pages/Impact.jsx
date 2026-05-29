@@ -25,7 +25,7 @@ function Counter({ target, suffix = '', prefix = '' }) {
     return () => clearInterval(timer)
   }, [target])
 
-  return <>{prefix}{count}{suffix}</>
+  return <>{prefix}{count.toLocaleString('fr-FR')}{suffix}</>
 }
 
 export default function Impact() {
@@ -57,9 +57,75 @@ export default function Impact() {
         </p>
       </section>
 
+      {/* ── CARBON PROJECTION — 12,000 projects/year (TOP POSITION) ── */}
+      <section style={{ padding: '56px 24px', background: NAVY }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 36 }}>
+            <h2 style={{ fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 800, color: '#fff', marginBottom: 8 }}>
+              {t('impact_carbon_title')}
+            </h2>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', maxWidth: 640, margin: '0 auto' }}>
+              {t('impact_carbon_subtitle')}
+            </p>
+          </div>
+
+          {/* Big number */}
+          <div style={{
+            textAlign: 'center', padding: '40px 24px', marginBottom: 32,
+            background: 'rgba(67, 169, 86, 0.15)',
+            borderRadius: 16, border: `2px solid ${VERT}`,
+          }}>
+            <div style={{ fontSize: 'clamp(48px, 10vw, 84px)', fontWeight: 900, color: VERT, lineHeight: 1 }}>
+              <Counter target={240000} suffix=" t" />
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: '#fff', marginTop: 10 }}>
+              {t('impact_carbon_big_label')}
+            </div>
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', marginTop: 6 }}>
+              {t('impact_carbon_big_equiv')}
+            </div>
+          </div>
+
+          {/* Breakdown cards */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 16, marginBottom: 24,
+          }}>
+            {[
+              { value: 12000, suffix: '', label: 'impact_carbon_projects', icon: '🏗️' },
+              { value: 576000, suffix: ' m³', label: 'impact_carbon_concrete', icon: '🧱' },
+              { value: 57600, suffix: ' t', label: 'impact_carbon_steel', icon: '⚙️' },
+              { value: 20, suffix: ' t', label: 'impact_carbon_per_project', icon: '🌱' },
+            ].map((item, i) => (
+              <div key={i} style={{
+                background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '20px 16px', textAlign: 'center',
+                border: '1px solid rgba(255,255,255,0.15)',
+              }}>
+                <div style={{ fontSize: 28, marginBottom: 6 }}>{item.icon}</div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: '#fff' }}>
+                  <Counter target={item.value} suffix={item.suffix} />
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 4, lineHeight: 1.4 }}>
+                  {t(item.label)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Methodology note */}
+          <div style={{
+            background: 'rgba(255,255,255,0.06)', borderRadius: 8, padding: '14px 18px',
+            border: '1px solid rgba(255,255,255,0.1)', fontSize: 10, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6,
+          }}>
+            <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{t('impact_carbon_method_title')}</span>{' '}
+            {t('impact_carbon_method_desc')}
+          </div>
+        </div>
+      </section>
+
       {/* ── ENVIRONMENTAL STATS ── */}
       <section style={{
-        padding: '48px 24px', background: NAVY, color: '#fff',
+        padding: '48px 24px', background: '#fff',
       }}>
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -73,10 +139,10 @@ export default function Impact() {
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 32, marginBottom: 8 }}>{stat.icon}</div>
-              <div style={{ fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 800, marginBottom: 8 }}>
+              <div style={{ fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 800, color: NAVY, marginBottom: 8 }}>
                 <Counter target={stat.target} suffix={stat.suffix} />
               </div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 13, color: '#888', lineHeight: 1.5 }}>
                 {t(stat.label)}
               </div>
             </div>
@@ -114,72 +180,6 @@ export default function Impact() {
               </p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── CARBON PROJECTION — 2,000 projects/year ── */}
-      <section style={{ padding: '56px 24px', background: '#fff' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 36 }}>
-            <h2 style={{ fontSize: 26, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
-              {t('impact_carbon_title')}
-            </h2>
-            <p style={{ fontSize: 14, color: '#666', maxWidth: 640, margin: '0 auto' }}>
-              {t('impact_carbon_subtitle')}
-            </p>
-          </div>
-
-          {/* Big number */}
-          <div style={{
-            textAlign: 'center', padding: '36px 24px', marginBottom: 32,
-            background: 'linear-gradient(135deg, #F0FFF4 0%, #E8F5E9 100%)',
-            borderRadius: 16, border: `2px solid ${VERT}`,
-          }}>
-            <div style={{ fontSize: 'clamp(40px, 8vw, 72px)', fontWeight: 900, color: VERT, lineHeight: 1 }}>
-              <Counter target={40000} suffix=" t" />
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: NAVY, marginTop: 8 }}>
-              {t('impact_carbon_big_label')}
-            </div>
-            <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
-              {t('impact_carbon_big_equiv')}
-            </div>
-          </div>
-
-          {/* Breakdown cards */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: 16, marginBottom: 24,
-          }}>
-            {[
-              { value: 2000, suffix: '', label: 'impact_carbon_projects', icon: '🏗️' },
-              { value: 96000, suffix: ' m³', label: 'impact_carbon_concrete', icon: '🧱' },
-              { value: 9600, suffix: ' t', label: 'impact_carbon_steel', icon: '⚙️' },
-              { value: 20, suffix: ' t', label: 'impact_carbon_per_project', icon: '🌱' },
-            ].map((item, i) => (
-              <div key={i} style={{
-                background: '#FAFAFA', borderRadius: 12, padding: '20px 16px', textAlign: 'center',
-                border: '1px solid #E5E5E5',
-              }}>
-                <div style={{ fontSize: 28, marginBottom: 6 }}>{item.icon}</div>
-                <div style={{ fontSize: 24, fontWeight: 800, color: NAVY }}>
-                  <Counter target={item.value} suffix={item.suffix} />
-                </div>
-                <div style={{ fontSize: 11, color: '#888', marginTop: 4, lineHeight: 1.4 }}>
-                  {t(item.label)}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Methodology note */}
-          <div style={{
-            background: '#FAFAFA', borderRadius: 8, padding: '16px 20px',
-            border: '1px solid #E5E5E5', fontSize: 11, color: '#888', lineHeight: 1.6,
-          }}>
-            <span style={{ fontWeight: 600, color: '#666' }}>{t('impact_carbon_method_title')}</span>{' '}
-            {t('impact_carbon_method_desc')}
-          </div>
         </div>
       </section>
 
@@ -226,7 +226,7 @@ export default function Impact() {
         fontSize: 11, color: '#aaa',
       }}>
         <div>© 2026 Tijan AI · Engineering Intelligence for Africa</div>
-        <div>Dakar · Abidjan · Casablanca · Lagos · Accra</div>
+        <div>Dakar · Abidjan · Casablanca · Lagos · Accra · Nouakchott</div>
       </footer>
     </div>
   )
