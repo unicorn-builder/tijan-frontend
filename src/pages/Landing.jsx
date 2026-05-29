@@ -480,6 +480,67 @@ export default function Landing() {
         ))}
       </section>
 
+      {/* ── CARBON IMPACT BANNER (high visibility) ── */}
+      <section style={{
+        padding: '52px 24px',
+        background: `linear-gradient(135deg, ${NAVY} 0%, #243656 100%)`,
+        textAlign: 'center',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Subtle grid overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `linear-gradient(${VERT}10 1px, transparent 1px), linear-gradient(90deg, ${VERT}10 1px, transparent 1px)`,
+          backgroundSize: '40px 40px', opacity: 0.3,
+        }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 960, margin: '0 auto' }}>
+          <div style={{ fontSize: 11, letterSpacing: 3, color: VERT, fontWeight: 700, marginBottom: 14, textTransform: 'uppercase' }}>
+            {t('landing_carbon_label')}
+          </div>
+          <div style={{ fontSize: 'clamp(42px, 10vw, 76px)', fontWeight: 900, color: VERT, lineHeight: 1, marginBottom: 6 }}>
+            240 000 t
+          </div>
+          <div style={{ fontSize: 'clamp(16px, 3vw, 22px)', fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+            {t('landing_carbon_co2')}
+          </div>
+          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28 }}>
+            {t('landing_carbon_stat3')}
+          </div>
+
+          <div style={{
+            display: 'flex', justifyContent: 'center', gap: 'clamp(12px, 3vw, 32px)', flexWrap: 'wrap', marginBottom: 28,
+          }}>
+            {[
+              { val: '12 000', label: t('landing_carbon_card1'), icon: '🏗️' },
+              { val: '576 000 m³', label: t('landing_carbon_card2'), icon: '🧱' },
+              { val: '57 600 t', label: t('landing_carbon_card3'), icon: '⚙️' },
+              { val: '20 t', label: t('landing_carbon_card4'), icon: '🌱' },
+            ].map((c, i) => (
+              <div key={i} style={{
+                background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 12, padding: '18px 20px', minWidth: 160, flex: '1 1 160px', maxWidth: 220,
+              }}>
+                <div style={{ fontSize: 22, marginBottom: 4 }}>{c.icon}</div>
+                <div style={{ fontSize: 'clamp(18px, 3vw, 26px)', fontWeight: 800, color: '#fff' }}>{c.val}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginTop: 4, lineHeight: 1.4 }}>{c.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={() => navigate('/impact')} style={{
+            background: VERT, color: '#fff', border: 'none',
+            borderRadius: 10, padding: '14px 36px', fontSize: 15, fontWeight: 700,
+            cursor: 'pointer', boxShadow: `0 4px 20px ${VERT}55`,
+            transition: 'transform 0.15s',
+          }}
+          onMouseEnter={e => { e.target.style.transform = 'translateY(-2px)' }}
+          onMouseLeave={e => { e.target.style.transform = 'translateY(0)' }}
+          >
+            {t('landing_carbon_cta')}
+          </button>
+        </div>
+      </section>
+
       {/* ── POUR QUI ── */}
       <section style={{ padding: '56px 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
@@ -592,52 +653,6 @@ export default function Landing() {
               <div style={{ fontSize: 12, color: '#888', lineHeight: 1.6 }}>{s.desc}</div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ── CARBON IMPACT BANNER ── */}
-      <section style={{
-        padding: '48px 24px', background: NAVY, textAlign: 'center',
-      }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ fontSize: 11, letterSpacing: 2, color: VERT, fontWeight: 700, marginBottom: 12, textTransform: 'uppercase' }}>
-            {t('landing_carbon_label')}
-          </div>
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: 'clamp(16px, 4vw, 40px)', flexWrap: 'wrap', marginBottom: 16,
-          }}>
-            <div>
-              <div style={{ fontSize: 'clamp(36px, 8vw, 64px)', fontWeight: 900, color: VERT, lineHeight: 1 }}>
-                240 000 t
-              </div>
-              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginTop: 6 }}>
-                {t('landing_carbon_co2')}
-              </div>
-            </div>
-            <div style={{ width: 1, height: 60, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
-            <div style={{ textAlign: 'left' }}>
-              {[
-                { icon: '🏗️', text: t('landing_carbon_stat1') },
-                { icon: '🧱', text: t('landing_carbon_stat2') },
-                { icon: '🚗', text: t('landing_carbon_stat3') },
-              ].map((s, i) => (
-                <div key={i} style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span>{s.icon}</span> {s.text}
-                </div>
-              ))}
-            </div>
-          </div>
-          <button onClick={() => navigate('/impact')} style={{
-            background: 'transparent', border: `1px solid ${VERT}`, color: VERT,
-            borderRadius: 8, padding: '10px 28px', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { e.target.style.background = VERT; e.target.style.color = '#fff' }}
-          onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = VERT }}
-          >
-            {t('landing_carbon_cta')}
-          </button>
         </div>
       </section>
 
