@@ -1511,6 +1511,24 @@ export default function Results() {
                 setParams(updatedParams)
                 setResultats(updatedResultats)
                 if (updatedMep) setMepData({ ok: true, ...updatedMep })
+                // Persist updated results to Supabase so they survive page refresh
+                if (supabase && user && projectId) {
+                  const update = {
+                    resultats_structure: updatedResultats,
+                    ...(updatedParams.nb_niveaux !== undefined ? { nb_niveaux: updatedParams.nb_niveaux } : {}),
+                    ...(updatedParams.surface_emprise_m2 !== undefined ? { surface_emprise_m2: updatedParams.surface_emprise_m2 } : {}),
+                    ...(updatedParams.portee_max_m !== undefined ? { portee_max_m: updatedParams.portee_max_m } : {}),
+                    ...(updatedParams.portee_min_m !== undefined ? { portee_min_m: updatedParams.portee_min_m } : {}),
+                    ...(updatedParams.nb_travees_x !== undefined ? { nb_travees_x: updatedParams.nb_travees_x } : {}),
+                    ...(updatedParams.nb_travees_y !== undefined ? { nb_travees_y: updatedParams.nb_travees_y } : {}),
+                    ...(updatedParams.usage ? { usage: updatedParams.usage } : {}),
+                    ...(updatedParams.ville ? { ville: updatedParams.ville } : {}),
+                  }
+                  if (updatedMep) update.resultats_mep = { ok: true, ...updatedMep }
+                  supabase.from('projets').update(update).eq('id', projectId).then(() => {
+                    console.log('Project updated in Supabase after chat modification')
+                  })
+                }
                 // Show toast notification
                 const toast = document.createElement('div')
                 toast.textContent = lang === 'en' ? 'Studies updated ✓' : 'Études mises à jour ✓'
