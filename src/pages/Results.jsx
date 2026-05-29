@@ -319,6 +319,7 @@ export default function Results() {
             if (data.dwg_geometry) setDwgGeometry(data.dwg_geometry)
             if (data.archi_pdf_url) setArchiPdfUrl(data.archi_pdf_url)
             if (data.resultats_mep) setMepData(data.resultats_mep)
+            if (data.chat_historique?.length > 0) setChatMessages(data.chat_historique)
           }
         })
     }
@@ -883,55 +884,131 @@ export default function Results() {
         }).then(r => r.json()).then(d => { if (d.ok) setFinitionsData(d.finitions) }).catch(() => {})
       }
       const POSTE_LABELS = {
-        carrelage: 'Carrelage', menuiserie_interieure: 'Menuiserie int.',
-        menuiserie_exterieure: 'Menuiserie ext.', faux_plafond: 'Faux-plafond',
-        peinture: 'Peinture', cuisine: 'Cuisine équipée'
+        carrelage: lang === 'en' ? 'Floor Tiling' : 'Carrelage',
+        menuiserie_interieure: lang === 'en' ? 'Interior Joinery' : 'Menuiserie intérieure',
+        menuiserie_exterieure: lang === 'en' ? 'Exterior Joinery' : 'Menuiserie extérieure',
+        faux_plafond: lang === 'en' ? 'False Ceiling' : 'Faux-plafond',
+        peinture: lang === 'en' ? 'Painting & Finishes' : 'Peinture et enduits',
+        cuisine: lang === 'en' ? 'Fitted Kitchen' : 'Cuisine équipée'
       }
       const GAMME_LABELS = { basic: 'BASIC', high_end: 'HIGH-END', luxury: 'LUXURY' }
       const GAMME_COLORS = { basic: '#3B82F6', high_end: VERT, luxury: '#F59E0B' }
+      const surfaceBatie = (params?.surface_emprise_m2 || 0) * (params?.nb_niveaux || 1)
       return (
         <Card>
           <SectionTitle>{t('tab_finitions')}</SectionTitle>
           <div style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>
-            Estimation des finitions intérieures et extérieures pour 3 gammes de standing.
+            {lang === 'en'
+              ? `Interior and exterior finishes estimate for ${Math.round(surfaceBatie).toLocaleString('fr-FR')} m² built area — 3 quality levels.`
+              : `Estimation des finitions intérieures et extérieures pour ${Math.round(surfaceBatie).toLocaleString('fr-FR')} m² bâtis — 3 niveaux de standing.`}
           </div>
           {!finitionsData ? (
-            <Spinner text="Calcul des finitions..." />
+            <Spinner text={lang === 'en' ? 'Calculating finishes...' : 'Calcul des finitions...'} />
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-              {Object.entries(GAMME_LABELS).map(([gamme, label]) => {
-                const d = finitionsData[gamme] || {}
-                const color = GAMME_COLORS[gamme]
-                return (
-                  <div key={gamme} style={{ border: `2px solid ${color}`, borderRadius: 12, overflow: 'hidden' }}>
-                    <div style={{ background: color, color: '#fff', padding: '10px 14px', fontWeight: 700, fontSize: 13, textAlign: 'center' }}>
-                      {label}
-                    </div>
-                    <div style={{ padding: '10px 12px' }}>
-                      {Object.entries(POSTE_LABELS).map(([poste, pl]) => {
-                        const item = d.detail?.[poste] || {}
+            <>
+              {/* Comparative table */}
+              <div style={{ overflowX: 'auto', marginBottom: 20 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: '8px 10px', background: GRIS1, borderBottom: `2px solid ${VERT}`, fontWeight: 700, color: '#333', width: '22%' }}>
+                        {lang === 'en' ? 'Item' : 'Poste'}
+                      </th>
+                      <th style={{ textAlign: 'center', padding: '8px 6px', background: GRIS1, borderBottom: `2px solid ${VERT}`, fontWeight: 600, color: '#666', width: '8%' }}>
+                        {lang === 'en' ? 'Qty' : 'Qté'}
+                      </th>
+                      <th style={{ textAlign: 'center', padding: '8px 6px', background: GRIS1, borderBottom: `2px solid ${VERT}`, fontWeight: 600, color: '#666', width: '5%' }}>
+                        {lang === 'en' ? 'Unit' : 'Unité'}
+                      </th>
+                      {Object.entries(GAMME_LABELS).map(([gamme, label]) => (
+                        <th key={gamme} style={{ textAlign: 'right', padding: '8px 10px', background: GAMME_COLORS[gamme], color: '#fff', fontWeight: 700, width: '21.66%' }}>
+                          {label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(POSTE_LABELS).map(([poste, pl], idx) => {
+                      const basicItem = finitionsData.basic?.detail?.[poste] || {}
+                      const heItem = finitionsData.high_end?.detail?.[poste] || {}
+                      const luxItem = finitionsData.luxury?.detail?.[poste] || {}
+                      return (
+                        <tr key={poste} style={{ background: idx % 2 === 0 ? '#fff' : GRIS1 }}>
+                          <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEE' }}>
+                            <div style={{ fontWeight: 600, color: '#333' }}>{pl}</div>
+                            <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{basicItem.description || ''}</div>
+                          </td>
+                          <td style={{ textAlign: 'center', padding: '8px 6px', borderBottom: '1px solid #EEE', color: '#555', fontWeight: 500 }}>
+                            {basicItem.quantite?.toLocaleString('fr-FR') || '—'}
+                          </td>
+                          <td style={{ textAlign: 'center', padding: '8px 6px', borderBottom: '1px solid #EEE', color: '#888' }}>
+                            {basicItem.unite || '—'}
+                          </td>
+                          <td style={{ textAlign: 'right', padding: '8px 10px', borderBottom: '1px solid #EEE' }}>
+                            <div style={{ fontWeight: 600, color: '#111' }}>{fmtFcfa(basicItem.montant, deviseInfo)}</div>
+                            <div style={{ fontSize: 9, color: '#999' }}>{fmtFcfa(basicItem.pu, deviseInfo)}/{basicItem.unite}</div>
+                          </td>
+                          <td style={{ textAlign: 'right', padding: '8px 10px', borderBottom: '1px solid #EEE' }}>
+                            <div style={{ fontWeight: 600, color: '#111' }}>{fmtFcfa(heItem.montant, deviseInfo)}</div>
+                            <div style={{ fontSize: 9, color: '#999' }}>{fmtFcfa(heItem.pu, deviseInfo)}/{heItem.unite}</div>
+                          </td>
+                          <td style={{ textAlign: 'right', padding: '8px 10px', borderBottom: '1px solid #EEE' }}>
+                            <div style={{ fontWeight: 600, color: '#111' }}>{fmtFcfa(luxItem.montant, deviseInfo)}</div>
+                            <div style={{ fontSize: 9, color: '#999' }}>{fmtFcfa(luxItem.pu, deviseInfo)}/{luxItem.unite}</div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                    {/* Total row */}
+                    <tr style={{ borderTop: `2px solid ${VERT}` }}>
+                      <td colSpan={3} style={{ padding: '10px 10px', fontWeight: 800, fontSize: 13, color: '#333' }}>TOTAL</td>
+                      {['basic', 'high_end', 'luxury'].map(gamme => (
+                        <td key={gamme} style={{ textAlign: 'right', padding: '10px 10px', fontWeight: 800, fontSize: 13, color: GAMME_COLORS[gamme] }}>
+                          {fmtFcfa(finitionsData[gamme]?.total, deviseInfo)}
+                        </td>
+                      ))}
+                    </tr>
+                    {/* Ratio per m² */}
+                    <tr>
+                      <td colSpan={3} style={{ padding: '4px 10px', fontSize: 10, color: '#888' }}>
+                        {lang === 'en' ? 'Ratio per m²' : 'Ratio au m²'}
+                      </td>
+                      {['basic', 'high_end', 'luxury'].map(gamme => {
+                        const ratio = surfaceBatie > 0 ? (finitionsData[gamme]?.total || 0) / surfaceBatie : 0
                         return (
-                          <div key={poste} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #F0F0F0', fontSize: 11 }}>
-                            <div>
-                              <div style={{ fontWeight: 600, color: '#333' }}>{pl}</div>
-                              <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{item.description || ''}</div>
-                              {item.marques && <div style={{ fontSize: 9, color: '#BBB', marginTop: 1, fontStyle: 'italic' }}>{item.marques}</div>}
-                            </div>
-                            <div style={{ fontWeight: 700, color: '#111', whiteSpace: 'nowrap', marginLeft: 8 }}>
-                              {(item.montant || 0).toLocaleString('fr-FR')}
-                            </div>
-                          </div>
+                          <td key={gamme} style={{ textAlign: 'right', padding: '4px 10px', fontSize: 10, color: '#888' }}>
+                            {fmtFcfa(ratio, deviseInfo)}/m²
+                          </td>
                         )
                       })}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0 4px', fontWeight: 800, fontSize: 13, color, borderTop: `2px solid ${color}`, marginTop: 6 }}>
-                        <span>TOTAL</span>
-                        <span>{(d.total || 0).toLocaleString('fr-FR')} FCFA</span>
-                      </div>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Brands summary */}
+              <div style={{ background: GRIS1, borderRadius: 8, padding: '12px 14px', marginBottom: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#555', marginBottom: 8 }}>
+                  {lang === 'en' ? 'Recommended brands by quality level' : 'Marques recommandées par gamme'}
+                </div>
+                {Object.entries(POSTE_LABELS).map(([poste, pl]) => {
+                  const heItem = finitionsData.high_end?.detail?.[poste]
+                  if (!heItem?.marques) return null
+                  return (
+                    <div key={poste} style={{ fontSize: 10, color: '#666', marginBottom: 3 }}>
+                      <span style={{ fontWeight: 600, color: '#444' }}>{pl}:</span>{' '}
+                      {heItem.marques}
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+
+              <div style={{ fontSize: 10, color: GRIS3, fontStyle: 'italic' }}>
+                {lang === 'en'
+                  ? `Prices for ${params?.ville || 'Dakar'} — including supply and installation. Download the complete BOQ for details.`
+                  : `Prix marché ${params?.ville || 'Dakar'} — fourniture et pose incluses. Téléchargez le BOQ complet pour le détail.`}
+              </div>
+            </>
           )}
         </Card>
       )

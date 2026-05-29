@@ -101,6 +101,10 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
         if (data.recalcul && data.updated_resultats) {
           reponseText = (t('chat_recalc') + '\n\n') + reponseText
         }
+        if (data.recalcul_error) {
+          console.error('MODIF recalcul error:', data.recalcul_error)
+          reponseText += '\n\n⚠️ ' + (lang === 'en' ? 'Recalculation failed: ' : 'Erreur de recalcul : ') + data.recalcul_error
+        }
 
         const updated = [...newMessages, { role: 'assistant', content: reponseText }]
         setMessages(updated)
