@@ -1036,6 +1036,118 @@ export default function Results() {
       )
     }
 
+    // ── FICHES TECHNIQUES & FOURNISSEURS ──
+    if (activeTab === 'fiches-techniques') {
+      const FICHES = [
+        {
+          icon: '🧱',
+          titre: lang === 'en' ? 'Concrete & Reinforcement' : 'Béton & Armatures',
+          items: [
+            { mat: lang === 'en' ? 'Ready-mix concrete' : 'Béton prêt à l\'emploi (BPE)', spec: resultats?.classe_beton || 'C25/30', fournisseurs: 'LafargeHolcim, SOCOCIM (SN), CIMAF (CI), Dangote (NG), Ciments du Maroc' },
+            { mat: lang === 'en' ? 'Reinforcing steel' : 'Acier HA haute adhérence', spec: resultats?.classe_acier || 'HA500', fournisseurs: 'ArcelorMittal, SOSEDIM (SN), Turkish Steel, Dangote Steel (NG)' },
+            { mat: lang === 'en' ? 'Formwork' : 'Coffrage bois/métallique', spec: 'PERI, DOKA', fournisseurs: 'PERI, Doka, Paschal, menuisiers locaux' },
+          ]
+        },
+        {
+          icon: '⚡',
+          titre: lang === 'en' ? 'Electrical' : 'Électricité',
+          items: [
+            { mat: lang === 'en' ? 'Main switchboard (TGBT)' : 'Tableau général (TGBT)', spec: 'NF C 15-100', fournisseurs: 'Schneider Electric, Legrand, Hager, ABB' },
+            { mat: lang === 'en' ? 'Cables & conduits' : 'Câbles & conduits', spec: 'U1000 R2V', fournisseurs: 'Nexans, Prysmian, Südkabel, General Cable' },
+            { mat: lang === 'en' ? 'Switches & outlets' : 'Appareillage (prises, inter.)', spec: 'IP20/IP44', fournisseurs: 'Legrand Mosaic, Schneider Odace, Hager' },
+          ]
+        },
+        {
+          icon: '💧',
+          titre: lang === 'en' ? 'Plumbing' : 'Plomberie',
+          items: [
+            { mat: lang === 'en' ? 'PPR pipes' : 'Tubes PPR eau chaude/froide', spec: 'PN20, DTU 60.11', fournisseurs: 'Wavin, Aliaxis, Interplast (SN), Pipelife' },
+            { mat: lang === 'en' ? 'PVC drainage' : 'Évacuation PVC', spec: 'Ø100-160mm', fournisseurs: 'Nicoll, Girpi, Interplast, Aliaxis' },
+            { mat: lang === 'en' ? 'Sanitary fixtures' : 'Équipements sanitaires', spec: 'NF EN 997', fournisseurs: 'Grohe, Roca, Jacob Delafon, Duravit, VitrA' },
+          ]
+        },
+        {
+          icon: '❄️',
+          titre: lang === 'en' ? 'HVAC' : 'Climatisation & Ventilation',
+          items: [
+            { mat: lang === 'en' ? 'Split AC units' : 'Climatiseurs split', spec: 'R32/R410A', fournisseurs: 'Daikin, Carrier, Midea, Samsung, LG' },
+            { mat: lang === 'en' ? 'VMC extraction' : 'VMC extraction', spec: 'DTU 68.3', fournisseurs: 'Atlantic, Aldes, Unelvent, S&P' },
+            { mat: lang === 'en' ? 'Copper piping' : 'Tubes cuivre frigorifiques', spec: 'NF EN 12735', fournisseurs: 'KME, Wieland, Halcor' },
+          ]
+        },
+        {
+          icon: '🔥',
+          titre: lang === 'en' ? 'Fire Safety' : 'Sécurité Incendie',
+          items: [
+            { mat: lang === 'en' ? 'Fire detection' : 'Détection incendie (SSI)', spec: 'NF S 61-970', fournisseurs: 'Siemens, Honeywell, Bosch, Notifier' },
+            { mat: lang === 'en' ? 'Fire extinguishers' : 'Extincteurs & RIA', spec: 'NF EN 3, IT 246', fournisseurs: 'Desautel, Sicli, Andrieu, Gloria' },
+            { mat: lang === 'en' ? 'Sprinkler system' : 'Réseau sprinklers', spec: 'NF EN 12845', fournisseurs: 'Viking, Tyco, Reliable, Victaulic' },
+          ]
+        },
+        {
+          icon: '🛗',
+          titre: lang === 'en' ? 'Elevators' : 'Ascenseurs',
+          items: [
+            { mat: lang === 'en' ? 'Passenger elevator' : 'Ascenseur passagers', spec: `${mepData?.ascenseurs?.capacite_kg || 630} kg`, fournisseurs: 'Otis, Schindler, KONE, ThyssenKrupp, Mitsubishi' },
+          ]
+        },
+      ]
+
+      return (
+        <Card>
+          <SectionTitle>{t('tab_fiches_techniques')}</SectionTitle>
+          <div style={{ fontSize: 12, color: '#666', marginBottom: 20, lineHeight: 1.6 }}>
+            {lang === 'en'
+              ? 'Technical specifications and recommended suppliers for all materials and equipment. Download the full PDF for detailed datasheets per item.'
+              : 'Spécifications techniques et fournisseurs recommandés pour l\'ensemble des matériaux et équipements. Téléchargez le PDF complet pour les fiches détaillées par item.'}
+          </div>
+          {FICHES.map((cat, ci) => (
+            <div key={ci} style={{ marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 20 }}>{cat.icon}</span>
+                <span style={{ fontWeight: 700, fontSize: 14, color: '#1B2A4A' }}>{cat.titre}</span>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                <thead>
+                  <tr>
+                    <th style={{ textAlign: 'left', padding: '8px 10px', background: VERT, color: '#fff', fontWeight: 600, borderRadius: ci === 0 ? '6px 0 0 0' : 0 }}>
+                      {lang === 'en' ? 'Material / Equipment' : 'Matériau / Équipement'}
+                    </th>
+                    <th style={{ textAlign: 'center', padding: '8px 10px', background: VERT, color: '#fff', fontWeight: 600, width: '18%' }}>
+                      {lang === 'en' ? 'Specification' : 'Norme / Spec.'}
+                    </th>
+                    <th style={{ textAlign: 'left', padding: '8px 10px', background: VERT, color: '#fff', fontWeight: 600, borderRadius: ci === 0 ? '0 6px 0 0' : 0 }}>
+                      {lang === 'en' ? 'Recommended Suppliers' : 'Fournisseurs recommandés'}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cat.items.map((item, ii) => (
+                    <tr key={ii} style={{ background: ii % 2 === 0 ? '#fff' : GRIS1 }}>
+                      <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEE', fontWeight: 600, color: '#333' }}>
+                        {item.mat}
+                      </td>
+                      <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEE', textAlign: 'center', color: '#666' }}>
+                        {item.spec}
+                      </td>
+                      <td style={{ padding: '8px 10px', borderBottom: '1px solid #EEE', color: '#888', fontStyle: 'italic' }}>
+                        {item.fournisseurs}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+          <div style={{ fontSize: 10, color: GRIS3, fontStyle: 'italic', marginTop: 8 }}>
+            {lang === 'en'
+              ? `Suppliers listed are available in ${params?.ville || 'Dakar'} or import to West Africa. Download the complete technical datasheets for full details.`
+              : `Fournisseurs disponibles à ${params?.ville || 'Dakar'} ou à l\'import en Afrique de l\'Ouest. Téléchargez les fiches techniques complètes pour le détail.`}
+          </div>
+        </Card>
+      )
+    }
+
     // ── RAPPORT EXÉCUTIF ──
     if (activeTab === 'rapport-executif') {
       // Auto-load finitions data if not yet fetched
@@ -1422,6 +1534,7 @@ export default function Results() {
     'dao-structure':      '/generate-dao?lot=structure',
     'dao-mep':            '/generate-dao?lot=mep',
     'dao-finitions':      '/generate-dao?lot=finitions',
+    'fiches-techniques':  '/generate-fiches-all',
   }
   const FILENAME_MAP = {
     'structure':          `TijanAI_NoteStructure_${slug}_${today}.pdf`,
@@ -1440,6 +1553,7 @@ export default function Results() {
     'dao-structure':      `TijanAI_DAO_Structure_${slug}_${today}.pdf`,
     'dao-mep':            `TijanAI_DAO_MEP_${slug}_${today}.pdf`,
     'dao-finitions':      `TijanAI_DAO_Finitions_${slug}_${today}.pdf`,
+    'fiches-techniques':  `TijanAI_FichesTechniques_${slug}_${today}.pdf`,
   }
 
   const endpoint = activeTab === 'chat' ? null : ENDPOINT_MAP[activeTab]
