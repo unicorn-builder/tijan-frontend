@@ -1620,7 +1620,7 @@ export default function Results() {
           {renderContent()}
           {/* Chat toujours monté, caché si pas actif */}
           <div style={{ display: activeTab === 'chat' ? 'block' : 'none', height: '100%' }}>
-            <ChatTijan params={params} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} onModify={(updatedParams, updatedResultats, updatedMep) => {
+            <ChatTijan params={params} projectId={projectId} resultatsStructure={resultats} resultatsMep={mepData} savedChat={chatMessages} onUpdateChat={setChatMessages} onModify={(updatedParams, updatedResultats, updatedMep) => {
                 // Update React state directly — triggers re-render of all dependent components
                 setParams(updatedParams)
                 setResultats(updatedResultats)

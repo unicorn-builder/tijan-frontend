@@ -54,7 +54,7 @@ function Message({ msg }) {
   )
 }
 
-export default function ChatTijan({ params, resultatsStructure, resultatsMep, savedChat, onUpdateChat, onModify, lang: langProp }) {
+export default function ChatTijan({ params, resultatsStructure, resultatsMep, savedChat, onUpdateChat, onModify, projectId, lang: langProp }) {
   const { supabase, user } = useAuth()
   const { t, lang } = useLang()
   const defaultMsg = [{
@@ -114,13 +114,14 @@ export default function ChatTijan({ params, resultatsStructure, resultatsMep, sa
         if (data.recalcul && data.updated_resultats && onModify) {
           onModify(data.updated_params, data.updated_resultats, data.updated_mep)
         }
-        // Sauvegarder dans Supabase
-        if (supabase && user && params?.nom) {
+        // Sauvegarder dans Supabase (par projectId UUID)
+        if (supabase && user && projectId) {
           supabase.from('projets')
             .update({ chat_historique: updated })
-            .eq('nom', params.nom)
-            .eq('user_id', user.id)
-            .then(() => {})
+            .eq('id', projectId)
+            .then(({ error }) => {
+              if (error) console.error('Chat save failed:', error.message)
+            })
         }
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: lang === 'en' ? 'An error occurred. Please try again.' : "Une erreur s'est produite. Réessayez." }])
