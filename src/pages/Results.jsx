@@ -321,6 +321,7 @@ export default function Results() {
             if (data.resultats_mep) setMepData(data.resultats_mep)
             if (data.chat_historique?.length > 0) setChatMessages(data.chat_historique)
             if (data.chat_historique?.length > 0) setChatMessages(data.chat_historique)
+            if (data.chat_historique?.length > 0) setChatMessages(data.chat_historique)
           }
         })
     }
