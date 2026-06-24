@@ -116,6 +116,12 @@ const T = {
   dash_supprimer_desc: { fr: 'Cette action est irréversible. Tous les résultats seront perdus.', en: 'This action cannot be undone. All results will be lost.' },
   dash_annuler: { fr: 'Annuler', en: 'Cancel' },
   dash_supprimer: { fr: 'Supprimer', en: 'Delete' },
+  dash_selectionner: { fr: 'Sélectionner', en: 'Select' },
+  dash_tout_selectionner: { fr: 'Tout sélectionner', en: 'Select all' },
+  dash_annuler_selection: { fr: 'Annuler', en: 'Cancel' },
+  dash_supprimer_n: { fr: 'Supprimer ({n})', en: 'Delete ({n})' },
+  dash_supprimer_multi_titre: { fr: 'Supprimer {n} projets ?', en: 'Delete {n} projects?' },
+  dash_supprimer_multi_desc: { fr: 'Cette action est irréversible. Tous les résultats de ces projets seront perdus.', en: 'This action cannot be undone. All results from these projects will be lost.' },
 
   // NEW PROJECT
   np_titre: { fr: 'Nouveau projet', en: 'New project' },

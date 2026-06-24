@@ -52,5 +52,12 @@ export function useProjects() {
     return { error }
   }
 
-  return { projets, loading, fetchProjets, sauvegarderProjet, supprimerProjet }
+  const supprimerPlusieurs = async (ids) => {
+    if (!ids || ids.length === 0) return { error: null }
+    const { error } = await supabase.from('projets').delete().in('id', ids)
+    if (!error) setProjets(prev => prev.filter(p => !ids.includes(p.id)))
+    return { error }
+  }
+
+  return { projets, loading, fetchProjets, sauvegarderProjet, supprimerProjet, supprimerPlusieurs }
 }

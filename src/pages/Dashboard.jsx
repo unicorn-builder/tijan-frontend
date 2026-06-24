@@ -1,5 +1,5 @@
 // Dashboard.jsx — Liste des projets de l'utilisateur
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useProjects } from '../hooks/useProjects'
@@ -28,17 +28,47 @@ function formatFcfa(n) {
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
-  const { projets, loading, supprimerProjet } = useProjects()
+  const { projets, loading, supprimerProjet, supprimerPlusieurs } = useProjects()
   const { restants } = useCredits()
   const { t, lang } = useLang()
   const navigate = useNavigate()
   const [confirmDelete, setConfirmDelete] = useState(null)
+  const [selectMode, setSelectMode] = useState(false)
+  const [selected, setSelected] = useState(new Set())
+  const [deleting, setDeleting] = useState(false)
 
   const nomUser = user?.user_metadata?.nom_complet || user?.email?.split('@')[0] || 'Utilisateur'
 
   const handleDelete = async (id) => {
     await supprimerProjet(id)
     setConfirmDelete(null)
+  }
+
+  const toggleSelect = (id) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selected.size === projets.length) setSelected(new Set())
+    else setSelected(new Set(projets.map(p => p.id)))
+  }
+
+  const exitSelectMode = () => {
+    setSelectMode(false)
+    setSelected(new Set())
+  }
+
+  const handleBulkDelete = async () => {
+    setDeleting(true)
+    await supprimerPlusieurs([...selected])
+    setDeleting(false)
+    setConfirmDelete(null)
+    exitSelectMode()
   }
 
   const ouvrirProjet = (projet) => {
@@ -71,11 +101,61 @@ export default function Dashboard() {
               {projets.length} projet{projets.length > 1 ? 's' : ''} {projets.length > 1 ? t('dash_count_plural') : t('dash_count')}
             </p>
           </div>
-          <button onClick={() => navigate('/projects/new')} style={{
-            background: VERT, color: '#fff', border: 'none', borderRadius: 8,
-            padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          }}>{t('dash_nouveau')}</button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {projets.length > 0 && !selectMode && (
+              <button onClick={() => setSelectMode(true)} style={{
+                background: '#fff', color: NAVY, border: `1px solid ${GRIS2}`, borderRadius: 8,
+                padding: '10px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}>{t('dash_selectionner')}</button>
+            )}
+            <button onClick={() => navigate('/projects/new')} style={{
+              background: VERT, color: '#fff', border: 'none', borderRadius: 8,
+              padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            }}>{t('dash_nouveau')}</button>
+          </div>
         </div>
+
+        {/* Barre d'actions mode sélection */}
+        {selectMode && (
+          <div style={{
+            background: '#fff', border: `1px solid ${GRIS2}`, borderRadius: 10,
+            padding: '10px 16px', marginBottom: 12,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: NAVY, fontWeight: 600 }}>
+                <input
+                  type="checkbox"
+                  checked={projets.length > 0 && selected.size === projets.length}
+                  onChange={toggleSelectAll}
+                  style={{ width: 16, height: 16, accentColor: VERT, cursor: 'pointer' }}
+                />
+                {t('dash_tout_selectionner')}
+              </label>
+              {selected.size > 0 && (
+                <span style={{ fontSize: 12, color: GRIS3 }}>
+                  {selected.size} / {projets.length}
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {selected.size > 0 && (
+                <button onClick={() => setConfirmDelete('bulk')} style={{
+                  background: '#DC2626', color: '#fff', border: 'none', borderRadius: 7,
+                  padding: '8px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                }}>
+                  {t('dash_supprimer_n').replace('{n}', selected.size)}
+                </button>
+              )}
+              <button onClick={exitSelectMode} style={{
+                background: GRIS1, color: NAVY, border: `1px solid ${GRIS2}`, borderRadius: 7,
+                padding: '8px 16px', fontSize: 13, cursor: 'pointer',
+              }}>
+                {t('dash_annuler_selection')}
+              </button>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: 60, color: GRIS3 }}>
@@ -118,16 +198,27 @@ export default function Dashboard() {
               const budget_haut = boq?.total_haut_fcfa
               return (
                 <div key={projet.id} style={{
-                  background: '#fff', border: `1px solid ${GRIS2}`,
+                  background: selected.has(projet.id) ? '#F0FFF4' : '#fff',
+                  border: `1px solid ${selected.has(projet.id) ? VERT : GRIS2}`,
                   borderRadius: 10, padding: '16px 20px',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  gap: 16, cursor: 'pointer',
-                  transition: 'box-shadow 0.15s',
+                  gap: 16, cursor: selectMode ? 'pointer' : 'default',
+                  transition: 'box-shadow 0.15s, background 0.15s, border-color 0.15s',
                 }}
                   onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)'}
                   onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+                  onClick={selectMode ? () => toggleSelect(projet.id) : undefined}
                 >
-                  <div style={{ flex: 1 }} onClick={() => ouvrirProjet(projet)}>
+                  {selectMode && (
+                    <input
+                      type="checkbox"
+                      checked={selected.has(projet.id)}
+                      onChange={() => toggleSelect(projet.id)}
+                      onClick={e => e.stopPropagation()}
+                      style={{ width: 18, height: 18, accentColor: VERT, cursor: 'pointer', flexShrink: 0 }}
+                    />
+                  )}
+                  <div style={{ flex: 1 }} onClick={selectMode ? undefined : () => ouvrirProjet(projet)}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                       <span style={{ fontSize: 15, fontWeight: 700, color: NAVY }}>{projet.nom}</span>
                       <span style={{
@@ -138,29 +229,31 @@ export default function Dashboard() {
                       </span>
                     </div>
                     <div style={{ fontSize: 12, color: GRIS3, display: 'flex', gap: 16 }}>
-                      <span>📍 {projet.ville}, {projet.pays}</span>
-                      <span>📐 {projet.surface_emprise_m2} m²</span>
-                      {budget_bas && <span>💰 {formatFcfa(budget_bas)} – {formatFcfa(budget_haut)}</span>}
-                      <span>🕐 {formatDate(projet.created_at)}</span>
+                      <span>{projet.ville}, {projet.pays}</span>
+                      <span>{projet.surface_emprise_m2} m²</span>
+                      {budget_bas && <span>{formatFcfa(budget_bas)} – {formatFcfa(budget_haut)}</span>}
+                      <span>{formatDate(projet.created_at)}</span>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                    <button onClick={() => ouvrirProjet(projet)} style={{
-                      background: VERT_LIGHT, color: VERT, border: 'none',
-                      borderRadius: 6, padding: '7px 14px', fontSize: 12,
-                      fontWeight: 600, cursor: 'pointer',
-                    }}>
-                      {lang === 'en' ? 'Open' : 'Ouvrir'}
-                    </button>
-                    <button onClick={() => setConfirmDelete(projet.id)} style={{
-                      background: '#FFF0F0', color: '#DC2626', border: 'none',
-                      borderRadius: 6, padding: '7px 12px', fontSize: 12,
-                      cursor: 'pointer',
-                    }}>
-                      ✕
-                    </button>
-                  </div>
+                  {!selectMode && (
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      <button onClick={() => ouvrirProjet(projet)} style={{
+                        background: VERT_LIGHT, color: VERT, border: 'none',
+                        borderRadius: 6, padding: '7px 14px', fontSize: 12,
+                        fontWeight: 600, cursor: 'pointer',
+                      }}>
+                        {lang === 'en' ? 'Open' : 'Ouvrir'}
+                      </button>
+                      <button onClick={() => setConfirmDelete(projet.id)} style={{
+                        background: '#FFF0F0', color: '#DC2626', border: 'none',
+                        borderRadius: 6, padding: '7px 12px', fontSize: 12,
+                        cursor: 'pointer',
+                      }}>
+                        ✕
+                      </button>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -168,7 +261,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Modal confirmation suppression */}
+      {/* Modal confirmation suppression (unitaire ou groupée) */}
       {confirmDelete && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
@@ -176,13 +269,16 @@ export default function Dashboard() {
         }}>
           <div style={{
             background: '#fff', borderRadius: 12, padding: 28,
-            maxWidth: 360, width: '90%', textAlign: 'center',
+            maxWidth: 400, width: '90%', textAlign: 'center',
           }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
-              {lang === 'en' ? 'Delete this project?' : 'Supprimer ce projet ?'}
+              {confirmDelete === 'bulk'
+                ? t('dash_supprimer_multi_titre').replace('{n}', selected.size)
+                : (lang === 'en' ? 'Delete this project?' : 'Supprimer ce projet ?')
+              }
             </div>
             <div style={{ fontSize: 13, color: GRIS3, marginBottom: 24 }}>
-              {t('dash_supprimer_desc')}
+              {confirmDelete === 'bulk' ? t('dash_supprimer_multi_desc') : t('dash_supprimer_desc')}
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button onClick={() => setConfirmDelete(null)} style={{
@@ -191,12 +287,22 @@ export default function Dashboard() {
               }}>
                 {t('dash_annuler')}
               </button>
-              <button onClick={() => handleDelete(confirmDelete)} style={{
-                background: '#DC2626', color: '#fff', border: 'none',
-                borderRadius: 7, padding: '9px 20px', fontSize: 13,
-                fontWeight: 700, cursor: 'pointer',
-              }}>
-                {t('dash_supprimer')}
+              <button
+                disabled={deleting}
+                onClick={confirmDelete === 'bulk' ? handleBulkDelete : () => handleDelete(confirmDelete)}
+                style={{
+                  background: '#DC2626', color: '#fff', border: 'none',
+                  borderRadius: 7, padding: '9px 20px', fontSize: 13,
+                  fontWeight: 700, cursor: deleting ? 'wait' : 'pointer',
+                  opacity: deleting ? 0.6 : 1,
+                }}
+              >
+                {deleting
+                  ? (lang === 'en' ? 'Deleting...' : 'Suppression...')
+                  : confirmDelete === 'bulk'
+                    ? t('dash_supprimer_n').replace('{n}', selected.size)
+                    : t('dash_supprimer')
+                }
               </button>
             </div>
           </div>
