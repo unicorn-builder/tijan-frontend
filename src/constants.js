@@ -31,8 +31,8 @@ export const TABS = [
   // ── Fiches techniques ──
   { id: 'fiches-techniques',   label: 'Fiches techniques & Fournisseurs', endpoint: '/generate-fiches-all',     filename: 'fiches_techniques.pdf',   mep: true,  group: 'Fiches' },
   // ── Plans ──
-  { id: 'plan-ba',             label: 'Plans BA',                    endpoint: '/generate-plans-structure',     filename: 'plans_structure.pdf',     mep: false, group: 'Plans', dwgRequired: true },
-  { id: 'plan-mep',            label: 'Plans MEP',                   endpoint: '/generate-plans-mep',           filename: 'plans_mep.pdf',           mep: true,  group: 'Plans', dwgRequired: true },
+  { id: 'plan-ba',             label: 'Plans BA',                    endpoint: '/generate-plans-structure',     filename: 'plans_structure.pdf',     mep: false, group: 'Plans', beta: true },
+  { id: 'plan-mep',            label: 'Plans MEP',                   endpoint: '/generate-plans-mep',           filename: 'plans_mep.pdf',           mep: true,  group: 'Plans', beta: true },
   // ── Assistant ──
   { id: 'chat',                label: 'Discuter avec Tijan',         endpoint: 'chat',                          filename: '',                        mep: false, group: 'Assistant' },
 ]

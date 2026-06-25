@@ -98,8 +98,8 @@ const LIVRABLES_KEYS = [
   { label: 'liv_rapport', norme: 'liv_norme_rapport', Icon: IconReport, color: '#993556', bg: '#FBEAF0' },
   { label: 'liv_schemas_structure', norme: 'liv_norme_schemas_str', Icon: IconSchema, color: '#993C1D', bg: '#FAECE7' },
   { label: 'liv_schemas_mep', norme: 'liv_norme_schemas_mep', Icon: IconMEPSchema, color: '#A32D2D', bg: '#FCEBEB' },
-  { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8 — DWG/DXF', Icon: IconPlan, color: '#1B6B2A', bg: '#E8F5E9' },
-  { label: 'liv_plans_mep', norme: 'A3 — 7 lots — DWG/DXF', Icon: IconBET, color: '#1B6B2A', bg: '#E8F5E9' },
+  { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8 — DWG/DXF', Icon: IconPlan, color: '#1B6B2A', bg: '#E8F5E9', beta: true },
+  { label: 'liv_plans_mep', norme: 'A3 — 7 lots — DWG/DXF', Icon: IconBET, color: '#1B6B2A', bg: '#E8F5E9', beta: true },
 ]
 
 const CHIFFRES_KEYS = [
@@ -591,13 +591,12 @@ export default function Landing() {
           {LIVRABLES_KEYS.map((l, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 12,
-              background: '#fff', border: l.comingSoon ? '1px dashed #D1D5DB' : '1px solid #EEF0F2', borderRadius: 10,
+              background: '#fff', border: l.beta ? '1px dashed #90CAF9' : '1px solid #EEF0F2', borderRadius: 10,
               padding: '14px 18px',
-              boxShadow: l.comingSoon ? 'none' : '0 1px 8px rgba(27,42,74,0.03)',
+              boxShadow: '0 1px 8px rgba(27,42,74,0.03)',
               transition: 'transform 0.15s, box-shadow 0.15s',
-              opacity: l.comingSoon ? 0.6 : 1,
             }}
-            onMouseEnter={e => { if (!l.comingSoon) e.currentTarget.style.transform = 'translateY(-2px)' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}
             >
               <div style={{
@@ -607,12 +606,12 @@ export default function Landing() {
                 <l.Icon color={l.color} />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: 13, color: l.comingSoon ? '#999' : NAVY }}>{t(l.label)}</div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: NAVY }}>{t(l.label)}</div>
                 <div style={{ fontSize: 11, color: '#AAA' }}>{t(l.norme)}</div>
               </div>
-              {l.comingSoon && (
-                <span style={{ fontSize: 10, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '3px 10px', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                  {t('bientot_dispo')}
+              {l.beta && (
+                <span style={{ fontSize: 10, background: '#E3F2FD', color: '#1565C0', borderRadius: 8, padding: '3px 10px', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                  En construction
                 </span>
               )}
             </div>

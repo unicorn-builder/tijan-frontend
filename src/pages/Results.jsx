@@ -434,7 +434,25 @@ export default function Results() {
       return (
         <Card>
           <div style={{ padding: '24px 16px' }}>
-            <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A', marginBottom: 12 }}>{title}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, fontSize: 18, color: '#1B2A4A' }}>{title}</div>
+              <span style={{
+                fontSize: 10, background: '#E3F2FD', color: '#1565C0', borderRadius: 8,
+                padding: '3px 12px', fontWeight: 700, border: '1px solid #90CAF9',
+              }}>
+                {lang === 'en' ? 'Preview — Under construction' : 'Apercu — En construction'}
+              </span>
+            </div>
+            <div style={{
+              background: '#E3F2FD', border: '1px solid #90CAF9', borderRadius: 8,
+              padding: '12px 16px', marginBottom: 16,
+            }}>
+              <span style={{ fontSize: 12, color: '#1565C0', lineHeight: 1.5 }}>
+                {lang === 'en'
+                  ? 'This feature is under active development. Plans are available for preview at no charge and are not included in your subscription billing.'
+                  : 'Cette fonctionnalité est en cours de construction. Les plans sont accessibles en aperçu gratuitement et ne sont pas facturés dans votre abonnement.'}
+              </span>
+            </div>
             <p style={{ fontSize: 13, color: '#666', marginBottom: 16, lineHeight: 1.6 }}>{desc}</p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
               {badges.map(s => (

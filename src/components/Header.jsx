@@ -24,6 +24,11 @@ export default function Header() {
           onClick={() => navigate('/')}
           style={{ height: 40, cursor: 'pointer', display: 'block' }}
         />
+        <span style={{
+          background: '#FFF8E1', color: '#E65100', fontSize: 9, fontWeight: 800,
+          padding: '2px 8px', borderRadius: 4, border: '1px solid #FFE0B2',
+          letterSpacing: 0.5, lineHeight: 1,
+        }}>BETA</span>
         <button onClick={() => navigate('/impact')} style={{
           background: 'none', border: 'none', fontSize: 13, color: '#555', cursor: 'pointer', fontWeight: 500,
         }}>{t('nav_impact')}</button>

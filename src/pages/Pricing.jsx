@@ -1,4 +1,4 @@
-// Pricing.jsx — Page tarifs Tijan AI (prix unique 500 000 FCFA par projet)
+// Pricing.jsx — Page tarifs Tijan AI (abonnement mensuel 500 000 FCFA HT)
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -7,8 +7,9 @@ import { VERT, BACKEND } from '../constants'
 import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
-const PRIX_PROJET = 500000 // FCFA TTC — prix unique par projet
+const PRIX_HT = 500000    // FCFA HT / mois
 const TVA_RATE = 0.18
+const PRIX_TTC = Math.round(PRIX_HT * (1 + TVA_RATE)) // 590 000 FCFA TTC
 
 function formatFCFA(n) {
   return n.toLocaleString('fr-FR') + ' FCFA'
@@ -61,7 +62,7 @@ export default function Pricing() {
     }
   }
 
-  const effectivePrice = promoResult ? promoResult.monthly_price : PRIX_PROJET
+  const effectivePrice = promoResult ? promoResult.monthly_price : PRIX_TTC
 
   const handlePay = async () => {
     if (!user) { navigate('/login'); return }
@@ -99,8 +100,15 @@ export default function Pricing() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <div style={{
+            display: 'inline-block', background: '#FFF8E1', color: '#E65100',
+            borderRadius: 20, padding: '5px 16px', fontSize: 11, fontWeight: 700,
+            letterSpacing: 0.5, marginBottom: 16, border: '1px solid #FFE0B2',
+          }}>
+            VERSION BETA
+          </div>
           <h1 style={{ fontSize: 32, fontWeight: 700, color: NAVY, marginBottom: 8 }}>
-            Un prix. Un projet. Tout inclus.
+            Un abonnement. Projets illimités.
           </h1>
           <p style={{ fontSize: 15, color: '#666', maxWidth: 460, margin: '0 auto' }}>
             Dossier technique complet — structure, MEP, EDGE — pour 10x moins qu'un bureau d'études.
@@ -121,7 +129,7 @@ export default function Pricing() {
             {promoResult ? (
               <>
                 <div style={{ fontSize: 22, color: '#999', textDecoration: 'line-through', lineHeight: 1 }}>
-                  {formatFCFA(PRIX_PROJET)}
+                  {formatFCFA(PRIX_HT)} HT
                 </div>
                 <div style={{ fontSize: 56, fontWeight: 800, color: VERT, marginBottom: 4, lineHeight: 1 }}>
                   {formatFCFA(promoResult.monthly_price)}
@@ -132,11 +140,11 @@ export default function Pricing() {
               </>
             ) : (
               <div style={{ fontSize: 56, fontWeight: 800, color: NAVY, marginBottom: 4, lineHeight: 1 }}>
-                {formatFCFA(PRIX_PROJET)}
+                {formatFCFA(PRIX_HT)}
               </div>
             )}
             <div style={{ fontSize: 15, color: '#666', marginTop: 10 }}>
-              par projet — TTC
+              HT / mois — projets illimités
             </div>
           </div>
 
@@ -166,8 +174,8 @@ export default function Pricing() {
               { icon: '🌱', text: 'Certification EDGE IFC v3' },
               { icon: '📋', text: 'Rapport exécutif maître d\'ouvrage' },
               { icon: '📑', text: 'Fiches techniques structure + MEP' },
-              { icon: '🏗️', text: 'Plans BA (coffrage + ferraillage)', comingSoon: true },
-              { icon: '📐', text: 'Plans MEP tous niveaux', comingSoon: true },
+              { icon: '🏗️', text: 'Plans BA (coffrage + ferraillage)', beta: true },
+              { icon: '📐', text: 'Plans MEP tous niveaux', beta: true },
             ].map((item, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
@@ -177,8 +185,8 @@ export default function Pricing() {
               }}>
                 <span style={{ fontSize: 18 }}>{item.icon}</span>
                 <span style={{ flex: 1 }}>{item.text}</span>
-                {item.comingSoon ? (
-                  <span style={{ fontSize: 9, background: '#FFF3E0', color: '#E65100', borderRadius: 8, padding: '1px 7px', fontWeight: 700 }}>Bientôt</span>
+                {item.beta ? (
+                  <span style={{ fontSize: 9, background: '#E3F2FD', color: '#1565C0', borderRadius: 8, padding: '1px 7px', fontWeight: 700 }}>En construction — gratuit</span>
                 ) : (
                   <span style={{ color: VERT, fontWeight: 700, fontSize: 15 }}>✓</span>
                 )}
@@ -236,13 +244,13 @@ export default function Pricing() {
             padding: '14px 16px', fontSize: 12, color: '#666', marginBottom: 20,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span>Montant HT</span><span>{formatFCFA(Math.round(effectivePrice / (1 + TVA_RATE)))}</span>
+              <span>Abonnement mensuel HT</span><span>{formatFCFA(promoResult ? Math.round(promoResult.monthly_price / (1 + TVA_RATE)) : PRIX_HT)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span>TVA 18%</span><span>{formatFCFA(effectivePrice - Math.round(effectivePrice / (1 + TVA_RATE)))}</span>
+              <span>TVA 18%</span><span>{formatFCFA(promoResult ? promoResult.monthly_price - Math.round(promoResult.monthly_price / (1 + TVA_RATE)) : Math.round(PRIX_HT * TVA_RATE))}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: NAVY, fontSize: 14, paddingTop: 8, borderTop: '1px solid #D0D0D0' }}>
-              <span>Total TTC</span><span>{formatFCFA(effectivePrice)}</span>
+              <span>Total TTC / mois</span><span>{formatFCFA(effectivePrice)}</span>
             </div>
           </div>
 
@@ -258,7 +266,7 @@ export default function Pricing() {
               opacity: payLoading ? 0.7 : 1,
             }}
           >
-            {payLoading ? t('pr_redirection') : `Lancer mon étude — ${formatFCFA(effectivePrice)} →`}
+            {payLoading ? t('pr_redirection') : `S'abonner — ${formatFCFA(effectivePrice)} TTC/mois →`}
           </button>
           <div style={{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 10 }}>
             Paiement sécurisé via Wave · Orange Money · Free Money
