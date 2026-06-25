@@ -948,7 +948,34 @@ export default function Results() {
             )
           ))}
 
-          {/* Section 4: Action buttons */}
+          {/* Section 4: Recommandations architecturales (quand mesures techniques insuffisantes) */}
+          {edge.recommandations_archi?.length > 0 && !edgeMode && (
+            <>
+              <SectionTitle>{lang === 'en' ? 'Architectural Recommendations' : 'Recommandations architecturales'}</SectionTitle>
+              <Card style={{ borderLeft: '3px solid #1565C0' }}>
+                <div style={{ fontSize: 12, color: '#1565C0', marginBottom: 10, fontWeight: 600 }}>
+                  {lang === 'en'
+                    ? 'The technical measures alone are insufficient. The following architectural changes would enable EDGE certification:'
+                    : 'Les mesures techniques seules sont insuffisantes. Les évolutions architecturales suivantes permettraient la certification EDGE :'}
+                </div>
+                {edge.recommandations_archi.map((r, i) => (
+                  <div key={i} style={{ padding: '10px 12px', marginBottom: 8, background: '#F5F8FF', borderRadius: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                      <span style={{ background: r.pilier === 'Énergie' ? '#FFF3E0' : r.pilier === 'Eau' ? '#E3F2FD' : '#F3E5F5', color: r.pilier === 'Énergie' ? '#E65100' : r.pilier === 'Eau' ? '#1565C0' : '#7B1FA2', borderRadius: 10, padding: '2px 8px', fontSize: 10, fontWeight: 600 }}>
+                        {r.pilier}
+                      </span>
+                      <span style={{ fontSize: 10, color: '#888', fontWeight: 600 }}>{r.type}</span>
+                      <span style={{ marginLeft: 'auto', color: VERT, fontWeight: 700, fontSize: 12 }}>+{r.gain_potentiel_pct}%</span>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#333', marginBottom: 2 }}>{r.recommandation}</div>
+                    <div style={{ fontSize: 11, color: '#666' }}>{r.detail}</div>
+                  </div>
+                ))}
+              </Card>
+            </>
+          )}
+
+          {/* Section 5: Action buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: '16px 0' }}>
             {/* Mise en conformité / Revenir au standard */}
             {!edgeMode ? (
