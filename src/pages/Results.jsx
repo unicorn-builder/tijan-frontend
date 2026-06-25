@@ -296,6 +296,9 @@ export default function Results() {
   const [mepError, setMepError] = useState(false)
   const [edgeOptimise, setEdgeOptimise] = useState(null)
   const [edgeLoading, setEdgeLoading] = useState(false)
+  const [edgeMode, setEdgeMode] = useState(false)   // true = all tabs show EDGE-optimised data
+  const [standardMepData, setStandardMepData] = useState(null)  // cache for reverting
+  const [standardResultats, setStandardResultats] = useState(null)
   const { download, loading: dlLoading } = usePdfDownload(params, lang, { supabase, projectId })
 
   // Load project from Supabase if opened by URL (no location.state)
@@ -353,6 +356,49 @@ export default function Results() {
       if (data.ok) setEdgeOptimise(data)
     } catch (e) { console.warn('EDGE optimization failed:', e) }
     finally { setEdgeLoading(false) }
+  }
+
+  // Activate EDGE mode: swap all tabs to EDGE-optimised data
+  const activerModeEDGE = async () => {
+    if (edgeOptimise) {
+      // Already cached — just switch
+      setStandardMepData(mepData)
+      setStandardResultats(resultats)
+      setMepData(edgeOptimise)
+      if (edgeOptimise.structure) {
+        setResultats(prev => ({ ...prev, ...edgeOptimise.structure }))
+      }
+      setEdgeMode(true)
+      return
+    }
+    // Need to recalculate first
+    if (!params?.nom || edgeLoading) return
+    setEdgeLoading(true)
+    try {
+      const res = await fetch(`${BACKEND}/calculate-mep-edge`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setEdgeOptimise(data)
+        setStandardMepData(mepData)
+        setStandardResultats(resultats)
+        setMepData(data)
+        if (data.structure) {
+          setResultats(prev => ({ ...prev, ...data.structure }))
+        }
+        setEdgeMode(true)
+      }
+    } catch (e) { console.warn('EDGE activation failed:', e) }
+    finally { setEdgeLoading(false) }
+  }
+
+  // Revert to standard (non-EDGE) design
+  const revenirStandard = () => {
+    if (standardMepData) setMepData(standardMepData)
+    if (standardResultats) setResultats(standardResultats)
+    setEdgeMode(false)
   }
 
   const MEP_TABS = ['note-mep', 'boq-mep', 'edge-assessment', 'schemas-mep', 'plan-mep']
@@ -772,119 +818,185 @@ export default function Results() {
     if (activeTab === 'edge-assessment' && mepData) {
       const edge = mepData.edge || {}
       const piliers = [
-        { key: 'economie_energie_pct', label: t('r_eco_energie') },
-        { key: 'economie_eau_pct', label: t('r_eco_eau') },
-        { key: 'economie_materiaux_pct', label: t('r_eco_materiaux') },
+        { key: 'economie_energie_pct', label: t('r_energie_label'), base: edge.base_energie_kwh_m2_an, projet: edge.projet_energie_kwh_m2_an, unite: 'kWh/m²/an' },
+        { key: 'economie_eau_pct', label: t('r_eau_label'), base: edge.base_eau_L_pers_j, projet: edge.projet_eau_L_pers_j, unite: 'L/pers/j' },
+        { key: 'economie_materiaux_pct', label: t('r_materiaux_label'), base: edge.base_ei_kwh_m2, projet: edge.projet_ei_kwh_m2, unite: 'kWh/m²' },
       ]
+      const seuil = 20
+
+      // Gauge bar component
+      const Gauge = ({ label, value, base, projet, unite }) => {
+        const pct = value || 0
+        const ok = pct >= seuil
+        const barColor = ok ? VERT : ORANGE
+        const barW = Math.min(pct, 100)
+        return (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>{label}</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: barColor }}>{pct.toFixed(1)}%</span>
+            </div>
+            <div style={{ position: 'relative', height: 18, background: '#F0F0F0', borderRadius: 9, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${barW}%`, background: barColor, borderRadius: 9, transition: 'width 0.6s ease' }} />
+              <div style={{ position: 'absolute', left: `${seuil}%`, top: -2, bottom: -2, width: 2, background: '#333', zIndex: 2 }} />
+              <div style={{ position: 'absolute', left: `${seuil}%`, top: -14, fontSize: 9, color: '#555', transform: 'translateX(-50%)', fontWeight: 600 }}>20%</div>
+            </div>
+            {base != null && projet != null && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: GRIS3, marginTop: 3 }}>
+                <span>{t('r_reference')}: {base?.toFixed(0)} {unite}</span>
+                <span>{t('r_projet')}: {projet?.toFixed(0)} {unite} ({ok ? '✓' : '✗'})</span>
+              </div>
+            )}
+          </div>
+        )
+      }
+
       return (
         <>
-          <Card>
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              <div>
-                <div style={{ fontSize: 11, color: GRIS3, marginBottom: 6 }}>{t('r_verdict_edge')}</div>
-                <Badge ok={edge.certifiable} label={edge.certifiable ? t('r_certifiable') : t('r_non_certifiable')} />
-                {edge.niveau_certification && <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>{edge.niveau_certification}</div>}
-              </div>
-              {piliers.map(({ key, label }) => (
-                <div key={key}>
-                  <div style={{ fontSize: 11, color: GRIS3 }}>{label}</div>
-                  <div style={{ fontWeight: 700, fontSize: 26, color: (edge[key] || 0) >= 20 ? VERT : ORANGE }}>
-                    {edge[key] !== undefined ? `${edge[key]}%` : '—'}
-                  </div>
-                  <div style={{ fontSize: 10, color: GRIS3 }}>{t('r_seuil_edge')}</div>
-                </div>
-              ))}
+          {/* EDGE mode banner */}
+          {edgeMode && (
+            <div style={{ background: '#EBF7ED', border: `1px solid ${VERT}`, borderRadius: 8, padding: '10px 16px', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 18 }}>🌱</span>
+              <span style={{ fontSize: 13, color: '#2D7A3A', fontWeight: 600, flex: 1 }}>{t('r_mode_edge_actif')}</span>
+              <button onClick={revenirStandard} style={{ background: 'none', border: `1px solid ${VERT}`, color: '#2D7A3A', borderRadius: 6, padding: '5px 14px', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                {t('r_revenir_standard')}
+              </button>
             </div>
-            <div style={{ marginTop: 12, fontSize: 11, color: ORANGE }}>
+          )}
+
+          {/* Section 1: Verdict + Gauges */}
+          <Card>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <Badge ok={edge.certifiable} label={edge.certifiable ? t('r_certifiable') : t('r_non_certifiable')} />
+              {edge.niveau_certification && <span style={{ fontSize: 12, color: '#555' }}>{edge.niveau_certification}</span>}
+            </div>
+            <SectionTitle>{t('r_performance_actuelle')}</SectionTitle>
+            {piliers.map(({ key, label, base, projet, unite }) => (
+              <Gauge key={key} label={label} value={edge[key] || 0} base={base} projet={projet} unite={unite} />
+            ))}
+            <div style={{ fontSize: 11, color: GRIS3, marginTop: 8, borderTop: `1px solid ${GRIS2}`, paddingTop: 8 }}>
               {t('r_edge_note')}
             </div>
           </Card>
 
-          {edge.plan_action?.length > 0 && (
+          {/* Section 2: Modifications proposées */}
+          {edge.plan_action?.length > 0 && !edgeMode && (
             <>
-              <SectionTitle>{t('r_plan_action')}</SectionTitle>
-              <Card style={{ borderLeft: `3px solid ${ORANGE}` }}>
-                <div style={{ fontSize: 12, color: ORANGE, marginBottom: 8, fontWeight: 600 }}>
-                  {t('r_cout_conformite')} : {fmtFcfa(edge.cout_mise_conformite_fcfa, deviseInfo)} | ROI : {edge.roi_ans} ans
+              <SectionTitle>{t('r_modifications_proposees')}</SectionTitle>
+              <Card>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                    <thead>
+                      <tr style={{ borderBottom: `2px solid ${GRIS2}` }}>
+                        {[t('r_mesure'), t('r_pilier'), t('r_impact'), t('r_cout')].map(h => (
+                          <th key={h} style={{ textAlign: 'left', padding: '8px 10px', fontSize: 11, color: GRIS3, fontWeight: 600 }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {edge.plan_action.map((a, i) => (
+                        <tr key={i} style={{ borderBottom: `1px solid ${GRIS1}` }}>
+                          <td style={{ padding: '8px 10px', fontWeight: 500 }}>{a.action}</td>
+                          <td style={{ padding: '8px 10px' }}>
+                            <span style={{ background: a.pilier === 'Énergie' ? '#FFF3E0' : a.pilier === 'Eau' ? '#E3F2FD' : '#F3E5F5', color: a.pilier === 'Énergie' ? '#E65100' : a.pilier === 'Eau' ? '#1565C0' : '#7B1FA2', borderRadius: 10, padding: '2px 8px', fontSize: 10, fontWeight: 600 }}>
+                              {a.pilier}
+                            </span>
+                          </td>
+                          <td style={{ padding: '8px 10px', color: VERT, fontWeight: 600 }}>+{a.gain_pct}%</td>
+                          <td style={{ padding: '8px 10px', color: '#555' }}>{a.cout_fcfa > 0 ? fmtFcfa(a.cout_fcfa, deviseInfo) : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ borderTop: `2px solid ${GRIS2}`, background: GRIS1 }}>
+                        <td colSpan={3} style={{ padding: '8px 10px', fontWeight: 700, fontSize: 12 }}>{t('r_total_surcout')}</td>
+                        <td style={{ padding: '8px 10px', fontWeight: 700, color: ORANGE }}>{fmtFcfa(edge.cout_mise_conformite_fcfa, deviseInfo)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
                 </div>
-                {edge.plan_action.map((a, i) => (
-                  <div key={i} style={{ fontSize: 12, marginBottom: 6, padding: '6px 10px', background: '#FFFBF0', borderRadius: 4 }}>
-                    <strong>[{a.pilier}]</strong> {a.action} — <span style={{ color: VERT }}>+{a.gain_pct}%</span>
-                    {a.cout_fcfa > 0 && <span style={{ color: GRIS3 }}> — {fmtFcfa(a.cout_fcfa, deviseInfo)}</span>}
+                {edge.roi_ans > 0 && (
+                  <div style={{ fontSize: 11, color: GRIS3, marginTop: 8 }}>
+                    ROI {t('r_economie').toLowerCase()}: ~{edge.roi_ans} {lang === 'en' ? 'years' : 'ans'}
                   </div>
-                ))}
+                )}
               </Card>
             </>
           )}
 
-          {/* Bouton optimisation EDGE */}
-          {!edgeOptimise && !(edge.certifiable) && (
-            <div style={{ margin: '16px 0', textAlign: 'center' }}>
-              <button onClick={optimiserEDGE} disabled={edgeLoading} style={{
-                background: edgeLoading ? '#ccc' : '#E07B00',
-                color: '#fff', border: 'none', borderRadius: 8,
-                padding: '12px 28px', fontSize: 14, fontWeight: 700,
-                cursor: edgeLoading ? 'not-allowed' : 'pointer', width: '100%', maxWidth: 400,
-              }}>
-                {edgeLoading ? t('r_optimisation_cours') : t('r_optimiser_edge')}
-              </button>
-              <div style={{ fontSize: 11, color: '#888', marginTop: 6 }}>
-                {t('r_optimise_note')}
-              </div>
-            </div>
-          )}
-
-          {/* Résultats optimisation EDGE */}
-          {edgeOptimise && (
-            <div style={{ background: '#EBF7ED', border: '1px solid #43A956', borderRadius: 8, padding: '16px 20px', marginBottom: 16 }}>
-              <div style={{ fontWeight: 700, color: '#2D7A3A', fontSize: 15, marginBottom: 12 }}>
-                ✅ Projet optimisé EDGE — {edgeOptimise.edge.niveau_certification}
-              </div>
-              <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 12 }}>
-                {[[t('r_energie_label'), edgeOptimise.edge.economie_energie_pct], [t('r_eau_label'), edgeOptimise.edge.economie_eau_pct], [t('r_materiaux_label'), edgeOptimise.edge.economie_materiaux_pct]].map(([label, val]) => (
-                  <div key={label} style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 11, color: '#555' }}>{label}</div>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: val >= 20 ? '#43A956' : '#E07B00' }}>{val}%</div>
-                    <div style={{ fontSize: 10, color: '#888' }}>{t('r_seuil_edge')}</div>
-                  </div>
-                ))}
-              </div>
-              {edgeOptimise.surcout_edge && (
-                <div style={{ fontSize: 12, color: '#555', borderTop: '1px solid #C8E6C9', paddingTop: 10 }}>
-                  <strong>{t('r_surcout')} :</strong>{' '}
-                  {fmtFcfa(edgeOptimise.surcout_edge.total_fcfa, deviseInfo)}
-                  {' '}({edgeOptimise.surcout_edge.pct_boq_mep}% du BOQ MEP Basic)
-                  <div style={{ marginTop: 4, fontSize: 11, color: '#888' }}>
-                    {lang === 'en' ? 'LED' : 'LED'} {(edgeOptimise.surcout_edge.led_fcfa/1e6).toFixed(1)}M +
-                    {lang === 'en' ? 'Insulation' : 'Isolation'} {(edgeOptimise.surcout_edge.isolation_fcfa/1e6).toFixed(1)}M +
-                    {lang === 'en' ? 'Eco WC' : 'WC éco'} {(edgeOptimise.surcout_edge.wc_fcfa/1e3).toFixed(0)}k +
-                    {lang === 'en' ? 'Faucets' : 'Robinetterie'} {fmtFcfa(edgeOptimise.surcout_edge.robinetterie_fcfa, deviseInfo)}
-                  </div>
-                </div>
-              )}
-              <button onClick={() => setEdgeOptimise(null)} style={{
-                marginTop: 10, background: 'none', border: '1px solid #43A956',
-                color: '#2D7A3A', borderRadius: 6, padding: '5px 14px', fontSize: 12, cursor: 'pointer'
-              }}>{t('r_revenir_original')}</button>
-            </div>
-          )}
-
+          {/* Section 3: Measures detail (expandable) */}
           {['mesures_energie', 'mesures_eau', 'mesures_materiaux'].map((key, i) => (
             edge[key]?.length > 0 && (
               <div key={key}>
                 <SectionTitle>{[t('r_mesures_energie'), t('r_mesures_eau'), t('r_mesures_materiaux')][i]}</SectionTitle>
                 <Card>
                   {edge[key].map((m, j) => (
-                    <div key={j} style={{ fontSize: 12, marginBottom: 4, color: m.statut?.includes('Intégré') ? '#2d7a3a' : '#333' }}>
-                      • {m.mesure} — <strong>+{m.gain_pct}%</strong>
-                      {m.statut && <span style={{ fontSize: 11, color: GRIS3 }}> [{m.statut}]</span>}
-                      {m.impact_prix && <div style={{ fontSize: 10, color: ORANGE, marginLeft: 10 }}>ℹ {m.impact_prix}</div>}
+                    <div key={j} style={{ display: 'flex', alignItems: 'baseline', gap: 8, fontSize: 12, marginBottom: 6, padding: '6px 10px', background: m.statut?.includes('Intégré') || m.statut?.toLowerCase().includes('standard') ? '#F0FFF4' : '#FFFBF0', borderRadius: 4 }}>
+                      <span style={{ color: m.statut?.includes('Intégré') || m.statut?.toLowerCase().includes('standard') ? VERT : ORANGE, fontWeight: 700, fontSize: 14 }}>
+                        {m.statut?.includes('Intégré') || m.statut?.toLowerCase().includes('standard') ? '✓' : '○'}
+                      </span>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontWeight: 500 }}>{m.mesure}</span>
+                        <span style={{ color: VERT, fontWeight: 600 }}> +{m.gain_pct}%</span>
+                        {m.statut && <span style={{ fontSize: 10, color: GRIS3 }}> — {m.statut}</span>}
+                        {m.impact_prix && <div style={{ fontSize: 10, color: ORANGE, marginTop: 2 }}>💰 {m.impact_prix}</div>}
+                      </div>
                     </div>
                   ))}
                 </Card>
               </div>
             )
           ))}
+
+          {/* Section 4: Action buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: '16px 0' }}>
+            {/* Mise en conformité / Revenir au standard */}
+            {!edgeMode ? (
+              <button onClick={activerModeEDGE} disabled={edgeLoading} style={{
+                background: edgeLoading ? '#ccc' : VERT,
+                color: '#fff', border: 'none', borderRadius: 8,
+                padding: '14px 28px', fontSize: 14, fontWeight: 700,
+                cursor: edgeLoading ? 'not-allowed' : 'pointer', width: '100%',
+              }}>
+                {edgeLoading ? t('r_optimisation_cours') : `🌱 ${t('r_mise_conformite_edge')}`}
+              </button>
+            ) : (
+              <button onClick={revenirStandard} style={{
+                background: '#fff', border: `2px solid ${ORANGE}`,
+                color: ORANGE, borderRadius: 8,
+                padding: '14px 28px', fontSize: 14, fontWeight: 700,
+                cursor: 'pointer', width: '100%',
+              }}>
+                {t('r_revenir_standard')}
+              </button>
+            )}
+            <div style={{ fontSize: 11, color: GRIS3, textAlign: 'center' }}>
+              {edgeMode ? t('r_revenir_standard_desc') : t('r_mise_conformite_desc')}
+            </div>
+
+            {/* Télécharger la liasse EDGE */}
+            <button
+              onClick={() => {
+                const extra = { edge_mode: edgeMode }
+                if (dwgGeometry) extra.dwg_geometry = dwgGeometry
+                const ee = dbProjet?.edge_extras || {}
+                Object.assign(extra, ee)
+                download('/generate-edge-dossier', `TijanAI_LiasseEDGE_${(params.nom || 'projet').replace(/\s+/g, '_').slice(0, 20)}_${new Date().toISOString().slice(0,10)}.pdf`, extra)
+              }}
+              disabled={!!dlLoading}
+              style={{
+                background: dlLoading === '/generate-edge-dossier' ? '#ccc' : '#1B2A4A',
+                color: '#fff', border: 'none', borderRadius: 8,
+                padding: '12px 28px', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', width: '100%',
+              }}
+            >
+              {dlLoading === '/generate-edge-dossier' ? t('res_generation') : `📋 ${t('r_telecharger_liasse')}`}
+            </button>
+            <div style={{ fontSize: 11, color: GRIS3, textAlign: 'center' }}>
+              {t('r_liasse_desc')}
+            </div>
+          </div>
         </>
       )
     }
