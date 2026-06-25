@@ -165,22 +165,34 @@ export default function Pricing() {
               Inclus dans chaque projet
             </div>
             {[
+              // Structure
               { icon: '📄', text: 'Note de calcul structure (EC2/EC8)' },
               { icon: '💰', text: 'BOQ Structure détaillé (7 lots)' },
+              { icon: '🔀', text: 'Schémas structure (coffrage + ferraillage)' },
+              { icon: '📝', text: 'DAO Lot Structure (CCTP + DPGF)' },
+              // MEP
               { icon: '⚡', text: 'Note de calcul MEP complète' },
               { icon: '📊', text: 'BOQ MEP 3 gammes de prix' },
-              { icon: '🔀', text: 'Schémas structure (coffrage + ferraillage)' },
               { icon: '🔌', text: 'Schémas isométriques MEP' },
-              { icon: '🌱', text: 'Certification EDGE IFC v3' },
+              { icon: '📝', text: 'DAO Lot MEP (CCTP + DPGF)' },
+              // Finitions
+              { icon: '🏠', text: 'BOQ Finitions (second œuvre)' },
+              { icon: '📝', text: 'DAO Lot Finitions (CCTP + DPGF)' },
+              // Synthèse
               { icon: '📋', text: 'Rapport exécutif maître d\'ouvrage' },
-              { icon: '📑', text: 'Fiches techniques structure + MEP' },
+              { icon: '🌱', text: 'Certification EDGE IFC v3' },
+              { icon: '📅', text: 'Planning d\'exécution (Gantt)' },
+              { icon: '💸', text: 'Planning des dépenses (trésorerie)' },
+              // Fiches
+              { icon: '📑', text: 'Fiches techniques & Fournisseurs' },
+              // Plans
               { icon: '🏗️', text: 'Plans BA (coffrage + ferraillage)', beta: true },
               { icon: '📐', text: 'Plans MEP tous niveaux', beta: true },
             ].map((item, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '8px 0',
-                borderBottom: i < 10 ? '1px solid #F0F0F0' : 'none',
+                borderBottom: i < 16 ? '1px solid #F0F0F0' : 'none',
                 fontSize: 14, color: item.comingSoon ? '#999' : '#333',
               }}>
                 <span style={{ fontSize: 18 }}>{item.icon}</span>

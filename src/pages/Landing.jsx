@@ -80,6 +80,26 @@ const IconPlan = ({ color }) => (
     <rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" />
   </svg>
 )
+const IconDAO = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8M16 17H8M10 9H8" />
+  </svg>
+)
+const IconCalendar = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+  </svg>
+)
+const IconWallet = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" /><path d="M3 5v14a2 2 0 0 0 2 2h16v-5" /><path d="M18 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
+  </svg>
+)
+const IconClipboard = ({ color }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" />
+  </svg>
+)
 
 const CIBLES = [
   { Icon: IconBank, bg: '#E6F1FB', color: '#185FA5', titre: 'cible_banques', desc: 'cible_banques_desc' },
@@ -90,21 +110,34 @@ const CIBLES = [
 ]
 
 const LIVRABLES_KEYS = [
+  // Structure
   { label: 'liv_note_structure', norme: 'EC2 / EC8', Icon: IconDoc, color: '#185FA5', bg: '#E6F1FB' },
   { label: 'liv_boq_structure', norme: '7 lots', Icon: IconGrid, color: '#3B6D11', bg: '#EAF3DE' },
+  { label: 'liv_schemas_structure', norme: 'liv_norme_schemas_str', Icon: IconSchema, color: '#993C1D', bg: '#FAECE7' },
+  { label: 'liv_dao_structure', norme: 'liv_norme_dao', Icon: IconDAO, color: '#185FA5', bg: '#E6F1FB' },
+  // MEP
   { label: 'liv_note_mep', norme: 'NF C 15-100 / DTU', Icon: IconBolt, color: '#854F0B', bg: '#FAEEDA' },
   { label: 'liv_boq_mep', norme: 'Basic / High-End / Luxury', Icon: IconChart, color: '#534AB7', bg: '#EEEDFE' },
-  { label: 'liv_edge', norme: 'liv_norme_edge', Icon: IconCheck, color: '#0F6E56', bg: '#E1F5EE' },
-  { label: 'liv_rapport', norme: 'liv_norme_rapport', Icon: IconReport, color: '#993556', bg: '#FBEAF0' },
-  { label: 'liv_schemas_structure', norme: 'liv_norme_schemas_str', Icon: IconSchema, color: '#993C1D', bg: '#FAECE7' },
   { label: 'liv_schemas_mep', norme: 'liv_norme_schemas_mep', Icon: IconMEPSchema, color: '#A32D2D', bg: '#FCEBEB' },
+  { label: 'liv_dao_mep', norme: 'liv_norme_dao', Icon: IconDAO, color: '#854F0B', bg: '#FAEEDA' },
+  // Finitions
+  { label: 'liv_boq_finitions', norme: 'liv_norme_finitions', Icon: IconGrid, color: '#6D4C41', bg: '#EFEBE9' },
+  { label: 'liv_dao_finitions', norme: 'liv_norme_dao', Icon: IconDAO, color: '#6D4C41', bg: '#EFEBE9' },
+  // Synthèse
+  { label: 'liv_rapport', norme: 'liv_norme_rapport', Icon: IconReport, color: '#993556', bg: '#FBEAF0' },
+  { label: 'liv_edge', norme: 'liv_norme_edge', Icon: IconCheck, color: '#0F6E56', bg: '#E1F5EE' },
+  { label: 'liv_planning', norme: 'liv_norme_planning', Icon: IconCalendar, color: '#1565C0', bg: '#E3F2FD' },
+  { label: 'liv_tresorerie', norme: 'liv_norme_tresorerie', Icon: IconWallet, color: '#6A1B9A', bg: '#F3E5F5' },
+  // Fiches
+  { label: 'liv_fiches', norme: 'liv_norme_fiches', Icon: IconClipboard, color: '#E65100', bg: '#FFF3E0' },
+  // Plans
   { label: 'liv_plans_ba', norme: 'A3 — EC2/EC8 — DWG/DXF', Icon: IconPlan, color: '#1B6B2A', bg: '#E8F5E9', beta: true },
   { label: 'liv_plans_mep', norme: 'A3 — 7 lots — DWG/DXF', Icon: IconBET, color: '#1B6B2A', bg: '#E8F5E9', beta: true },
 ]
 
 const CHIFFRES_KEYS = [
   { val: '<5 min', label: 'chiffre_dossier' },
-  { val: '10', label: 'chiffre_docs' },
+  { val: '17', label: 'chiffre_docs' },
   { val: '5', label: 'chiffre_pays' },
   { val: '±15%', label: 'chiffre_precision' },
 ]
