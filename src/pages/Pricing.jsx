@@ -1,5 +1,7 @@
-// Pricing.jsx — Page tarifs Tijan AI (abonnement mensuel 990 $ TTC)
-// Affichage bi-devise : USD + monnaie locale selon le pays de connexion
+// Pricing.jsx — Page tarifs Tijan AI
+// UEMOA → 600 000 FCFA flat (pas de dollar)
+// MAD/NGN/GHS → USD + équivalent local (taux API)
+// Autres pays → USD uniquement
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -8,7 +10,8 @@ import { VERT, BACKEND } from '../constants'
 import { useLang } from '../i18n.jsx'
 
 const NAVY = '#1B2A4A'
-const PRIX_TTC = 990       // $ TTC / mois
+const PRIX_USD = 990            // $ TTC / mois
+const PRIX_UEMOA = 600000      // FCFA TTC / mois (prix flat UEMOA)
 
 /* ---------- Devises locales ---------- */
 const CURRENCY_META = {
@@ -40,13 +43,10 @@ const RATES_CACHE_KEY = 'tijan_fx_rates'
 const RATES_TTL_MS = 7 * 24 * 60 * 60 * 1000  // 7 jours
 
 async function fetchRates() {
-  // 1. Vérifier le cache local (TTL 7 jours)
   try {
     const cached = JSON.parse(localStorage.getItem(RATES_CACHE_KEY))
     if (cached && Date.now() - cached.ts < RATES_TTL_MS) return cached.rates
   } catch { /* cache invalide → on refetch */ }
-
-  // 2. Fetch depuis l'API gratuite (open.er-api.com — pas de clé requise)
   try {
     const res = await fetch('https://open.er-api.com/v6/latest/USD')
     if (!res.ok) throw new Error(res.status)
@@ -56,11 +56,9 @@ async function fetchRates() {
     for (const code of Object.keys(CURRENCY_META)) {
       if (data.rates[code]) rates[code] = data.rates[code]
     }
-    // Persister en cache
     localStorage.setItem(RATES_CACHE_KEY, JSON.stringify({ ts: Date.now(), rates }))
     return rates
   } catch {
-    // 3. Fallback hardcodé
     return FALLBACK_RATES
   }
 }
@@ -74,6 +72,10 @@ function detectLocalCurrency() {
 
 function formatUSD(n) {
   return n.toLocaleString('en-US') + ' $'
+}
+
+function formatFCFA(n) {
+  return n.toLocaleString('fr-FR') + ' FCFA'
 }
 
 function formatLocal(n, currencyCode, rates) {
@@ -112,12 +114,16 @@ export default function Pricing() {
     if (code) { setPromoCode(code.toUpperCase()); setShowPromo(true) }
   }, [])
 
-  // Détection devise locale + fetch taux au montage
+  // Détection devise locale + fetch taux au montage (sauf UEMOA : prix flat)
   useEffect(() => {
     const cur = detectLocalCurrency()
     setLocalCur(cur)
-    if (cur) fetchRates().then(setFxRates)
+    if (cur && cur !== 'XOF') fetchRates().then(setFxRates)
   }, [])
+
+  const isUEMOA = localCur === 'XOF'
+  // Pays servis hors UEMOA (MAD, NGN, GHS) : USD + équivalent local
+  const hasLocalDual = localCur && localCur !== 'XOF' && fxRates
 
   const validatePromo = async () => {
     if (!promoCode.trim()) return
@@ -141,8 +147,14 @@ export default function Pricing() {
     }
   }
 
-  const effectivePrice = promoResult ? promoResult.monthly_price : PRIX_TTC
-  const formatPrice = formatUSD
+  // Prix effectif pour le paiement (toujours en USD côté backend)
+  const effectivePrice = promoResult ? promoResult.monthly_price : PRIX_USD
+  // Prix d'affichage (FCFA flat pour UEMOA, USD pour les autres)
+  const baseDisplay = isUEMOA ? PRIX_UEMOA : PRIX_USD
+  const effectiveDisplay = promoResult
+    ? (isUEMOA ? Math.round(PRIX_UEMOA * (1 - promoResult.discount_percent / 100)) : promoResult.monthly_price)
+    : baseDisplay
+  const fmtPrice = (n) => isUEMOA ? formatFCFA(n) : formatUSD(n)
 
   const handlePay = async () => {
     if (!user) { navigate('/login'); return }
@@ -209,12 +221,12 @@ export default function Pricing() {
             {promoResult ? (
               <>
                 <div style={{ fontSize: 22, color: '#999', textDecoration: 'line-through', lineHeight: 1 }}>
-                  {formatUSD(PRIX_TTC)}
+                  {fmtPrice(baseDisplay)}
                 </div>
                 <div style={{ fontSize: 56, fontWeight: 800, color: VERT, marginBottom: 4, lineHeight: 1 }}>
-                  {formatUSD(promoResult.monthly_price)}
+                  {fmtPrice(effectiveDisplay)}
                 </div>
-                {localCur && fxRates && (
+                {hasLocalDual && (
                   <div style={{ fontSize: 18, color: '#888', marginTop: 4 }}>
                     ≈ {formatLocal(promoResult.monthly_price, localCur, fxRates)}
                   </div>
@@ -226,11 +238,11 @@ export default function Pricing() {
             ) : (
               <>
                 <div style={{ fontSize: 56, fontWeight: 800, color: NAVY, marginBottom: 4, lineHeight: 1 }}>
-                  {formatUSD(PRIX_TTC)}
+                  {fmtPrice(baseDisplay)}
                 </div>
-                {localCur && fxRates && (
+                {hasLocalDual && (
                   <div style={{ fontSize: 18, color: '#888', marginTop: 4 }}>
-                    ≈ {formatLocal(PRIX_TTC, localCur, fxRates)}
+                    ≈ {formatLocal(PRIX_USD, localCur, fxRates)}
                   </div>
                 )}
               </>
@@ -247,7 +259,10 @@ export default function Pricing() {
             border: `1px solid ${VERT}30`,
           }}>
             <span style={{ fontSize: 13, color: '#333' }}>
-              Un BET facture <strong>5 000 à 8 000 $</strong>{localCur && fxRates ? ` (${formatLocal(5000, localCur, fxRates)} – ${formatLocal(8000, localCur, fxRates)})` : ''} pour une seule étude.
+              {isUEMOA
+                ? <>Un BET facture <strong>3 à 5 millions FCFA</strong> pour une seule étude.</>
+                : <>Un BET facture <strong>5 000 à 8 000 $</strong>{hasLocalDual ? ` (${formatLocal(5000, localCur, fxRates)} – ${formatLocal(8000, localCur, fxRates)})` : ''} pour une seule étude.</>
+              }
             </span>
           </div>
 
@@ -348,9 +363,9 @@ export default function Pricing() {
             padding: '14px 16px', fontSize: 12, color: '#666', marginBottom: 20,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: NAVY, fontSize: 14 }}>
-              <span>Total TTC / mois</span><span>{formatUSD(effectivePrice)}</span>
+              <span>Total TTC / mois</span><span>{fmtPrice(effectiveDisplay)}</span>
             </div>
-            {localCur && fxRates && (
+            {hasLocalDual && (
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#888', fontSize: 12, marginTop: 4 }}>
                 <span>Équivalent local</span><span>≈ {formatLocal(effectivePrice, localCur, fxRates)}</span>
               </div>
@@ -369,7 +384,7 @@ export default function Pricing() {
               opacity: payLoading ? 0.7 : 1,
             }}
           >
-            {payLoading ? t('pr_redirection') : `S'abonner — ${formatUSD(effectivePrice)}${localCur && fxRates ? ` (≈ ${formatLocal(effectivePrice, localCur, fxRates)})` : ''} /mois →`}
+            {payLoading ? t('pr_redirection') : `S'abonner — ${fmtPrice(effectiveDisplay)}${hasLocalDual ? ` (≈ ${formatLocal(effectivePrice, localCur, fxRates)})` : ''} /mois →`}
           </button>
           <div style={{ fontSize: 11, color: '#888', textAlign: 'center', marginTop: 10 }}>
             Paiement sécurisé via Wave · Orange Money · Free Money
