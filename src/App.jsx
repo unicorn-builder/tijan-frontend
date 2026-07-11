@@ -13,6 +13,7 @@ import Impact from './pages/Impact'
 import Investors from './pages/Investors'
 import CGU from './pages/CGU'
 import CreditsHistory from './pages/CreditsHistory'
+import Retrofit from './pages/Retrofit'
 
 const MobileStyles = () => (
   <style>{`
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/projects/:id/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
           <Route path="/cgu" element={<CGU />} />
           <Route path="/credits" element={<ProtectedRoute><CreditsHistory /></ProtectedRoute>} />
+          <Route path="/retrofit" element={<ProtectedRoute><Retrofit /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

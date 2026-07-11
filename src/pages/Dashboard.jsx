@@ -108,6 +108,10 @@ export default function Dashboard() {
                 padding: '10px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
               }}>{t('dash_selectionner')}</button>
             )}
+            <button onClick={() => navigate('/retrofit')} style={{
+              background: '#fff', color: VERT, border: `2px solid ${VERT}`, borderRadius: 8,
+              padding: '10px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}>{t('dash_audit_edge')}</button>
             <button onClick={() => navigate('/projects/new')} style={{
               background: VERT, color: '#fff', border: 'none', borderRadius: 8,
               padding: '10px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer',

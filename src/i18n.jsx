@@ -134,6 +134,7 @@ const T = {
   dash_supprimer_n: { fr: 'Supprimer ({n})', en: 'Delete ({n})' },
   dash_supprimer_multi_titre: { fr: 'Supprimer {n} projets ?', en: 'Delete {n} projects?' },
   dash_supprimer_multi_desc: { fr: 'Cette action est irréversible. Tous les résultats de ces projets seront perdus.', en: 'This action cannot be undone. All results from these projects will be lost.' },
+  dash_audit_edge: { fr: 'Audit EDGE Rénovation', en: 'EDGE Retrofit Audit' },
 
   // NEW PROJECT
   np_titre: { fr: 'Nouveau projet', en: 'New project' },
