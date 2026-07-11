@@ -122,6 +122,10 @@ export default function Retrofit() {
   const [tarifElec, setTarifElec] = useState('115')
   const [tarifEau, setTarifEau] = useState('800')
 
+  // ── Plan upload (optional) ──
+  const [planFiles, setPlanFiles] = useState([])
+  const planRef = useRef(null)
+
   // ── STEP 2: Zones from analysis ──
   const [zones, setZones] = useState([])
   const [ficheReleve, setFicheReleve] = useState(null)
@@ -140,6 +144,26 @@ export default function Retrofit() {
     setLoading(true)
     setError('')
     try {
+      // If plans uploaded, parse them first to get geometry
+      let dwg_geometry = null
+      if (planFiles.length > 0) {
+        const formData = new FormData()
+        planFiles.forEach(f => formData.append('files', f))
+        formData.append('ville', ville)
+        formData.append('pays', pays)
+        const parseRes = await fetch(`${BACKEND}/parse`, {
+          method: 'POST',
+          body: formData,
+        })
+        if (parseRes.ok) {
+          const parseData = await parseRes.json()
+          if (parseData.geometry || parseData.dwg_geometry) {
+            dwg_geometry = parseData.geometry || parseData.dwg_geometry
+          }
+        }
+        // If parsing fails, continue without geometry — default zones will be used
+      }
+
       const body = {
         nom, ville, pays,
         type_batiment: typeBat,
@@ -148,6 +172,7 @@ export default function Retrofit() {
         surface_emprise_m2: parseFloat(surfaceEmprise) || 500,
         toiture,
         nb_occupants: parseInt(nbOccupants) || 0,
+        ...(dwg_geometry ? { dwg_geometry } : {}),
       }
       const res = await fetch(`${BACKEND}/retrofit/analyze-building`, {
         method: 'POST',
@@ -401,10 +426,77 @@ export default function Retrofit() {
               </div>
             </div>
 
+            {/* Plan upload (optional) */}
+            <div style={card}>
+              <h2 style={{ margin: '0 0 4px', color: VERT_DARK, fontSize: 16 }}>
+                {lang === 'fr' ? 'Plans architecturaux' : 'Architectural plans'}
+                <span style={{ fontSize: 12, color: GRIS3, fontWeight: 400, marginLeft: 8 }}>
+                  ({lang === 'fr' ? 'optionnel' : 'optional'})
+                </span>
+              </h2>
+              <p style={{ fontSize: 12, color: GRIS3, margin: '0 0 12px' }}>
+                {lang === 'fr'
+                  ? 'Si vous avez les plans, Tijan détectera automatiquement les zones. Sinon, des zones types seront générées.'
+                  : 'If you have plans, Tijan will auto-detect zones. Otherwise, typical zones will be generated.'
+                }
+              </p>
+              <input
+                type="file"
+                ref={planRef}
+                accept=".pdf,.dwg,.dxf"
+                multiple
+                style={{ display: 'none' }}
+                onChange={e => setPlanFiles([...e.target.files])}
+              />
+              <div
+                onClick={() => planRef.current?.click()}
+                onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = VERT }}
+                onDragLeave={e => { e.currentTarget.style.borderColor = GRIS2 }}
+                onDrop={e => {
+                  e.preventDefault()
+                  e.currentTarget.style.borderColor = GRIS2
+                  if (e.dataTransfer.files?.length) setPlanFiles([...e.dataTransfer.files])
+                }}
+                style={{
+                  border: `2px dashed ${planFiles.length ? VERT : GRIS2}`,
+                  borderRadius: 10, padding: '28px 16px', textAlign: 'center',
+                  cursor: 'pointer', background: planFiles.length ? VERT_LIGHT : '#FAFAFA',
+                  transition: '0.2s',
+                }}
+              >
+                {planFiles.length > 0 ? (
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: VERT }}>
+                      {planFiles.length} fichier{planFiles.length > 1 ? 's' : ''} sélectionné{planFiles.length > 1 ? 's' : ''}
+                    </div>
+                    <div style={{ fontSize: 12, color: GRIS3, marginTop: 4 }}>
+                      {planFiles.map(f => f.name).join(', ')}
+                    </div>
+                    <button
+                      onClick={e => { e.stopPropagation(); setPlanFiles([]) }}
+                      style={{ marginTop: 8, background: 'none', border: `1px solid ${GRIS2}`, borderRadius: 6, padding: '4px 12px', fontSize: 11, color: GRIS3, cursor: 'pointer' }}
+                    >
+                      {lang === 'fr' ? 'Retirer' : 'Remove'}
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: 28, marginBottom: 4 }}>📐</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>
+                      {lang === 'fr' ? 'Déposez vos plans ou cliquez pour choisir' : 'Drop your plans or click to choose'}
+                    </div>
+                    <div style={{ fontSize: 11, color: GRIS3, marginTop: 4 }}>
+                      PDF, DWG, DXF
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div style={{ textAlign: 'right' }}>
               <button onClick={analyzeBuilding} disabled={loading || !nom}
                 style={{ ...btn(true), opacity: loading || !nom ? 0.5 : 1 }}>
-                {loading ? 'Analyse en cours...' : 'Analyser le bâtiment →'}
+                {loading ? (lang === 'fr' ? 'Analyse en cours...' : 'Analyzing...') : (lang === 'fr' ? 'Analyser le bâtiment →' : 'Analyze building →')}
               </button>
             </div>
           </>
