@@ -60,6 +60,14 @@ const PLAN_ARCHIVE_MAP = {
   '/generate-plans-mep':           { key: 'plans_mep',           ext: 'pdf', contentType: 'application/pdf' },
   '/generate-plans-structure-pro': { key: 'plans_structure_dwg', ext: 'dwg', contentType: 'application/octet-stream' },
   '/generate-plans-mep-pro':       { key: 'plans_mep_dwg',       ext: 'dwg', contentType: 'application/octet-stream' },
+  '/generate-note-structure':      { key: 'note_structure',      ext: 'pdf', contentType: 'application/pdf' },
+  '/generate-note-mep':            { key: 'note_mep',            ext: 'pdf', contentType: 'application/pdf' },
+  '/generate-boq':                 { key: 'boq_structure',       ext: 'pdf', contentType: 'application/pdf' },
+  '/generate-boq-mep':             { key: 'boq_mep',             ext: 'pdf', contentType: 'application/pdf' },
+  '/generate-rapport-executif':    { key: 'rapport_executif',    ext: 'pdf', contentType: 'application/pdf' },
+  '/generate-schemas-ferraillage': { key: 'schemas_ferraillage', ext: 'pdf', contentType: 'application/pdf' },
+  '/generate-schemas-mep':         { key: 'schemas_mep',         ext: 'pdf', contentType: 'application/pdf' },
+  '/generate-edge-assessment':     { key: 'edge_assessment',     ext: 'pdf', contentType: 'application/pdf' },
 }
 
 async function archivePlan({ supabase, projectId, endpoint, blob }) {
@@ -88,12 +96,44 @@ async function archivePlan({ supabase, projectId, endpoint, blob }) {
   }
 }
 
-function usePdfDownload(params, lang = 'fr', { supabase = null, projectId = null } = {}) {
+function usePdfDownload(params, lang = 'fr', { supabase = null, projectId = null, plansUrls = null } = {}) {
   const [loading, setLoading] = useState(null)
-  const download = async (endpoint, filename, extra = {}) => {
+
+  // Download from an archived Supabase Storage URL (fast, no backend needed)
+  const downloadArchived = async (archivedUrl, filename) => {
+    try {
+      const res = await fetch(archivedUrl)
+      if (!res.ok) return false // archived copy unavailable — fall through to regenerate
+      const blob = await res.blob()
+      if (blob.size < 1000) return false // suspiciously small — regenerate instead
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = filename; a.click()
+      URL.revokeObjectURL(url)
+      return true
+    } catch {
+      return false // network error — fall through to regenerate
+    }
+  }
+
+  const download = async (endpoint, filename, extra = {}, { forceRegenerate = false } = {}) => {
     if (!params || !endpoint) return
     setLoading(endpoint)
     try {
+      // Try archived version first (instant download, no backend cold-start)
+      if (!forceRegenerate && plansUrls && PLAN_ARCHIVE_MAP[endpoint]) {
+        const archiveKey = PLAN_ARCHIVE_MAP[endpoint].key
+        const archived = plansUrls[archiveKey]
+        if (archived?.url) {
+          console.log('[plan-download] trying archived copy:', archiveKey)
+          const ok = await downloadArchived(archived.url, filename)
+          if (ok) {
+            console.log('[plan-download] served from archive ✓')
+            return
+          }
+          console.log('[plan-download] archive unavailable, falling back to regeneration')
+        }
+      }
       // Strip dwg_geometry from params — only pass via extra when needed (plans)
       const { dwg_geometry, dwgGeometry, ...cleanParams } = params
       const res = await fetch(`${BACKEND}${endpoint}`, {
@@ -299,7 +339,7 @@ export default function Results() {
   const [edgeMode, setEdgeMode] = useState(false)   // true = all tabs show EDGE-optimised data
   const [standardMepData, setStandardMepData] = useState(null)  // cache for reverting
   const [standardResultats, setStandardResultats] = useState(null)
-  const { download, loading: dlLoading } = usePdfDownload(params, lang, { supabase, projectId })
+  const { download, loading: dlLoading } = usePdfDownload(params, lang, { supabase, projectId, plansUrls: dbProjet?.plans_urls })
 
   // Load project from Supabase if opened by URL (no location.state)
   useEffect(() => {
@@ -1840,6 +1880,24 @@ export default function Results() {
               >
                 {dlLoading === endpoint ? t('res_generation') : (activeTab === 'plan-ba' || activeTab === 'plan-mep' ? 'PDF' : (t('res_telecharger') || t('r_telecharger_pdf')))}
               </button>
+              )}
+              {/* Regenerate button — force fresh generation when archived version is being served */}
+              {PLAN_ARCHIVE_MAP[endpoint] && dbProjet?.plans_urls?.[PLAN_ARCHIVE_MAP[endpoint]?.key]?.url && (
+                <button
+                  onClick={() => {
+                    const nomFichier = `TijanAI_${activeTab.replace(/-/g,'')}_${slug}_${today}.pdf`
+                    const extra = {}
+                    if (activeTab === 'plan-ba' || activeTab === 'plan-mep') {
+                      if (dwgGeometry) extra.dwg_geometry = dwgGeometry
+                    }
+                    download(endpoint, nomFichier, extra, { forceRegenerate: true })
+                  }}
+                  disabled={!!dlLoading}
+                  style={{ background: '#fff', color: ORANGE, border: `1.5px solid ${ORANGE}`, borderRadius: 6, padding: '11px 16px', fontSize: 12, fontWeight: 600, cursor: 'pointer', opacity: dlLoading ? 0.6 : 1 }}
+                  title={lang === 'en' ? 'Generate a fresh version (takes longer)' : 'Générer une nouvelle version (plus long)'}
+                >
+                  {dlLoading === endpoint ? '...' : (lang === 'en' ? 'Regenerate' : 'Régénérer')}
+                </button>
               )}
               {/* DWG download button for plans */}
               {(activeTab === 'plan-ba' || activeTab === 'plan-mep') && dwgGeometry && Object.keys(dwgGeometry).length > 0 && (

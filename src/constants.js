@@ -1,4 +1,4 @@
-export const BACKEND = 'https://build-ai-backend.onrender.com'
+export const BACKEND = import.meta.env.VITE_BACKEND_URL || 'https://build-ai-backend.onrender.com'
 
 export const VERT = '#43A956'
 export const VERT_LIGHT = '#EBF7ED'
