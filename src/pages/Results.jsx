@@ -1803,16 +1803,17 @@ export default function Results() {
     const hasDwg = dwgGeometry && Object.keys(dwgGeometry).length > 0
     const hasMep = mepData?.ok
 
-    // Filter items based on available data
+    // Filter items based on available data — track what was skipped
+    const skipped = []
     const items = DOWNLOAD_ALL_ITEMS.filter(item => {
-      if (item.needsDwg && !hasDwg) return false
-      if (item.needsMep && !hasMep) return false
+      if (item.needsDwg && !hasDwg) { skipped.push({ label: `${item.label} (${item.format})`, reason: lang === 'en' ? 'no DWG geometry' : 'pas de géométrie DWG' }); return false }
+      if (item.needsMep && !hasMep) { skipped.push({ label: `${item.label} (${item.format})`, reason: lang === 'en' ? 'MEP not calculated' : 'MEP non calculé' }); return false }
       return true
     })
     if (items.length === 0) return
 
     const errors = []
-    setDownloadAllState({ current: 0, total: items.length, label: '', errors: [] })
+    setDownloadAllState({ current: 0, total: items.length, label: lang === 'en' ? 'Waking up server...' : 'Réveil du serveur...', errors: [] })
     abortDownloadAllRef.current = false
 
     // Load JSZip dynamically from CDN (only on first use)
@@ -1832,8 +1833,39 @@ export default function Results() {
       }
     }
 
+    // Wake up backend before starting (avoids cold-start timeout on first real request)
+    try {
+      await fetch(`${BACKEND}/health`, { method: 'GET', signal: AbortSignal.timeout(60000) })
+      console.log('[download-all] Backend is awake')
+    } catch {
+      console.warn('[download-all] Health check failed — backend may be cold, proceeding anyway')
+    }
+
+    if (abortDownloadAllRef.current) { setDownloadAllState(null); return }
+
     const zip = new window.JSZip()
     const { dwg_geometry: _dg1, dwgGeometry: _dg2, ...cleanParams } = params
+
+    // Helper: fetch with timeout + 1 retry on failure
+    const fetchWithRetry = async (url, options) => {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 120000) // 2 min timeout
+          const res = await fetch(url, { ...options, signal: controller.signal })
+          clearTimeout(timeoutId)
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          return res
+        } catch (e) {
+          if (attempt === 0) {
+            console.log(`[download-all] Retry after failure: ${e.message}`)
+            await new Promise(r => setTimeout(r, 3000)) // wait 3s before retry
+          } else {
+            throw e
+          }
+        }
+      }
+    }
 
     for (let i = 0; i < items.length; i++) {
       if (abortDownloadAllRef.current) break
@@ -1845,14 +1877,16 @@ export default function Results() {
         const baseEndpoint = item.endpoint.split('?')[0]
         const archiveMeta = PLAN_ARCHIVE_MAP[baseEndpoint]
         if (archiveMeta && dbProjet?.plans_urls?.[archiveMeta.key]?.url) {
-          const archRes = await fetch(dbProjet.plans_urls[archiveMeta.key].url)
-          if (archRes.ok) {
-            const archBlob = await archRes.blob()
-            if (archBlob.size > 1000) {
-              zip.folder(item.folder).file(item.filename, archBlob)
-              continue
+          try {
+            const archRes = await fetch(dbProjet.plans_urls[archiveMeta.key].url)
+            if (archRes.ok) {
+              const archBlob = await archRes.blob()
+              if (archBlob.size > 1000) {
+                zip.folder(item.folder).file(item.filename, archBlob)
+                continue
+              }
             }
-          }
+          } catch { /* archive unavailable — fall through to regeneration */ }
         }
 
         // Build extra params for special endpoints
@@ -1863,13 +1897,12 @@ export default function Results() {
           Object.assign(extra, dbProjet?.edge_extras || {})
         }
 
-        const res = await fetch(`${BACKEND}${item.endpoint}`, {
+        const res = await fetchWithRetry(`${BACKEND}${item.endpoint}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...cleanParams, lang, project_id: projectId || undefined, ...extra }),
         })
 
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const blob = await res.blob()
         if (blob.size < 100) throw new Error('Empty response')
         zip.folder(item.folder).file(item.filename, blob)
@@ -1898,12 +1931,20 @@ export default function Results() {
       alert((lang === 'en' ? 'ZIP error: ' : 'Erreur ZIP : ') + e.message)
     }
 
+    // Summary message: errors + skipped items
+    const msgs = []
     if (errors.length > 0) {
-      setTimeout(() => {
-        alert((lang === 'en'
-          ? `Download complete with ${errors.length} error(s):\n`
-          : `Téléchargement terminé avec ${errors.length} erreur(s) :\n`) + errors.join('\n'))
-      }, 500)
+      msgs.push((lang === 'en' ? `${errors.length} error(s):\n` : `${errors.length} erreur(s) :\n`) + errors.join('\n'))
+    }
+    if (skipped.length > 0) {
+      const skippedLines = skipped.map(s => `${s.label} — ${s.reason}`).join('\n')
+      msgs.push((lang === 'en' ? `\n${skipped.length} skipped:\n` : `\n${skipped.length} ignoré(s) :\n`) + skippedLines)
+    }
+    if (msgs.length > 0) {
+      const prefix = errors.length > 0
+        ? (lang === 'en' ? 'Download complete with issues:\n\n' : 'Téléchargement terminé avec des problèmes :\n\n')
+        : (lang === 'en' ? 'Download complete.\n\n' : 'Téléchargement terminé.\n\n')
+      setTimeout(() => alert(prefix + msgs.join('\n')), 500)
     }
 
     setDownloadAllState(null)
