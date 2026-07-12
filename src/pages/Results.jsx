@@ -1846,20 +1846,30 @@ export default function Results() {
     const zip = new window.JSZip()
     const { dwg_geometry: _dg1, dwgGeometry: _dg2, ...cleanParams } = params
 
-    // Helper: fetch with timeout + 1 retry on failure
+    // Helper: fetch with timeout + 1 retry on failure — captures error detail
     const fetchWithRetry = async (url, options) => {
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
           const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 120000) // 2 min timeout
+          const timeoutId = setTimeout(() => controller.abort(), 180000) // 3 min timeout
           const res = await fetch(url, { ...options, signal: controller.signal })
           clearTimeout(timeoutId)
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          if (!res.ok) {
+            // Read error body for diagnostics
+            let detail = `HTTP ${res.status}`
+            try {
+              const errText = await res.text()
+              try { const j = JSON.parse(errText); if (j?.detail) detail = `${res.status}: ${typeof j.detail === 'string' ? j.detail.slice(0, 200) : JSON.stringify(j.detail).slice(0, 200)}` } catch { if (errText) detail = `${res.status}: ${errText.slice(0, 200)}` }
+            } catch { /* body unreadable */ }
+            const err = new Error(detail)
+            err.status = res.status
+            throw err
+          }
           return res
         } catch (e) {
           if (attempt === 0) {
             console.log(`[download-all] Retry after failure: ${e.message}`)
-            await new Promise(r => setTimeout(r, 3000)) // wait 3s before retry
+            await new Promise(r => setTimeout(r, 5000)) // wait 5s before retry (let server recover)
           } else {
             throw e
           }
@@ -1908,8 +1918,10 @@ export default function Results() {
         zip.folder(item.folder).file(item.filename, blob)
       } catch (e) {
         console.warn(`[download-all] Failed: ${item.label} (${item.format})`, e)
-        errors.push(`${item.label} (${item.format})`)
+        errors.push(`${item.label} (${item.format}) — ${e.message || 'Unknown error'}`)
       }
+      // Small delay between requests to let server GC between heavy generations
+      if (i < items.length - 1) await new Promise(r => setTimeout(r, 1500))
     }
 
     if (abortDownloadAllRef.current) {
