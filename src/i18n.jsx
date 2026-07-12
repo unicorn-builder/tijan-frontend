@@ -384,6 +384,7 @@ const T = {
   r_fiche_plomb: { fr: 'Fiche plomberie (DTU 60.11)', en: 'Plumbing datasheet (DTU 60.11)' },
   r_donnees_non_dispo: { fr: 'Données non disponibles.', en: 'Data not available.' },
   r_telecharger_complet: { fr: 'Téléchargez le dossier complet ci-dessous.', en: 'Download the complete report below.' },
+  res_download_all: { fr: 'Tout télécharger (ZIP)', en: 'Download all (ZIP)' },
   r_recommandation: { fr: 'Recommandation', en: 'Recommendation' },
   r_detail_pdf: { fr: 'Détail complet disponible dans le PDF', en: 'Full detail available in the PDF' },
 

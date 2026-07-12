@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import ChatTijan from '../components/ChatTijan'
 import { useAuth } from '../context/AuthContext'
@@ -95,6 +95,45 @@ async function archivePlan({ supabase, projectId, endpoint, blob }) {
     return null
   }
 }
+
+// Download-all: complete manifest of outputs organized by folder
+const DOWNLOAD_ALL_ITEMS = [
+  // 01_Structure
+  { folder: '01_Structure', label: 'Note Structure', format: 'PDF', endpoint: '/generate', filename: 'NoteCalculStructure.pdf' },
+  { folder: '01_Structure', label: 'Note Structure', format: 'Word', endpoint: '/generate-note-docx', filename: 'NoteCalculStructure.docx' },
+  { folder: '01_Structure', label: 'BOQ Structure', format: 'PDF', endpoint: '/generate-boq', filename: 'BOQ_Structure.pdf' },
+  { folder: '01_Structure', label: 'BOQ Structure', format: 'Excel', endpoint: '/generate-boq-xlsx', filename: 'BOQ_Structure.xlsx' },
+  { folder: '01_Structure', label: 'Schémas Ferraillage', format: 'PDF', endpoint: '/generate-schemas-ferraillage', filename: 'SchemasFerraillage.pdf' },
+  { folder: '01_Structure', label: 'DAO Structure', format: 'PDF', endpoint: '/generate-dao?lot=structure', filename: 'DAO_Structure.pdf' },
+  { folder: '01_Structure', label: 'DAO Structure', format: 'Word', endpoint: '/generate-dao-docx?lot=structure', filename: 'DAO_Structure.docx' },
+  // 02_MEP
+  { folder: '02_MEP', label: 'Note MEP', format: 'PDF', endpoint: '/generate-note-mep', filename: 'NoteCalculMEP.pdf', needsMep: true },
+  { folder: '02_MEP', label: 'BOQ MEP', format: 'PDF', endpoint: '/generate-boq-mep', filename: 'BOQ_MEP.pdf', needsMep: true },
+  { folder: '02_MEP', label: 'BOQ MEP', format: 'Excel', endpoint: '/generate-boq-mep-xlsx', filename: 'BOQ_MEP.xlsx', needsMep: true },
+  { folder: '02_MEP', label: 'Schémas MEP', format: 'PDF', endpoint: '/generate-schemas-mep', filename: 'SchemasMEP.pdf', needsMep: true },
+  { folder: '02_MEP', label: 'DAO MEP', format: 'PDF', endpoint: '/generate-dao?lot=mep', filename: 'DAO_MEP.pdf', needsMep: true },
+  { folder: '02_MEP', label: 'DAO MEP', format: 'Word', endpoint: '/generate-dao-docx?lot=mep', filename: 'DAO_MEP.docx', needsMep: true },
+  // 03_Finitions
+  { folder: '03_Finitions', label: 'BOQ Finitions', format: 'PDF', endpoint: '/generate-boq-finitions', filename: 'BOQ_Finitions.pdf' },
+  { folder: '03_Finitions', label: 'DAO Finitions', format: 'PDF', endpoint: '/generate-dao?lot=finitions', filename: 'DAO_Finitions.pdf' },
+  { folder: '03_Finitions', label: 'DAO Finitions', format: 'Word', endpoint: '/generate-dao-docx?lot=finitions', filename: 'DAO_Finitions.docx' },
+  // 04_Synthese
+  { folder: '04_Synthese', label: 'Rapport Exécutif', format: 'PDF', endpoint: '/generate-rapport-executif', filename: 'RapportExecutif.pdf' },
+  { folder: '04_Synthese', label: 'Rapport Exécutif', format: 'Word', endpoint: '/generate-rapport-docx', filename: 'RapportExecutif.docx' },
+  { folder: '04_Synthese', label: 'Conformité EDGE', format: 'PDF', endpoint: '/generate-edge-assessment', filename: 'ConformiteEDGE.pdf', needsMep: true, isEdge: true },
+  { folder: '04_Synthese', label: 'Planning', format: 'PDF', endpoint: '/generate-planning', filename: 'PlanningExecution.pdf' },
+  { folder: '04_Synthese', label: 'Planning', format: 'Word', endpoint: '/generate-planning-docx', filename: 'PlanningExecution.docx' },
+  { folder: '04_Synthese', label: 'Planning & Trésorerie', format: 'Excel', endpoint: '/generate-planning-xlsx', filename: 'Planning_Tresorerie.xlsx' },
+  { folder: '04_Synthese', label: 'Trésorerie', format: 'PDF', endpoint: '/generate-planning-tresorerie', filename: 'PlanningDepenses.pdf' },
+  { folder: '04_Synthese', label: 'Trésorerie', format: 'Word', endpoint: '/generate-tresorerie-docx', filename: 'PlanningDepenses.docx' },
+  // 05_Fiches
+  { folder: '05_Fiches', label: 'Fiches Techniques', format: 'PDF', endpoint: '/generate-fiches-all', filename: 'FichesTechniques.pdf', needsMep: true },
+  // 06_Plans
+  { folder: '06_Plans', label: 'Plans BA', format: 'PDF', endpoint: '/generate-plans-structure', filename: 'PlansBA.pdf', needsDwg: true },
+  { folder: '06_Plans', label: 'Plans BA', format: 'DWG', endpoint: '/generate-plans-structure-pro?format=dwg', filename: 'PlansBA.dwg', needsDwg: true },
+  { folder: '06_Plans', label: 'Plans MEP', format: 'PDF', endpoint: '/generate-plans-mep', filename: 'PlansMEP.pdf', needsDwg: true },
+  { folder: '06_Plans', label: 'Plans MEP', format: 'DWG', endpoint: '/generate-plans-mep-pro?format=dwg', filename: 'PlansMEP.dwg', needsDwg: true },
+]
 
 function usePdfDownload(params, lang = 'fr', { supabase = null, projectId = null, plansUrls = null } = {}) {
   const [loading, setLoading] = useState(null)
@@ -340,6 +379,8 @@ export default function Results() {
   const [standardMepData, setStandardMepData] = useState(null)  // cache for reverting
   const [standardResultats, setStandardResultats] = useState(null)
   const { download, loading: dlLoading } = usePdfDownload(params, lang, { supabase, projectId, plansUrls: dbProjet?.plans_urls })
+  const [downloadAllState, setDownloadAllState] = useState(null) // { current, total, label, errors }
+  const abortDownloadAllRef = useRef(false)
 
   // Load project from Supabase if opened by URL (no location.state)
   useEffect(() => {
@@ -1756,6 +1797,118 @@ export default function Results() {
   const endpoint = activeTab === 'chat' ? null : ENDPOINT_MAP[activeTab]
   const filename = FILENAME_MAP[activeTab]
 
+  // ── Download All Dossier ──
+  const downloadAllDossier = async () => {
+    if (!params || !params.nom || downloadAllState) return
+    const hasDwg = dwgGeometry && Object.keys(dwgGeometry).length > 0
+    const hasMep = mepData?.ok
+
+    // Filter items based on available data
+    const items = DOWNLOAD_ALL_ITEMS.filter(item => {
+      if (item.needsDwg && !hasDwg) return false
+      if (item.needsMep && !hasMep) return false
+      return true
+    })
+    if (items.length === 0) return
+
+    const errors = []
+    setDownloadAllState({ current: 0, total: items.length, label: '', errors: [] })
+    abortDownloadAllRef.current = false
+
+    // Load JSZip dynamically from CDN (only on first use)
+    if (!window.JSZip) {
+      try {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script')
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+          s.onload = resolve
+          s.onerror = reject
+          document.head.appendChild(s)
+        })
+      } catch {
+        alert(lang === 'en' ? 'Failed to load ZIP library' : 'Impossible de charger la librairie ZIP')
+        setDownloadAllState(null)
+        return
+      }
+    }
+
+    const zip = new window.JSZip()
+    const { dwg_geometry: _dg1, dwgGeometry: _dg2, ...cleanParams } = params
+
+    for (let i = 0; i < items.length; i++) {
+      if (abortDownloadAllRef.current) break
+      const item = items[i]
+      setDownloadAllState({ current: i + 1, total: items.length, label: `${item.label} (${item.format})`, errors: [...errors] })
+
+      try {
+        // Try archived version first (instant, no backend cold-start)
+        const baseEndpoint = item.endpoint.split('?')[0]
+        const archiveMeta = PLAN_ARCHIVE_MAP[baseEndpoint]
+        if (archiveMeta && dbProjet?.plans_urls?.[archiveMeta.key]?.url) {
+          const archRes = await fetch(dbProjet.plans_urls[archiveMeta.key].url)
+          if (archRes.ok) {
+            const archBlob = await archRes.blob()
+            if (archBlob.size > 1000) {
+              zip.folder(item.folder).file(item.filename, archBlob)
+              continue
+            }
+          }
+        }
+
+        // Build extra params for special endpoints
+        const extra = {}
+        if (item.needsDwg && dwgGeometry) extra.dwg_geometry = dwgGeometry
+        if (item.isEdge) {
+          if (dwgGeometry) extra.dwg_geometry = dwgGeometry
+          Object.assign(extra, dbProjet?.edge_extras || {})
+        }
+
+        const res = await fetch(`${BACKEND}${item.endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...cleanParams, lang, project_id: projectId || undefined, ...extra }),
+        })
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const blob = await res.blob()
+        if (blob.size < 100) throw new Error('Empty response')
+        zip.folder(item.folder).file(item.filename, blob)
+      } catch (e) {
+        console.warn(`[download-all] Failed: ${item.label} (${item.format})`, e)
+        errors.push(`${item.label} (${item.format})`)
+      }
+    }
+
+    if (abortDownloadAllRef.current) {
+      setDownloadAllState(null)
+      return
+    }
+
+    // Generate and trigger ZIP download
+    setDownloadAllState({ current: items.length, total: items.length, label: lang === 'en' ? 'Creating ZIP...' : 'Création du ZIP...', errors: [...errors] })
+    try {
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+      const url = URL.createObjectURL(zipBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `TijanAI_Dossier_${slug}_${today}.zip`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      alert((lang === 'en' ? 'ZIP error: ' : 'Erreur ZIP : ') + e.message)
+    }
+
+    if (errors.length > 0) {
+      setTimeout(() => {
+        alert((lang === 'en'
+          ? `Download complete with ${errors.length} error(s):\n`
+          : `Téléchargement terminé avec ${errors.length} erreur(s) :\n`) + errors.join('\n'))
+      }, 500)
+    }
+
+    setDownloadAllState(null)
+  }
+
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif", minHeight: '100vh', background: '#FAFAFA' }}>
       <div style={{ background: '#fff', borderBottom: `1px solid ${GRIS2}`, padding: isMobile ? '0 8px' : '0 24px', height: isMobile ? 44 : 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100 }}>
@@ -1811,6 +1964,32 @@ export default function Results() {
               </React.Fragment>
             )
           })}
+          {/* Download All button */}
+          {params?.nom && (
+            <div style={{ padding: isMobile ? '0 8px' : '16px 20px', borderTop: isMobile ? 'none' : `1px solid ${GRIS2}`, marginTop: isMobile ? 0 : 8, display: isMobile ? 'inline-block' : 'block' }}>
+              <button
+                onClick={downloadAllDossier}
+                disabled={!!dlLoading || !!downloadAllState}
+                style={{
+                  background: VERT_LIGHT,
+                  color: VERT_DARK,
+                  border: `1.5px solid ${VERT}`,
+                  borderRadius: 6,
+                  padding: isMobile ? '8px 14px' : '10px 12px',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: downloadAllState || dlLoading ? 'not-allowed' : 'pointer',
+                  width: isMobile ? 'auto' : '100%',
+                  textAlign: 'center',
+                  opacity: downloadAllState || dlLoading ? 0.6 : 1,
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {t('res_download_all')}
+              </button>
+            </div>
+          )}
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? 12 : 24 }}>
@@ -2002,6 +2181,53 @@ export default function Results() {
 
         </div>
       </div>
+
+      {/* Download All progress overlay */}
+      {downloadAllState && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 12, padding: '32px 40px',
+            maxWidth: 420, width: '90%', textAlign: 'center',
+            fontFamily: "'DM Sans', sans-serif", boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#111', marginBottom: 6 }}>
+              {t('res_download_all')}
+            </div>
+            <div style={{ fontSize: 12, color: GRIS3, marginBottom: 16 }}>
+              {downloadAllState.label}
+            </div>
+            <div style={{ background: GRIS1, borderRadius: 8, height: 8, overflow: 'hidden', marginBottom: 10 }}>
+              <div style={{
+                height: '100%', background: VERT, borderRadius: 8,
+                width: `${Math.round((downloadAllState.current / downloadAllState.total) * 100)}%`,
+                transition: 'width 0.3s ease',
+              }} />
+            </div>
+            <div style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>
+              {downloadAllState.current} / {downloadAllState.total}
+            </div>
+            {downloadAllState.errors?.length > 0 && (
+              <div style={{ fontSize: 11, color: ORANGE, marginBottom: 12 }}>
+                {downloadAllState.errors.length} {lang === 'en' ? 'error(s)' : 'erreur(s)'}
+              </div>
+            )}
+            <button
+              onClick={() => { abortDownloadAllRef.current = true }}
+              style={{
+                background: '#fff', border: `1px solid ${GRIS2}`, borderRadius: 6,
+                padding: '8px 24px', fontSize: 12, color: '#666',
+                cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              {lang === 'en' ? 'Cancel' : 'Annuler'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
