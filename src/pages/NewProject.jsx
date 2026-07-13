@@ -30,6 +30,7 @@ export default function NewProject() {
   // Values: "SOUS_SOL" | "RDC" | "ETAGE_1".."ETAGE_40" | "TERRASSE" | "" (auto)
   const [mainLevels, setMainLevels] = useState([])
   const [nbNiveaux, setNbNiveaux] = useState('')
+  const [usage, setUsage] = useState('residentiel')
   const [nbLogements, setNbLogements] = useState('')
   const [solFile, setSolFile] = useState(null)
   // EDGE Assessment optional inputs
@@ -85,7 +86,6 @@ export default function NewProject() {
     if (!ville.trim()) { setErrorMsg(t('np_err_ville')); return }
     if (!mainFile) { setErrorMsg(t('np_err_plans')); return }
     if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
-    if (!nbLogements || parseInt(nbLogements) < 1) { setErrorMsg(t('np_err_logements')); return }
     if (restants < 1) {
       setShowNoCreditModal(true)
       return
@@ -99,7 +99,6 @@ export default function NewProject() {
     if (!ville.trim()) { setErrorMsg(t('np_err_ville')); return }
     if (!mainFile) { setErrorMsg(t('np_err_plans')); return }
     if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
-    if (!nbLogements || parseInt(nbLogements) < 1) { setErrorMsg(t('np_err_logements')); return }
 
     // Check if user has sufficient credits (1 required)
     if (restants < 1) {
@@ -198,7 +197,7 @@ export default function NewProject() {
     setStep('calculating')
     const payload = {
       nom: nom.trim(), ville: ville.trim(), pays: 'Senegal',
-      usage: 'residentiel',
+      usage,
       nb_niveaux: Math.min(Math.max(parseInt(parsed.nb_niveaux) || 5, 2), 20),
       hauteur_etage_m: parseFloat(parsed.hauteur_etage_m) || 3.0,
       surface_emprise_m2: Math.min(Math.max(surface_emprise_m2, 50), 10000),
@@ -207,7 +206,7 @@ export default function NewProject() {
       nb_travees_x: parseInt(parsed.nb_travees_x) || 4,
       nb_travees_y: parseInt(parsed.nb_travees_y) || 3,
       surface_terrain_m2: parseFloat(surfaceTerrain),
-      nb_logements: parseInt(nbLogements),
+      nb_logements: parseInt(nbLogements) || 0,
     }
     // EDGE optional inputs (only include if user provided)
     if (costConstr) payload.cost_construction_xof_m2 = parseFloat(costConstr)
@@ -269,7 +268,7 @@ export default function NewProject() {
           portee_min_m: payload.portee_min_m,
           nb_travees_x: payload.nb_travees_x,
           nb_travees_y: payload.nb_travees_y,
-          usage: payload.usage || 'residentiel',
+          usage: payload.usage,
           urn: payload.urn || null,
           resultats_structure: resultats,
         }).select('id').maybeSingle()
@@ -411,16 +410,27 @@ export default function NewProject() {
               <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>{t('np_emprise_note')}</div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
               <div>
                 <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_niveaux')}</label>
                 <input type="number" value={nbNiveaux} onChange={e => setNbNiveaux(e.target.value)} placeholder={mainFiles.length > 1 ? `${mainFiles.length} ${t('np_fichiers')}` : t('np_niveaux_ph')} style={inp} min="2" max="40" />
                 <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>{t('np_niveaux_note')}</div>
               </div>
               <div>
-                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_logements')} *</label>
-                <input type="number" value={nbLogements} onChange={e => setNbLogements(e.target.value)} placeholder="ex: 33" style={inp} min="1" max="500" />
-                <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>{t('np_logements_note')}</div>
+                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_usage')} *</label>
+                <select value={usage} onChange={e => setUsage(e.target.value)} style={inp}>
+                  <option value="residentiel">{t('np_usage_residentiel')}</option>
+                  <option value="bureau">{t('np_usage_bureau')}</option>
+                  <option value="hotel">{t('np_usage_hotel')}</option>
+                  <option value="commercial">{t('np_usage_commercial')}</option>
+                  <option value="mixte">{t('np_usage_mixte')}</option>
+                  <option value="industriel">{t('np_usage_industriel')}</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t(`np_units_${usage}`)}</label>
+                <input type="number" value={nbLogements} onChange={e => setNbLogements(e.target.value)} placeholder={t(`np_units_${usage}_ph`)} style={inp} min="0" max="500" />
+                <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>{t('np_units_note')}</div>
               </div>
             </div>
 
