@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext'
 import { LangProvider } from './i18n.jsx'
 import ProtectedRoute from './components/ProtectedRoute'
 import Landing from './pages/Landing'
+import LandingV2 from './pages/LandingV2'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import NewProject from './pages/NewProject'
@@ -34,7 +35,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<LandingV2 />} />
           <Route path="/impact" element={<Impact />} />
           <Route path="/investors" element={<Investors />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
