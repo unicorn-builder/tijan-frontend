@@ -45,41 +45,42 @@ export default function LandingV2() {
 
       <div style={{ height: 4, background: `linear-gradient(90deg, ${VERT} 0%, ${VERT_DARK} 60%, ${ORANGE} 100%)` }} />
 
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 28px' }}>
-        <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 72, cursor: 'pointer' }} onClick={() => navigate('/')} />
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 28px' }}>
+        <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 54, cursor: 'pointer' }} onClick={() => navigate('/')} />
         <button onClick={() => navigate(user ? '/dashboard' : '/login')}
           style={{ background: VERT_LIGHT, border: `1px solid ${VERT}`, borderRadius: 8, padding: '8px 16px', fontSize: 14, cursor: 'pointer', color: VERT_DARK, fontWeight: 600 }}>
           {user ? 'Mes projets' : 'Se connecter'}
         </button>
       </header>
 
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '36px 20px 40px' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px 40px' }}>
 
-        {/* ── Hero ── */}
-        <div style={{ background: ORANGE_LT, color: ORANGE, fontSize: 13, fontWeight: 700, borderRadius: 999, padding: '7px 18px', marginBottom: 20, letterSpacing: 0.3 }}>
-          ⚡ 3 mois de travail d&rsquo;ingénierie — livrés en 5 minutes
-        </div>
-        <h1 style={{ fontSize: 'clamp(30px, 4.6vw, 48px)', fontWeight: 800, color: NAVY, textAlign: 'center', lineHeight: 1.15, margin: '0 0 14px', maxWidth: 820 }}>
-          Le bureau d&rsquo;études qui <span style={{ color: VERT }}>disrupte</span> la construction africaine
-        </h1>
-        <p style={{ color: '#555', fontSize: 17, textAlign: 'center', maxWidth: 640, margin: '0 0 28px', lineHeight: 1.55 }}>
-          Tijan AI génère des dossiers techniques complets — <span style={{ color: VERT_DARK, fontWeight: 600 }}>notes de calcul</span>, <span style={{ color: VERT_DARK, fontWeight: 600 }}>plans BA</span>, <span style={{ color: BLEU, fontWeight: 600 }}>MEP</span>, <span style={{ color: ORANGE, fontWeight: 600 }}>BOQ</span> — conformes Eurocodes, à partir de vos plans d&rsquo;architecte.
-        </p>
-
-        {/* ── CTA ── */}
-        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 12 }}>
-          <button onClick={go}
-            style={{ background: VERT, color: '#FFF', border: 'none', borderRadius: 12, padding: '15px 34px', fontSize: 17, fontWeight: 700, cursor: 'pointer', boxShadow: '0 6px 18px rgba(67,169,86,0.35)' }}>
-            Lancer mon projet →
-          </button>
-          <button onClick={() => navigate('/pricing')}
-            style={{ background: '#FFF', color: NAVY, border: `1.5px solid ${NAVY}22`, borderRadius: 12, padding: '15px 26px', fontSize: 16, fontWeight: 600, cursor: 'pointer' }}>
-            Voir les tarifs
-          </button>
-        </div>
-        <p style={{ fontSize: 13, color: '#8A8A85', marginBottom: 40 }}>
-          <span style={{ color: VERT }}>✓</span> Déposez un DWG, DXF ou PDF — le dossier part de vos vrais plans
-        </p>
+        {/* ── Hero — tient dans le premier écran, CTA visible sans scroller ── */}
+        <section style={{ minHeight: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <div style={{ background: ORANGE_LT, color: ORANGE, fontSize: 13, fontWeight: 700, borderRadius: 999, padding: '6px 16px', marginBottom: 16, letterSpacing: 0.3 }}>
+            ⚡ 3 mois de travail d&rsquo;ingénierie — livrés en 5 minutes
+          </div>
+          <h1 style={{ fontSize: 'clamp(26px, 3.8vw, 40px)', fontWeight: 800, color: NAVY, textAlign: 'center', lineHeight: 1.15, margin: '0 0 12px', maxWidth: 760 }}>
+            Le bureau d&rsquo;études qui <span style={{ color: VERT }}>disrupte</span> la construction africaine
+          </h1>
+          <p style={{ color: '#555', fontSize: 16, textAlign: 'center', maxWidth: 600, margin: '0 0 24px', lineHeight: 1.5 }}>
+            <span style={{ color: VERT_DARK, fontWeight: 600 }}>Notes de calcul</span>, <span style={{ color: VERT_DARK, fontWeight: 600 }}>plans BA</span>, <span style={{ color: BLEU, fontWeight: 600 }}>MEP</span> et <span style={{ color: ORANGE, fontWeight: 600 }}>BOQ</span> conformes Eurocodes, générés à partir de vos plans d&rsquo;architecte.
+          </p>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 10 }}>
+            <button onClick={go}
+              style={{ background: VERT, color: '#FFF', border: 'none', borderRadius: 12, padding: '15px 34px', fontSize: 17, fontWeight: 700, cursor: 'pointer', boxShadow: '0 6px 18px rgba(67,169,86,0.35)' }}>
+              Lancer mon projet →
+            </button>
+            <button onClick={() => navigate('/pricing')}
+              style={{ background: '#FFF', color: NAVY, border: `1.5px solid ${NAVY}22`, borderRadius: 12, padding: '15px 26px', fontSize: 16, fontWeight: 600, cursor: 'pointer' }}>
+              Voir les tarifs
+            </button>
+          </div>
+          <p style={{ fontSize: 13, color: '#8A8A85', margin: 0 }}>
+            <span style={{ color: VERT }}>✓</span> Déposez un DWG, DXF ou PDF — le dossier part de vos vrais plans
+          </p>
+          <div style={{ marginTop: 26, color: '#B5B5B0', fontSize: 20 }}>↓</div>
+        </section>
 
         {/* ── Les 4 promesses ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18, width: '100%', maxWidth: 1060, marginBottom: 44 }}>
