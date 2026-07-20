@@ -1,51 +1,50 @@
 import { useNavigate } from 'react-router-dom'
-import { useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { VERT, VERT_LIGHT, VERT_DARK, ORANGE, ORANGE_LT } from '../constants'
 
 const NAVY = '#1B2A4A'
+const BLEU = '#185FA5'
+const BLEU_LT = '#E6F1FB'
 
 /*
- * LandingV2 — « la barre de commande est la page » (Sprint 1 UI/UX).
- * Un seul élément central : décrire son projet ou déposer un plan.
- * L'authentification n'intervient qu'au moment de générer (friction
- * après la valeur). L'ancienne landing reste sur /landing.
+ * LandingV2 — page de conviction Tijan AI.
+ * Un message central (3 mois → 5 minutes), les 4 promesses clés,
+ * un CTA unique. Le chat de modification vit DANS le projet.
  */
 
-const EXAMPLES = [
-  { label: 'Immeuble R+8 à Dakar', prompt: 'Immeuble résidentiel R+8 avec sous-sol parking à Dakar, 32 logements, portée max 6 m' },
-  { label: 'Villa R+1 à Saly', prompt: 'Villa R+1 de 250 m² à Saly, 4 chambres, piscine, terrasse accessible' },
-  { label: 'Audit EDGE d’une école', prompt: 'Audit de rénovation EDGE d’une école de 2 400 m² à Thiès (climatisation, éclairage, eau)', route: '/retrofit' },
+const PROMESSES = [
+  {
+    t: '3 mois de travail en 5 minutes',
+    d: 'Notes de calcul Eurocodes, plans BA, MEP et BOQ générés d’un coup, cohérents entre eux — ce qu’un bureau d’études livre en un trimestre.',
+    c: ORANGE, bg: ORANGE_LT, ic: '⚡',
+  },
+  {
+    t: 'Plus de clash',
+    d: 'Structure, plomberie, électricité et CVC issus d’une même maquette : les conflits entre lots sont détectés et résolus avant le chantier, pas dessus.',
+    c: BLEU, bg: BLEU_LT, ic: '🛡️',
+  },
+  {
+    t: 'Modifiez en conversant',
+    d: '« Passe le bâtiment en R+6 », « ajoute un sous-sol » : l’assistant intégré recalcule tout le dossier. L’ingénierie devient une conversation.',
+    c: VERT_DARK, bg: VERT_LIGHT, ic: '💬',
+  },
+  {
+    t: 'Impact vert mesuré',
+    d: 'Certification EDGE intégrée : chaque projet chiffre ses économies d’énergie, d’eau et de carbone. Construire sobre devient le choix par défaut.',
+    c: VERT_DARK, bg: VERT_LIGHT, ic: '🌱',
+  },
 ]
 
 export default function LandingV2() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const fileRef = useRef(null)
-  const [prompt, setPrompt] = useState('')
-  const [dragOver, setDragOver] = useState(false)
-
-  const start = (text, file, route) => {
-    // La valeur d'abord : on mémorise l'intention, ProtectedRoute gère
-    // la connexion si nécessaire, puis NewProject retrouve le contexte.
-    if (text) sessionStorage.setItem('tijan_intent_prompt', text)
-    if (file) sessionStorage.setItem('tijan_intent_filename', file.name)
-    navigate(route || '/projects/new', { state: { prompt: text, fileName: file?.name } })
-  }
-
-  const onDrop = (e) => {
-    e.preventDefault(); setDragOver(false)
-    const f = e.dataTransfer?.files?.[0]
-    if (f) start(prompt, f)
-  }
+  const go = () => navigate(user ? '/projects/new' : '/login')
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#FFFFFF', fontFamily: 'Inter, system-ui, sans-serif' }}>
 
-      {/* Liseré charte en haut de page */}
       <div style={{ height: 4, background: `linear-gradient(90deg, ${VERT} 0%, ${VERT_DARK} 60%, ${ORANGE} 100%)` }} />
 
-      {/* Header minimal — vrai logo + accès compte */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 28px' }}>
         <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 72, cursor: 'pointer' }} onClick={() => navigate('/')} />
         <button onClick={() => navigate(user ? '/dashboard' : '/login')}
@@ -54,80 +53,77 @@ export default function LandingV2() {
         </button>
       </header>
 
-      {/* Cœur de page — la barre de commande */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 20px', marginTop: -40 }}>
-        <div style={{ background: ORANGE_LT, color: ORANGE, fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: '6px 16px', marginBottom: 18, letterSpacing: 0.3 }}>
-          ⚡ Dossier technique complet en moins de 5 minutes
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '36px 20px 40px' }}>
+
+        {/* ── Hero ── */}
+        <div style={{ background: ORANGE_LT, color: ORANGE, fontSize: 13, fontWeight: 700, borderRadius: 999, padding: '7px 18px', marginBottom: 20, letterSpacing: 0.3 }}>
+          ⚡ 3 mois de travail d&rsquo;ingénierie — livrés en 5 minutes
         </div>
-        <h1 style={{ fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 700, color: NAVY, textAlign: 'center', marginBottom: 10 }}>
-          Que construisons-nous <span style={{ color: VERT }}>aujourd&rsquo;hui</span>&nbsp;?
+        <h1 style={{ fontSize: 'clamp(30px, 4.6vw, 48px)', fontWeight: 800, color: NAVY, textAlign: 'center', lineHeight: 1.15, margin: '0 0 14px', maxWidth: 820 }}>
+          Le bureau d&rsquo;études qui <span style={{ color: VERT }}>disrupte</span> la construction africaine
         </h1>
-        <p style={{ color: '#666', fontSize: 15, textAlign: 'center', marginBottom: 28 }}>
-          Notes de calcul, <span style={{ color: VERT_DARK, fontWeight: 600 }}>plans BA</span>, <span style={{ color: '#185FA5', fontWeight: 600 }}>MEP</span> et <span style={{ color: ORANGE, fontWeight: 600 }}>BOQ</span> — Eurocodes, en quelques minutes.
+        <p style={{ color: '#555', fontSize: 17, textAlign: 'center', maxWidth: 640, margin: '0 0 28px', lineHeight: 1.55 }}>
+          Tijan AI génère des dossiers techniques complets — <span style={{ color: VERT_DARK, fontWeight: 600 }}>notes de calcul</span>, <span style={{ color: VERT_DARK, fontWeight: 600 }}>plans BA</span>, <span style={{ color: BLEU, fontWeight: 600 }}>MEP</span>, <span style={{ color: ORANGE, fontWeight: 600 }}>BOQ</span> — conformes Eurocodes, à partir de vos plans d&rsquo;architecte.
         </p>
 
-        <div
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={onDrop}
-          style={{
-            width: '100%', maxWidth: 720, background: '#FFF',
-            border: dragOver ? `2px dashed ${VERT}` : '1px solid #E2E2DE',
-            borderRadius: 16, boxShadow: '0 4px 24px rgba(27,42,74,0.07)',
-            padding: '18px 18px 12px', transition: 'border .15s',
-          }}>
-          <textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && prompt.trim()) { e.preventDefault(); start(prompt.trim()) } }}
-            placeholder="Décris ton projet… ou dépose ton plan (DWG, DXF, PDF) ici"
-            rows={3}
-            style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', fontSize: 16, color: '#222', background: 'transparent', fontFamily: 'inherit' }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-            <button onClick={() => fileRef.current?.click()}
-              style={{ background: 'none', border: 'none', color: '#777', fontSize: 13.5, cursor: 'pointer', padding: '6px 8px' }}>
-              📎 Joindre un plan
-            </button>
-            <input ref={fileRef} type="file" accept=".dwg,.dxf,.pdf,.ifc" hidden
-              onChange={(e) => e.target.files?.[0] && start(prompt, e.target.files[0])} />
-            <button onClick={() => prompt.trim() && start(prompt.trim())}
-              disabled={!prompt.trim()}
-              style={{
-                background: prompt.trim() ? VERT : '#D8D8D4', color: '#FFF', border: 'none',
-                borderRadius: 10, padding: '10px 22px', fontSize: 15, fontWeight: 600,
-                cursor: prompt.trim() ? 'pointer' : 'default', transition: 'background .15s',
-              }}>
-              Générer le dossier →
-            </button>
+        {/* ── CTA ── */}
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 12 }}>
+          <button onClick={go}
+            style={{ background: VERT, color: '#FFF', border: 'none', borderRadius: 12, padding: '15px 34px', fontSize: 17, fontWeight: 700, cursor: 'pointer', boxShadow: '0 6px 18px rgba(67,169,86,0.35)' }}>
+            Lancer mon projet →
+          </button>
+          <button onClick={() => navigate('/pricing')}
+            style={{ background: '#FFF', color: NAVY, border: `1.5px solid ${NAVY}22`, borderRadius: 12, padding: '15px 26px', fontSize: 16, fontWeight: 600, cursor: 'pointer' }}>
+            Voir les tarifs
+          </button>
+        </div>
+        <p style={{ fontSize: 13, color: '#8A8A85', marginBottom: 40 }}>
+          <span style={{ color: VERT }}>✓</span> Déposez un DWG, DXF ou PDF — le dossier part de vos vrais plans
+        </p>
+
+        {/* ── Les 4 promesses ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18, width: '100%', maxWidth: 1060, marginBottom: 44 }}>
+          {PROMESSES.map((p) => (
+            <div key={p.t} style={{ background: '#FFF', border: '1px solid #ECECEA', borderTop: `4px solid ${p.c}`, borderRadius: 14, padding: '22px 20px', boxShadow: '0 2px 12px rgba(27,42,74,0.05)' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 10, background: p.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 14 }}>{p.ic}</div>
+              <div style={{ fontSize: 16.5, fontWeight: 700, color: NAVY, marginBottom: 8 }}>{p.t}</div>
+              <div style={{ fontSize: 14, color: '#666', lineHeight: 1.55 }}>{p.d}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Bandeau révolution ── */}
+        <div style={{ width: '100%', maxWidth: 1060, background: NAVY, borderRadius: 16, padding: '30px 28px', display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between', marginBottom: 44 }}>
+          <div style={{ maxWidth: 560 }}>
+            <div style={{ color: VERT, fontWeight: 700, fontSize: 13, letterSpacing: 1, marginBottom: 6 }}>RÉVOLUTION TECHNOLOGIQUE</div>
+            <div style={{ color: '#FFF', fontSize: 20, fontWeight: 700, lineHeight: 1.4 }}>
+              97 % des projets africains se construisent sans ingénierie de qualité. Tijan AI change l&rsquo;équation : l&rsquo;excellence d&rsquo;un bureau d&rsquo;études, au prix et à la vitesse du continent.
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 28 }}>
+            {[['4', 'pays couverts'], ['<5 min', 'par dossier'], ['EC2/EC8', 'Eurocodes']].map(([v, l]) => (
+              <div key={l} style={{ textAlign: 'center' }}>
+                <div style={{ color: VERT, fontSize: 26, fontWeight: 800 }}>{v}</div>
+                <div style={{ color: '#B8C2D8', fontSize: 12.5 }}>{l}</div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Exemples cliquables — chacun préremplit un vrai projet */}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 18 }}>
-          {EXAMPLES.map((ex, i) => {
-            const c = [VERT_DARK, '#185FA5', ORANGE][i % 3]
-            const bg = [VERT_LIGHT, '#E6F1FB', ORANGE_LT][i % 3]
-            return (
-              <button key={ex.label} onClick={() => start(ex.prompt, null, ex.route)}
-                style={{
-                  background: bg, border: `1px solid ${c}33`, borderRadius: 999,
-                  padding: '8px 16px', fontSize: 13.5, color: c, fontWeight: 600, cursor: 'pointer',
-                }}>
-                {ex.label}
-              </button>
-            )
-          })}
+        {/* ── CTA final ── */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: NAVY, marginBottom: 14 }}>Votre prochain projet mérite une vraie ingénierie.</div>
+          <button onClick={go}
+            style={{ background: VERT, color: '#FFF', border: 'none', borderRadius: 12, padding: '14px 32px', fontSize: 16, fontWeight: 700, cursor: 'pointer' }}>
+            Commencer maintenant →
+          </button>
+          <p style={{ marginTop: 16, fontSize: 12.5, color: '#8A8A85' }}>
+            Chaque dossier est vérifié par un ingénieur structure habilité.
+          </p>
         </div>
-
-        {/* Réassurance — coches vertes, engagement pas excuse */}
-        <p style={{ marginTop: 26, fontSize: 13, color: '#8A8A85', textAlign: 'center' }}>
-          <span style={{ color: VERT }}>✓</span> Eurocodes EC2/EC8 &nbsp;·&nbsp; <span style={{ color: VERT }}>✓</span> Sénégal, Côte d&rsquo;Ivoire, Ghana, Nigeria &nbsp;·&nbsp; <span style={{ color: VERT }}>✓</span> chaque dossier vérifié par un ingénieur structure habilité
-        </p>
       </main>
 
-      {/* Footer minimal — tout le reste vit sur des pages secondaires */}
-      <footer style={{ display: 'flex', gap: 22, justifyContent: 'center', padding: '20px 0 26px', fontSize: 13, color: '#999' }}>
+      <footer style={{ display: 'flex', gap: 22, justifyContent: 'center', padding: '18px 0 24px', fontSize: 13, color: '#999', borderTop: '1px solid #F0F0EE' }}>
         <a href="/pricing" style={{ color: '#999', textDecoration: 'none' }}>Tarifs</a>
         <a href="/impact" style={{ color: '#999', textDecoration: 'none' }}>Impact</a>
         <a href="/landing" style={{ color: '#999', textDecoration: 'none' }}>En savoir plus</a>
