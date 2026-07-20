@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { VERT } from '../constants'
+import { VERT, VERT_LIGHT, VERT_DARK, ORANGE, ORANGE_LT } from '../constants'
+
+const NAVY = '#1B2A4A'
 
 /*
  * LandingV2 — « la barre de commande est la page » (Sprint 1 UI/UX).
@@ -40,22 +42,28 @@ export default function LandingV2() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF8', fontFamily: 'Inter, system-ui, sans-serif' }}>
 
-      {/* Header minimal — logo + accès compte, rien d'autre */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 28px' }}>
-        <span style={{ fontWeight: 800, fontSize: 18, color: VERT, letterSpacing: 0.3 }}>TIJAN AI</span>
+      {/* Liseré charte en haut de page */}
+      <div style={{ height: 4, background: `linear-gradient(90deg, ${VERT} 0%, ${VERT_DARK} 60%, ${ORANGE} 100%)` }} />
+
+      {/* Header minimal — vrai logo + accès compte */}
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 28px' }}>
+        <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 38, cursor: 'pointer' }} onClick={() => navigate('/')} />
         <button onClick={() => navigate(user ? '/dashboard' : '/login')}
-          style={{ background: 'none', border: '1px solid #DDD', borderRadius: 8, padding: '8px 16px', fontSize: 14, cursor: 'pointer', color: '#333' }}>
+          style={{ background: VERT_LIGHT, border: `1px solid ${VERT}`, borderRadius: 8, padding: '8px 16px', fontSize: 14, cursor: 'pointer', color: VERT_DARK, fontWeight: 600 }}>
           {user ? 'Mes projets' : 'Se connecter'}
         </button>
       </header>
 
       {/* Cœur de page — la barre de commande */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 20px', marginTop: -40 }}>
-        <h1 style={{ fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 700, color: '#1B2A4A', textAlign: 'center', marginBottom: 10 }}>
-          Que construisons-nous aujourd&rsquo;hui&nbsp;?
+        <div style={{ background: ORANGE_LT, color: ORANGE, fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: '6px 16px', marginBottom: 18, letterSpacing: 0.3 }}>
+          ⚡ Dossier technique complet en moins de 5 minutes
+        </div>
+        <h1 style={{ fontSize: 'clamp(26px, 4vw, 40px)', fontWeight: 700, color: NAVY, textAlign: 'center', marginBottom: 10 }}>
+          Que construisons-nous <span style={{ color: VERT }}>aujourd&rsquo;hui</span>&nbsp;?
         </h1>
         <p style={{ color: '#666', fontSize: 15, textAlign: 'center', marginBottom: 28 }}>
-          Notes de calcul, plans BA, MEP et BOQ — Eurocodes, en quelques minutes.
+          Notes de calcul, <span style={{ color: VERT_DARK, fontWeight: 600 }}>plans BA</span>, <span style={{ color: '#185FA5', fontWeight: 600 }}>MEP</span> et <span style={{ color: ORANGE, fontWeight: 600 }}>BOQ</span> — Eurocodes, en quelques minutes.
         </p>
 
         <div
@@ -97,20 +105,24 @@ export default function LandingV2() {
 
         {/* Exemples cliquables — chacun préremplit un vrai projet */}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 18 }}>
-          {EXAMPLES.map((ex) => (
-            <button key={ex.label} onClick={() => start(ex.prompt, null, ex.route)}
-              style={{
-                background: '#FFF', border: '1px solid #E2E2DE', borderRadius: 999,
-                padding: '8px 16px', fontSize: 13.5, color: '#444', cursor: 'pointer',
-              }}>
-              {ex.label}
-            </button>
-          ))}
+          {EXAMPLES.map((ex, i) => {
+            const c = [VERT_DARK, '#185FA5', ORANGE][i % 3]
+            const bg = [VERT_LIGHT, '#E6F1FB', ORANGE_LT][i % 3]
+            return (
+              <button key={ex.label} onClick={() => start(ex.prompt, null, ex.route)}
+                style={{
+                  background: bg, border: `1px solid ${c}33`, borderRadius: 999,
+                  padding: '8px 16px', fontSize: 13.5, color: c, fontWeight: 600, cursor: 'pointer',
+                }}>
+                {ex.label}
+              </button>
+            )
+          })}
         </div>
 
-        {/* Une ligne de réassurance — engagement, pas excuse */}
+        {/* Réassurance — coches vertes, engagement pas excuse */}
         <p style={{ marginTop: 26, fontSize: 13, color: '#8A8A85', textAlign: 'center' }}>
-          Eurocodes EC2/EC8 &nbsp;·&nbsp; Sénégal, Côte d&rsquo;Ivoire, Ghana, Nigeria &nbsp;·&nbsp; chaque dossier vérifié par un ingénieur structure habilité
+          <span style={{ color: VERT }}>✓</span> Eurocodes EC2/EC8 &nbsp;·&nbsp; <span style={{ color: VERT }}>✓</span> Sénégal, Côte d&rsquo;Ivoire, Ghana, Nigeria &nbsp;·&nbsp; <span style={{ color: VERT }}>✓</span> chaque dossier vérifié par un ingénieur structure habilité
         </p>
       </main>
 
