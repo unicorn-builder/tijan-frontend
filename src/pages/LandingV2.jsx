@@ -40,14 +40,14 @@ export default function LandingV2() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#FAFAF8', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#FFFFFF', fontFamily: 'Inter, system-ui, sans-serif' }}>
 
       {/* Liseré charte en haut de page */}
       <div style={{ height: 4, background: `linear-gradient(90deg, ${VERT} 0%, ${VERT_DARK} 60%, ${ORANGE} 100%)` }} />
 
       {/* Header minimal — vrai logo + accès compte */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 28px' }}>
-        <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 38, cursor: 'pointer' }} onClick={() => navigate('/')} />
+        <img src="/tijan_logo_crop.png" alt="Tijan AI" style={{ height: 72, cursor: 'pointer' }} onClick={() => navigate('/')} />
         <button onClick={() => navigate(user ? '/dashboard' : '/login')}
           style={{ background: VERT_LIGHT, border: `1px solid ${VERT}`, borderRadius: 8, padding: '8px 16px', fontSize: 14, cursor: 'pointer', color: VERT_DARK, fontWeight: 600 }}>
           {user ? 'Mes projets' : 'Se connecter'}
