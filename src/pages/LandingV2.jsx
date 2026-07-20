@@ -55,8 +55,8 @@ export default function LandingV2() {
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px 40px' }}>
 
-        {/* ── Hero — tient dans le premier écran, CTA visible sans scroller ── */}
-        <section style={{ minHeight: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+        {/* ── Hero compact — enchaîne directement sur les promesses ── */}
+        <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '26px 0 30px' }}>
           <div style={{ background: ORANGE_LT, color: ORANGE, fontSize: 13, fontWeight: 700, borderRadius: 999, padding: '6px 16px', marginBottom: 16, letterSpacing: 0.3 }}>
             ⚡ 3 mois de travail d&rsquo;ingénierie — livrés en 5 minutes
           </div>
@@ -79,22 +79,23 @@ export default function LandingV2() {
           <p style={{ fontSize: 13, color: '#8A8A85', margin: 0 }}>
             <span style={{ color: VERT }}>✓</span> Déposez un DWG, DXF ou PDF — le dossier part de vos vrais plans
           </p>
-          <div style={{ marginTop: 26, color: '#B5B5B0', fontSize: 20 }}>↓</div>
         </section>
 
-        {/* ── Les 4 promesses ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 18, width: '100%', maxWidth: 1060, marginBottom: 44 }}>
+        {/* ── Les 4 promesses — collées au hero ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 14, width: '100%', maxWidth: 1060, marginBottom: 26 }}>
           {PROMESSES.map((p) => (
-            <div key={p.t} style={{ background: '#FFF', border: '1px solid #ECECEA', borderTop: `4px solid ${p.c}`, borderRadius: 14, padding: '22px 20px', boxShadow: '0 2px 12px rgba(27,42,74,0.05)' }}>
-              <div style={{ width: 42, height: 42, borderRadius: 10, background: p.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginBottom: 14 }}>{p.ic}</div>
-              <div style={{ fontSize: 16.5, fontWeight: 700, color: NAVY, marginBottom: 8 }}>{p.t}</div>
-              <div style={{ fontSize: 14, color: '#666', lineHeight: 1.55 }}>{p.d}</div>
+            <div key={p.t} style={{ background: '#FFF', border: '1px solid #ECECEA', borderTop: `4px solid ${p.c}`, borderRadius: 12, padding: '14px 16px', boxShadow: '0 2px 10px rgba(27,42,74,0.05)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: p.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>{p.ic}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: NAVY }}>{p.t}</div>
+              </div>
+              <div style={{ fontSize: 13, color: '#666', lineHeight: 1.5 }}>{p.d}</div>
             </div>
           ))}
         </div>
 
         {/* ── Bandeau révolution ── */}
-        <div style={{ width: '100%', maxWidth: 1060, background: NAVY, borderRadius: 16, padding: '30px 28px', display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between', marginBottom: 44 }}>
+        <div style={{ width: '100%', maxWidth: 1060, background: NAVY, borderRadius: 16, padding: '22px 26px', display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center', justifyContent: 'space-between', marginBottom: 26 }}>
           <div style={{ maxWidth: 560 }}>
             <div style={{ color: VERT, fontWeight: 700, fontSize: 13, letterSpacing: 1, marginBottom: 6 }}>RÉVOLUTION TECHNOLOGIQUE</div>
             <div style={{ color: '#FFF', fontSize: 20, fontWeight: 700, lineHeight: 1.4 }}>
