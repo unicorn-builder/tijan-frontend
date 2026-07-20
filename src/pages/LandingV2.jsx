@@ -60,8 +60,8 @@ export default function LandingV2() {
           <div style={{ background: ORANGE_LT, color: ORANGE, fontSize: 13, fontWeight: 700, borderRadius: 999, padding: '6px 16px', marginBottom: 16, letterSpacing: 0.3 }}>
             ⚡ 3 mois de travail d&rsquo;ingénierie — livrés en 5 minutes
           </div>
-          <h1 style={{ fontSize: 'clamp(26px, 3.8vw, 40px)', fontWeight: 800, color: NAVY, textAlign: 'center', lineHeight: 1.15, margin: '0 0 12px', maxWidth: 760 }}>
-            Le bureau d&rsquo;études qui <span style={{ color: VERT }}>disrupte</span> la construction africaine
+          <h1 style={{ fontSize: 'clamp(26px, 3.8vw, 40px)', fontWeight: 800, color: NAVY, textAlign: 'center', lineHeight: 1.2, margin: '0 0 12px', maxWidth: 820 }}>
+            Vos études structurelles et techniques <span style={{ color: VERT }}>en 5 mn</span>, aux meilleurs standards d&rsquo;ingénierie
           </h1>
           <p style={{ color: '#555', fontSize: 16, textAlign: 'center', maxWidth: 600, margin: '0 0 24px', lineHeight: 1.5 }}>
             <span style={{ color: VERT_DARK, fontWeight: 600 }}>Notes de calcul</span>, <span style={{ color: VERT_DARK, fontWeight: 600 }}>plans BA</span>, <span style={{ color: BLEU, fontWeight: 600 }}>MEP</span> et <span style={{ color: ORANGE, fontWeight: 600 }}>BOQ</span> conformes Eurocodes, générés à partir de vos plans d&rsquo;architecte.
