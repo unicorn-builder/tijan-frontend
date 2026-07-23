@@ -87,7 +87,6 @@ export default function NewProject() {
     if (!nom.trim()) { setErrorMsg(t('np_err_nom')); return }
     if (!ville.trim()) { setErrorMsg(t('np_err_ville')); return }
     if (!mainFile) { setErrorMsg(t('np_err_plans')); return }
-    if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
     if (restants < 1) {
       setShowNoCreditModal(true)
       return
@@ -100,7 +99,6 @@ export default function NewProject() {
     if (!nom.trim()) { setErrorMsg(t('np_err_nom')); return }
     if (!ville.trim()) { setErrorMsg(t('np_err_ville')); return }
     if (!mainFile) { setErrorMsg(t('np_err_plans')); return }
-    if (!surfaceTerrain) { setErrorMsg(t('np_err_surface')); return }
 
     // Check if user has sufficient credits (1 required)
     if (restants < 1) {
@@ -249,7 +247,7 @@ export default function NewProject() {
       portee_min_m: Math.min(Math.max(parseFloat(parsed.portee_min_m) || 4.5, 3), 12),
       nb_travees_x: parseInt(parsed.nb_travees_x) || 4,
       nb_travees_y: parseInt(parsed.nb_travees_y) || 3,
-      surface_terrain_m2: parseFloat(surfaceTerrain),
+      surface_terrain_m2: parseFloat(surfaceTerrain) || 0,
       nb_logements: parseInt(nbLogements) || 0,
     }
     // EDGE optional inputs (only include if user provided)
@@ -458,8 +456,8 @@ export default function NewProject() {
             </div>
 
             <div>
-              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_surface')} *</label>
-              <input type="number" value={surfaceTerrain} onChange={e => setSurfaceTerrain(e.target.value)} placeholder="ex: 1400" style={inp} min="50" />
+              <label style={{ fontSize: 12, color: '#555', display: 'block', marginBottom: 5 }}>{t('np_surface')} <span style={{ color: '#aaa' }}>(optionnel)</span></label>
+              <input type="number" value={surfaceTerrain} onChange={e => setSurfaceTerrain(e.target.value)} placeholder="ex: 1400 — déduit du plan si vide" style={inp} min="50" />
               <div style={{ fontSize: 10, color: '#aaa', marginTop: 4 }}>{t('np_emprise_note')}</div>
             </div>
 
