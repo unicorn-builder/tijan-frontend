@@ -76,7 +76,9 @@ export default function NewProject() {
     return out
   })()
   const loading = step === 'uploading' || step === 'calculating'
-  const loadingText = step === 'uploading' ? (parseProgress || t('np_uploading')) : t('np_calculating')
+  const loadingText = step === 'uploading'
+    ? (parseProgress || t('np_uploading'))
+    : (parseProgress ? `${parseProgress} — ${t('np_calculating')}` : t('np_calculating'))
   const [showNoCreditModal, setShowNoCreditModal] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -147,7 +149,11 @@ export default function NewProject() {
               const pd = await pr.json()
               setParseProgress(`Analyse (${pd.progress || '...'})`)
               if (pd.status === 'done' && pd.result) { parsed = pd.result; break }
-              if (pd.status === 'error') { break }
+              if (pd.status === 'error') {
+                setErrorMsg(`Erreur d'analyse des plans — ${(pd.error || 'inconnue')}`.slice(0, 280))
+                setStep('idle')
+                return
+              }
             } catch {}
           }
         }
@@ -168,6 +174,25 @@ export default function NewProject() {
           return
         }
         if (data.ok) parsed = data
+        // Gros DWG/DXF : le backend répond {async, job_id} et parse en tâche de
+        // fond (évite les timeouts proxy) → on poll /parse-status jusqu'à la fin.
+        if (data.ok && data.async && data.job_id) {
+          parsed = {}
+          for (let i = 0; i < 240; i++) { // jusqu'à ~12 min
+            await new Promise(r => setTimeout(r, 3000))
+            try {
+              const pr = await fetch(`${BACKEND}/parse-status/${data.job_id}`)
+              const pd = await pr.json()
+              setParseProgress(`Analyse du plan (${pd.progress || '...'})`)
+              if (pd.status === 'done' && pd.result) { parsed = pd.result; break }
+              if (pd.status === 'error') {
+                setErrorMsg(`Erreur d'analyse du plan — ${(pd.error || 'inconnue')}`.slice(0, 280))
+                setStep('idle')
+                return
+              }
+            } catch {}
+          }
+        }
       }
 
       // Override nb_niveaux: user field > file count > parsed value
@@ -176,7 +201,26 @@ export default function NewProject() {
         if (parsed.donnees_moteur) parsed.donnees_moteur.nb_niveaux = userNiveaux
       }
       setParseProgress('')
-    } catch {}
+    } catch (e) {
+      // JAMAIS silencieux : un parse perdu = crédit brûlé sans géométrie.
+      console.error('[parse] exception', e)
+      setErrorMsg(`L'analyse du plan a échoué (connexion interrompue ou serveur indisponible). Réessayez — aucun crédit n'a été décompté.`)
+      setStep('idle')
+      return
+    }
+
+    // Fichier CAD fourni mais aucune géométrie extraite → on REFUSE de créer le
+    // projet en silence (c'était le bug prod du 22/07 : crédit décompté, onglet
+    // Plans vide « Fichier DWG/DXF requis »).
+    const isCadInput = allFiles.some(f => /\.(dwg|dxf|ifc)$/i.test(f.name || ''))
+    if (isCadInput && !parsed.dwg_geometry) {
+      setErrorMsg(`L'analyse du fichier DWG/DXF n'a extrait aucune géométrie. Le projet n'a pas été créé et aucun crédit n'a été décompté. Réessayez, ou contactez le support avec votre fichier.`)
+      setStep('idle')
+      return
+    }
+    if (parsed.geometry_levels?.length) {
+      setParseProgress(`Géométrie prête : ${parsed.geometry_levels.length} niveau(x) détecté(s)`)
+    }
 
     // Priorité : surface terrain saisie × 0.70, sauf si le parser extrait une emprise réaliste
     const terrainCalc = Math.round(parseFloat(surfaceTerrain) * 0.70)
@@ -317,6 +361,15 @@ export default function NewProject() {
                 }
               }
             }
+          }
+          // Step 1bis: persist geom_ref — petite chaîne, ne peut pas échouer pour
+          // cause de taille. Le backend la résout via Supabase Storage même après
+          // un redémarrage Render (migration 005 + bucket 'plans'/geom_cache).
+          if (geomRef) {
+            const { error: refErr } = await supabase
+              .from('projets').update({ geom_ref: geomRef }).eq('id', projectId)
+            if (refErr) console.error('[NewProject] geom_ref persist FAILED (migration 005 appliquée ?)', refErr.message)
+            else console.log('[NewProject] geom_ref persisted ✓', geomRef)
           }
           // Step 2: Try to persist geometry + EDGE extras (best-effort, may fail for large payloads)
           const extras = {}

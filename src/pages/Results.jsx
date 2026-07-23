@@ -122,8 +122,8 @@ function usePdfDownload(params, lang = 'fr', { projectId = null } = {}) {
       console.warn('PDF generation failed:', e)
       if (e.status === 422 && (endpoint.includes('plans-structure') || endpoint.includes('plans-mep'))) {
         alert(lang === 'en'
-          ? 'Plans require a DWG/DXF input file. This project was created from a PDF — please create a new project with a DWG/DXF to generate structure and MEP plans. (Other deliverables remain available.)'
-          : 'Les plans nécessitent un fichier DWG/DXF en entrée. Ce projet a été créé à partir d\'un PDF — créez un nouveau projet avec un DWG/DXF pour générer les plans structure et MEP. (Les autres livrables restent disponibles.)')
+          ? 'The server could not find the DWG geometry for this project. If it was created from a PDF, plans are unavailable; if you did upload a DWG/DXF, re-import it in the Plans tab ("Manage DWGs per level") to re-attach the geometry. (Other deliverables remain available.)'
+          : 'Le serveur n\'a pas retrouvé la géométrie DWG de ce projet. S\'il a été créé depuis un PDF, les plans sont indisponibles ; si vous aviez importé un DWG/DXF, ré-importez-le dans l\'onglet Plans (« Gérer les DWG par niveau ») pour ré-associer la géométrie. (Les autres livrables restent disponibles.)')
       } else {
         alert((lang === 'en' ? 'Download error: ' : 'Erreur téléchargement: ') + e.message)
       }
@@ -281,7 +281,7 @@ export default function Results() {
   const [dwgGeometry, setDwgGeometry] = useState(state?.dwgGeometry || null)
   const [archiPdfUrl, setArchiPdfUrl] = useState(null)
   const archiPdfRef = state?.archiPdfRef || null
-  const geomRef = state?.geomRef || null
+  const [geomRef, setGeomRef] = useState(state?.geomRef || null)
   const [params, setParams] = useState(state?.params || {})
 
   const [activeTab, setActiveTab] = useState('structure')
@@ -321,6 +321,7 @@ export default function Results() {
             })
             // Restore persisted geometry and archi PDF URL for plan generation
             if (data.dwg_geometry) setDwgGeometry(data.dwg_geometry)
+            if (data.geom_ref) setGeomRef(data.geom_ref)
             if (data.archi_pdf_url) setArchiPdfUrl(data.archi_pdf_url)
             if (data.resultats_mep) setMepData(data.resultats_mep)
             if (data.chat_historique?.length > 0) setChatMessages(data.chat_historique)
@@ -463,7 +464,7 @@ export default function Results() {
 
   const renderContent = () => {
     if (activeTab === 'plan-ba' || activeTab === 'plan-mep') {
-      const hasDwg = dwgGeometry && Object.keys(dwgGeometry).length > 0
+      const hasDwg = (dwgGeometry && Object.keys(dwgGeometry).length > 0) || !!geomRef
       const isPlanBA = activeTab === 'plan-ba'
       const title = isPlanBA
         ? (lang === 'en' ? 'Structural Drawings (BA)' : 'Plans Structure (BA)')
@@ -521,7 +522,9 @@ export default function Results() {
             {hasDwg && (
               <div style={{ background: VERT_LIGHT, border: `1px solid ${VERT}`, borderRadius: 8, padding: '12px 16px' }}>
                 <span style={{ fontSize: 12, color: VERT_DARK, fontWeight: 600 }}>
-                  ✓ {lang === 'en' ? `DWG geometry loaded (${Object.keys(dwgGeometry).length} levels)` : `Géométrie DWG chargée (${Object.keys(dwgGeometry).length} niveaux)`}
+                  ✓ {dwgGeometry && Object.keys(dwgGeometry).length > 0
+                    ? (lang === 'en' ? `Geometry ready: ${Object.keys(dwgGeometry).filter(k => !k.startsWith('_')).length} levels detected` : `Géométrie prête : ${Object.keys(dwgGeometry).filter(k => !k.startsWith('_')).length} niveaux détectés`)
+                    : (lang === 'en' ? 'DWG geometry ready (stored server-side)' : 'Géométrie DWG prête (sauvegardée côté serveur)')}
                 </span>
               </div>
             )}
@@ -1720,7 +1723,7 @@ export default function Results() {
   // ── Download All Dossier ──
   const downloadAllDossier = async () => {
     if (!params || !params.nom || downloadAllState) return
-    const hasDwg = dwgGeometry && Object.keys(dwgGeometry).length > 0
+    const hasDwg = (dwgGeometry && Object.keys(dwgGeometry).length > 0) || !!geomRef
     const hasMep = mepData?.ok
 
     // Filter items based on available data — track what was skipped
@@ -1805,7 +1808,10 @@ export default function Results() {
       try {
         // Build extra params for special endpoints
         const extra = {}
-        if (item.needsDwg && dwgGeometry) extra.dwg_geometry = dwgGeometry
+        if (item.needsDwg) {
+          if (dwgGeometry) extra.dwg_geometry = dwgGeometry
+          else if (geomRef) extra.geom_ref = geomRef
+        }
         if (item.isEdge) {
           if (dwgGeometry) extra.dwg_geometry = dwgGeometry
           Object.assign(extra, dbProjet?.edge_extras || {})
@@ -2002,6 +2008,7 @@ export default function Results() {
                   }
                   if (activeTab === 'plan-ba' || activeTab === 'plan-mep') {
                     if (dwgGeometry) extra.dwg_geometry = dwgGeometry
+                    else if (geomRef) extra.geom_ref = geomRef
                   }
                   download(endpoint, nomFichier, extra)
                 }}
