@@ -362,11 +362,11 @@ export default function NewProject() {
           }
           // Step 1bis: persist geom_ref — petite chaîne, ne peut pas échouer pour
           // cause de taille. Le backend la résout via Supabase Storage même après
-          // un redémarrage Render (migration 005 + bucket 'plans'/geom_cache).
+          // un redémarrage Render (migration 006 + bucket privé 'geom-cache').
           if (geomRef) {
             const { error: refErr } = await supabase
               .from('projets').update({ geom_ref: geomRef }).eq('id', projectId)
-            if (refErr) console.error('[NewProject] geom_ref persist FAILED (migration 005 appliquée ?)', refErr.message)
+            if (refErr) console.error('[NewProject] geom_ref persist FAILED (migration 006 appliquée ?)', refErr.message)
             else console.log('[NewProject] geom_ref persisted ✓', geomRef)
           }
           // Step 2: Try to persist geometry + EDGE extras (best-effort, may fail for large payloads)
