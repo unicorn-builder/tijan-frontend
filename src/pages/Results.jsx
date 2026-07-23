@@ -122,8 +122,8 @@ function usePdfDownload(params, lang = 'fr', { projectId = null } = {}) {
       console.warn('PDF generation failed:', e)
       if (e.status === 422 && (endpoint.includes('plans-structure') || endpoint.includes('plans-mep'))) {
         alert(lang === 'en'
-          ? 'The server could not find the DWG geometry for this project. If it was created from a PDF, plans are unavailable; if you did upload a DWG/DXF, re-import it in the Plans tab ("Manage DWGs per level") to re-attach the geometry. (Other deliverables remain available.)'
-          : 'Le serveur n\'a pas retrouvé la géométrie DWG de ce projet. S\'il a été créé depuis un PDF, les plans sont indisponibles ; si vous aviez importé un DWG/DXF, ré-importez-le dans l\'onglet Plans (« Gérer les DWG par niveau ») pour ré-associer la géométrie. (Les autres livrables restent disponibles.)')
+          ? 'Execution plans require a DWG/DXF source. This project appears to have been created from a PDF (or without CAD geometry), so plans cannot be generated. Import a DWG/DXF in the Plans tab ("Manage DWGs per level") to enable them. (All other deliverables remain available.)'
+          : 'Les plans d\'exécution nécessitent une source DWG/DXF. Ce projet semble avoir été créé depuis un PDF (ou sans géométrie CAO), les plans ne peuvent donc pas être générés. Importez un DWG/DXF dans l\'onglet Plans (« Gérer les DWG par niveau ») pour les activer. (Tous les autres livrables restent disponibles.)')
       } else {
         alert((lang === 'en' ? 'Download error: ' : 'Erreur téléchargement: ') + e.message)
       }
