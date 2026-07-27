@@ -136,6 +136,195 @@ function usePdfDownload(params, lang = 'fr', { projectId = null } = {}) {
 // Inline manager to add/replace DWGs per level on an existing project.
 // Calls /parse-multi with the NEW files only, then merges into existing dwg_geometry
 // (keys already present get overwritten). Persists back to Supabase.
+// ── D1 (27/07/2026) — Écran « niveaux détectés » ──
+// Remplace l'ancien écran « Gérer les DWG par niveau » comme entrée
+// principale : miniatures RÉELLES (wireframe SVG depuis les murs),
+// usage déduit par niveau (programme Vision/libellés), locaux à
+// confirmer avec correction en un clic, persistée dans le projet.
+const FONCTIONS_UI = [
+  'bureau_prive', 'bureau_partage', 'open_space', 'salle_reunion',
+  'cabine_phone', 'espace_evenement', 'lounge', 'accueil', 'kitchenette',
+  'chambre', 'chambre_hotel', 'sejour', 'cuisine', 'dressing',
+  'sdb_privative', 'wc_privatif', 'bloc_sanitaire', 'sanitaire_pmr',
+  'douche_collective', 'circulation', 'escalier', 'ascenseur',
+  'local_technique', 'stockage', 'buanderie', 'parking', 'balcon',
+  'terrasse', 'inconnu',
+]
+const USAGES_UI = ['residentiel', 'tertiaire', 'hotelier', 'commerce',
+  'sante', 'scolaire', 'parking', 'technique']
+
+function LevelMiniature({ geom }) {
+  const walls = (geom?.walls || [])
+  const segs = []
+  for (const w of walls) {
+    if (w.type === 'line' && w.start && w.end) segs.push([w.start, w.end])
+    else if (w.type === 'polyline' && w.points) {
+      for (let i = 0; i + 1 < w.points.length; i++) segs.push([w.points[i], w.points[i + 1]])
+    }
+    if (segs.length > 900) break
+  }
+  if (!segs.length) return <div style={{ width: 150, height: 96, background: '#F4F4F4', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: GRIS3 }}>—</div>
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
+  for (const [a, b] of segs) {
+    for (const p of [a, b]) {
+      if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0]
+      if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1]
+    }
+  }
+  const W = 150, H = 96, dw = Math.max(1, x1 - x0), dh = Math.max(1, y1 - y0)
+  const s = Math.min((W - 8) / dw, (H - 8) / dh)
+  const ox = (W - dw * s) / 2, oy = (H - dh * s) / 2
+  const X = v => ox + (v - x0) * s
+  const Y = v => H - (oy + (v - y0) * s)   // Y inversé (plan → écran)
+  return (
+    <svg width={W} height={H} style={{ background: '#FCFCFC', border: `1px solid ${GRIS2}`, borderRadius: 4, flexShrink: 0 }}>
+      {segs.map(([a, b], i) => (
+        <line key={i} x1={X(a[0])} y1={Y(a[1])} x2={X(b[0])} y2={Y(b[1])}
+          stroke="#607D8B" strokeWidth="0.7" />
+      ))}
+    </svg>
+  )
+}
+
+function LevelsReview({ dwgGeometry, setDwgGeometry, supabase, projectId, lang }) {
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [edits, setEdits] = useState({})   // {`${lvl}::${libelle}`: fonction}
+  const [usageEdits, setUsageEdits] = useState({})  // {lvl: usage}
+  if (!dwgGeometry) return null
+  const levelKeys = Object.keys(dwgGeometry).filter(k => !k.startsWith('_') && dwgGeometry[k] && typeof dwgGeometry[k] === 'object' && dwgGeometry[k].walls)
+  if (!levelKeys.length) return null
+  const order = k => {
+    const u = k.toUpperCase()
+    if (u.includes('SOUS')) return -1
+    if (u.includes('RDC') || u.includes('REZ')) return 0
+    const m = u.match(/(?:ETAGE|R\+|NIVEAU)[ _-]*(\d+)/)
+    if (m) return parseInt(m[1])
+    if (u.includes('TERRASSE') || u.includes('TOIT')) return 98
+    return 50
+  }
+  const sorted = [...levelKeys].sort((a, b) => order(a) - order(b))
+  const nEdits = Object.keys(edits).length + Object.keys(usageEdits).length
+
+  const save = async () => {
+    setBusy(true); setMsg('')
+    try {
+      const next = { ...dwgGeometry }
+      for (const lvl of sorted) {
+        const g = next[lvl]
+        const prog = g?._programme
+        if (!prog) continue
+        let touched = false
+        const espaces = (prog.espaces || []).map(e => {
+          const key = `${lvl}::${e.libelle}`
+          if (edits[key] && edits[key] !== e.fonction) {
+            touched = true
+            return { ...e, fonction: edits[key], confiance: 1.0, source: 'utilisateur' }
+          }
+          return e
+        })
+        const usage = usageEdits[lvl]
+        if (usage || touched) {
+          next[lvl] = {
+            ...g,
+            _programme: {
+              ...prog,
+              espaces,
+              ...(usage ? { usage_niveau: usage, confiance_usage: 1.0 } : {}),
+              a_confirmer: (prog.a_confirmer || []).filter(e => !edits[`${lvl}::${e.libelle}`]),
+              resume: {
+                ...(prog.resume || {}),
+                ...(usage ? { usage } : {}),
+                source: 'utilisateur',
+                programme_confirme: true,
+              },
+            },
+          }
+        }
+      }
+      setDwgGeometry(next)
+      if (supabase && projectId) {
+        const { error } = await supabase.from('projets')
+          .update({ dwg_geometry: next }).eq('id', projectId)
+        if (error) throw new Error(error.message)
+      }
+      setEdits({}); setUsageEdits({})
+      setMsg(lang === 'en' ? 'Corrections saved ✓' : 'Corrections enregistrées ✓')
+    } catch (e) {
+      setMsg((lang === 'en' ? 'Error: ' : 'Erreur : ') + (e.message || 'save'))
+    } finally { setBusy(false) }
+  }
+
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#111', marginBottom: 8 }}>
+        {lang === 'en' ? 'Detected levels' : 'Niveaux détectés'} ({sorted.length})
+        <span style={{ fontWeight: 400, color: GRIS3, marginLeft: 8, fontSize: 11 }}>
+          {lang === 'en' ? 'what the engine sees — confirm or fix in one click'
+            : 'ce que voit le moteur — confirmez ou corrigez en un clic'}
+        </span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10 }}>
+        {sorted.map(lvl => {
+          const g = dwgGeometry[lvl]
+          const rs = g?._programme?.resume || null
+          const aConf = g?._programme?.a_confirmer || []
+          const usage = usageEdits[lvl] || rs?.usage || '—'
+          const confirmed = rs?.programme_confirme
+          return (
+            <div key={lvl} style={{ border: `1px solid ${GRIS2}`, borderRadius: 8, padding: 10, background: '#fff', display: 'flex', gap: 10 }}>
+              <LevelMiniature geom={g} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 700 }}>{lvl}</div>
+                <div style={{ fontSize: 10, color: GRIS3, marginBottom: 4 }}>
+                  {(g.walls || []).length} {lang === 'en' ? 'walls' : 'murs'} · {(g.rooms || []).length} {lang === 'en' ? 'rooms' : 'pièces'}
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+                  <select value={usage} onChange={e => setUsageEdits(p => ({ ...p, [lvl]: e.target.value }))}
+                    style={{ fontSize: 10, padding: '2px 4px', border: `1px solid ${confirmed ? VERT : ORANGE}`, borderRadius: 4, color: confirmed ? VERT_DARK : '#8B6914', background: confirmed ? VERT_LIGHT : ORANGE_LT, fontWeight: 700 }}>
+                    {usage === '—' && <option value="—">—</option>}
+                    {USAGES_UI.map(u => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                  {rs && <span style={{ fontSize: 9, color: GRIS3 }}>
+                    {rs.source === 'vision' ? 'Vision' : rs.source === 'utilisateur' ? (lang === 'en' ? 'confirmed' : 'confirmé') : (lang === 'en' ? 'from labels' : 'déduit des libellés')}
+                  </span>}
+                </div>
+                {aConf.length > 0 && (
+                  <div style={{ maxHeight: 96, overflowY: 'auto' }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: ORANGE, marginBottom: 2 }}>
+                      {aConf.length} {lang === 'en' ? 'space(s) to confirm' : 'local(aux) à confirmer'}
+                    </div>
+                    {aConf.slice(0, 12).map((e, i) => {
+                      const key = `${lvl}::${e.libelle}`
+                      return (
+                        <div key={i} style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 2 }}>
+                          <span style={{ fontSize: 9, color: '#444', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 90 }} title={e.libelle}>{e.libelle || '(sans libellé)'}</span>
+                          <select value={edits[key] || e.fonction || 'inconnu'}
+                            onChange={ev => setEdits(p => ({ ...p, [key]: ev.target.value }))}
+                            style={{ fontSize: 9, padding: '1px 2px', border: `1px solid ${GRIS2}`, borderRadius: 3, flex: 1 }}>
+                            {FONCTIONS_UI.map(f => <option key={f} value={f}>{f}</option>)}
+                          </select>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+        <button onClick={save} disabled={!nEdits || busy}
+          style={{ background: nEdits ? VERT : GRIS2, color: '#fff', border: 'none', borderRadius: 5, padding: '6px 14px', fontSize: 11, fontWeight: 600, cursor: nEdits && !busy ? 'pointer' : 'not-allowed' }}>
+          {busy ? '…' : (lang === 'en' ? `Save ${nEdits} correction(s)` : `Enregistrer ${nEdits} correction(s)`)}
+        </button>
+        {msg && <span style={{ fontSize: 10, color: GRIS3 }}>{msg}</span>}
+      </div>
+    </div>
+  )
+}
+
 function DwgLevelsManager({ dwgGeometry, setDwgGeometry, supabase, projectId, lang }) {
   const [open, setOpen] = useState(false)
   const [files, setFiles] = useState([])
@@ -529,6 +718,8 @@ export default function Results() {
               </div>
             )}
           </div>
+          <LevelsReview dwgGeometry={dwgGeometry} setDwgGeometry={setDwgGeometry}
+            supabase={supabase} projectId={projectId} lang={lang} />
           <DwgLevelsManager dwgGeometry={dwgGeometry} setDwgGeometry={setDwgGeometry}
             supabase={supabase} projectId={projectId} lang={lang} />
         </Card>
