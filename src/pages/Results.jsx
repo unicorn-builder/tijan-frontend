@@ -264,6 +264,40 @@ function LevelsReview({ dwgGeometry, setDwgGeometry, supabase, projectId, lang }
             : 'ce que voit le moteur — confirmez ou corrigez en un clic'}
         </span>
       </div>
+      {/* Verdict de DOSSIER — l'étude n'a pas le droit de se dire complète
+          quand un niveau n'est pas confirmé, ni de taire un niveau non
+          desservi. C'est ce silence qui a laissé partir AfricaWorks. */}
+      {(() => {
+        const infos = sorted.map(l => dwgGeometry[l]?._programme?.resume || null)
+        const nonDesservis = sorted.filter((l, i) => infos[i] && !infos[i].desserte_fiable)
+        const nonConfirmes = sorted.filter((l, i) => !infos[i] || !infos[i].programme_confirme)
+        const pannes = sorted.filter((l, i) => infos[i]?.erreur_passe)
+        if (!nonDesservis.length && !nonConfirmes.length && !pannes.length) return null
+        const grave = nonDesservis.length > 0 || pannes.length > 0
+        return (
+          <div style={{
+            border: `1px solid ${grave ? '#CC3333' : ORANGE}`, borderRadius: 8,
+            background: grave ? '#FDECEA' : ORANGE_LT, padding: '8px 10px',
+            marginBottom: 10, fontSize: 11, color: grave ? '#8B1A10' : '#8B6914',
+          }}>
+            <b>{grave
+              ? (lang === 'en' ? 'Study NOT complete' : 'Étude NON complète')
+              : (lang === 'en' ? 'Programme not confirmed' : 'Programme non confirmé')}</b>
+            {' — '}
+            {nonDesservis.length > 0 && (lang === 'en'
+              ? `${nonDesservis.length} level(s) will NOT be served: ${nonDesservis.slice(0, 6).join(', ')}. `
+              : `${nonDesservis.length} niveau(x) ne seront PAS desservis : ${nonDesservis.slice(0, 6).join(', ')}. `)}
+            {pannes.length > 0 && (lang === 'en'
+              ? `Programme pass failed on: ${pannes.slice(0, 6).join(', ')}. `
+              : `Passe programme en échec sur : ${pannes.slice(0, 6).join(', ')}. `)}
+            {nonDesservis.length === 0 && pannes.length === 0 && (lang === 'en'
+              ? `Deduced from labels on ${nonConfirmes.length} level(s): ${nonConfirmes.slice(0, 6).join(', ')}. The study serves them, but the programme is not confirmed. `
+              : `Déduit des libellés sur ${nonConfirmes.length} niveau(x) : ${nonConfirmes.slice(0, 6).join(', ')}. L'étude les dessert, mais le programme n'est pas confirmé. `)}
+            {lang === 'en' ? 'Check the usages below before generating.'
+              : 'Vérifiez les usages ci-dessous avant de générer.'}
+          </div>
+        )
+      })()}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10 }}>
         {sorted.map(lvl => {
           const g = dwgGeometry[lvl]
