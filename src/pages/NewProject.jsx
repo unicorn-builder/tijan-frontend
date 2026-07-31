@@ -95,6 +95,74 @@ export default function NewProject() {
     setShowConfirm(true)
   }
 
+  // ── Attente d'un parse asynchrone — JAMAIS silencieuse (31/07) ──
+  // L'ancienne boucle s'arrêtait après 240 tours (12 min) et, si le job
+  // n'avait pas fini, ne disait RIEN : `parsed` restait vide et la page
+  // retombait sur le formulaire sans message. C'est exactement le défaut
+  // qu'on venait de corriger côté serveur — reproduit côté client.
+  //
+  // Trois règles :
+  //  1. tant que le serveur répond « processing », on attend — le budget
+  //     est celui du serveur, pas une constante arbitraire ;
+  //  2. si l'avancement ne bouge plus pendant 6 min, le job est mort :
+  //     on le DIT ;
+  //  3. sortir de la boucle sans résultat renvoie `null`, et l'appelant
+  //     doit s'arrêter. Aucun chemin ne continue avec un parse vide.
+  async function pollParse(jobId, label) {
+    const DELAI = 3000
+    const PLAFOND_MS = 30 * 60 * 1000     // garde-fou absolu
+    const STAGNATION_MS = 6 * 60 * 1000   // plus aucun signe de vie
+    const t0 = Date.now()
+    let dernierProgres = ''
+    let dernierChangement = Date.now()
+    let echecsReseau = 0
+
+    while (Date.now() - t0 < PLAFOND_MS) {
+      await new Promise(r => setTimeout(r, DELAI))
+      let pd = null
+      try {
+        const pr = await fetch(`${BACKEND}/parse-status/${jobId}`)
+        if (pr.status === 404) {
+          // Le serveur a redémarré : la tâche vit en mémoire, elle est
+          // perdue. Le dire tout de suite plutôt que d'attendre 6 minutes.
+          setErrorMsg("L'analyse a été interrompue par un redémarrage du "
+            + "serveur. Aucun crédit n'a été décompté — relancez le projet.")
+          return null
+        }
+        pd = await pr.json()
+        echecsReseau = 0
+      } catch {
+        // Une coupure réseau passagère ne doit pas tuer un parse payé.
+        if (++echecsReseau > 40) {
+          setErrorMsg("Connexion perdue pendant l'analyse. Votre plan est "
+            + "peut-être encore en cours de traitement — rechargez la page "
+            + "dans quelques minutes avant de relancer.")
+          return null
+        }
+        continue
+      }
+      const prog = pd?.progress || '...'
+      setParseProgress(`${label} (${prog})`)
+      if (prog !== dernierProgres) { dernierProgres = prog; dernierChangement = Date.now() }
+
+      if (pd?.status === 'done' && pd.result) return pd.result
+      if (pd?.status === 'error') {
+        setErrorMsg(`Erreur d'analyse — ${(pd.error || 'inconnue')}`.slice(0, 280))
+        return null
+      }
+      if (Date.now() - dernierChangement > STAGNATION_MS) {
+        setErrorMsg("L'analyse s'est interrompue côté serveur "
+          + `(bloquée sur « ${prog} »). Aucun crédit n'a été décompté — `
+          + 'réessayez, ou envoyez-nous le fichier si cela se reproduit.')
+        return null
+      }
+    }
+    setErrorMsg("L'analyse dépasse 30 minutes, ce qui n'est pas normal. "
+      + "Aucun crédit n'a été décompté. Réessayez, ou envoyez-nous le "
+      + 'fichier si cela se reproduit.')
+    return null
+  }
+
   async function lancer() {
     if (!nom.trim()) { setErrorMsg(t('np_err_nom')); return }
     if (!ville.trim()) { setErrorMsg(t('np_err_ville')); return }
@@ -139,21 +207,8 @@ export default function NewProject() {
         if (data.ok) parsed = data
         // Async APS path: poll job status until done
         if (data.ok && data.async && data.job_id) {
-          const jobId = data.job_id
-          for (let i = 0; i < 240; i++) { // up to ~12 min
-            await new Promise(r => setTimeout(r, 3000))
-            try {
-              const pr = await fetch(`${BACKEND}/parse-status/${jobId}`)
-              const pd = await pr.json()
-              setParseProgress(`Analyse (${pd.progress || '...'})`)
-              if (pd.status === 'done' && pd.result) { parsed = pd.result; break }
-              if (pd.status === 'error') {
-                setErrorMsg(`Erreur d'analyse des plans — ${(pd.error || 'inconnue')}`.slice(0, 280))
-                setStep('idle')
-                return
-              }
-            } catch {}
-          }
+          parsed = await pollParse(data.job_id, 'Analyse')
+          if (!parsed) { setStep('idle'); return }
         }
       } else {
         const fileToSend = mainFile
@@ -175,21 +230,8 @@ export default function NewProject() {
         // Gros DWG/DXF : le backend répond {async, job_id} et parse en tâche de
         // fond (évite les timeouts proxy) → on poll /parse-status jusqu'à la fin.
         if (data.ok && data.async && data.job_id) {
-          parsed = {}
-          for (let i = 0; i < 240; i++) { // jusqu'à ~12 min
-            await new Promise(r => setTimeout(r, 3000))
-            try {
-              const pr = await fetch(`${BACKEND}/parse-status/${data.job_id}`)
-              const pd = await pr.json()
-              setParseProgress(`Analyse du plan (${pd.progress || '...'})`)
-              if (pd.status === 'done' && pd.result) { parsed = pd.result; break }
-              if (pd.status === 'error') {
-                setErrorMsg(`Erreur d'analyse du plan — ${(pd.error || 'inconnue')}`.slice(0, 280))
-                setStep('idle')
-                return
-              }
-            } catch {}
-          }
+          parsed = await pollParse(data.job_id, 'Analyse du plan')
+          if (!parsed) { setStep('idle'); return }
         }
       }
 
