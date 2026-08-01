@@ -186,11 +186,33 @@ function LevelMiniature({ geom }) {
   )
 }
 
-function LevelsReview({ dwgGeometry, setDwgGeometry, supabase, projectId, lang }) {
+function LevelsReview({ dwgGeometry, setDwgGeometry, supabase, projectId, lang, geomRef }) {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [edits, setEdits] = useState({})   // {`${lvl}::${libelle}`: fonction}
   const [usageEdits, setUsageEdits] = useState({})  // {lvl: usage}
+  const [progEnCours, setProgEnCours] = useState(false)
+
+  // Suivi de la passe programme différée : le parse rend la main dès que la
+  // géométrie est prête, le sens des locaux se calcule ensuite.
+  useEffect(() => {
+    if (!geomRef) return
+    let vivant = true
+    let n = 0
+    const tick = async () => {
+      if (!vivant || n++ > 120) return
+      try {
+        const r = await fetch(`${BACKEND}/programme-status/${geomRef}`)
+        const d = await r.json()
+        if (!vivant) return
+        setProgEnCours(d.status === 'en_cours')
+        if (d.status === 'en_cours') setTimeout(tick, 5000)
+      } catch { /* silencieux : c'est un simple indicateur */ }
+    }
+    tick()
+    return () => { vivant = false }
+  }, [geomRef])
+
   if (!dwgGeometry) return null
   const levelKeys = Object.keys(dwgGeometry).filter(k => !k.startsWith('_') && dwgGeometry[k] && typeof dwgGeometry[k] === 'object' && dwgGeometry[k].walls)
   if (!levelKeys.length) return null
@@ -267,6 +289,21 @@ function LevelsReview({ dwgGeometry, setDwgGeometry, supabase, projectId, lang }
       {/* Verdict de DOSSIER — l'étude n'a pas le droit de se dire complète
           quand un niveau n'est pas confirmé, ni de taire un niveau non
           desservi. C'est ce silence qui a laissé partir AfricaWorks. */}
+      {/* La passe programme se termine en arrière-plan (le parse rend la
+          main dès que la géométrie est prête). Tant qu'elle tourne, on le
+          dit — plutôt que d'afficher « non desservi » à tort. */}
+      {progEnCours && (
+        <div style={{
+          border: `1px solid ${VERT}`, borderRadius: 8, background: VERT_LIGHT,
+          padding: '8px 10px', marginBottom: 10, fontSize: 11, color: VERT_DARK,
+        }}>
+          <b>{lang === 'en' ? 'Programme being analysed' : 'Programme en cours d’analyse'}</b>
+          {' — '}
+          {lang === 'en'
+            ? 'levels and rooms are being identified in the background. You can wait a moment before generating: the study will be more complete.'
+            : 'les niveaux et les locaux sont en cours d’identification en arrière-plan. Attendez un instant avant de générer : l’étude sera plus complète.'}
+        </div>
+      )}
       {(() => {
         const infos = sorted.map(l => dwgGeometry[l]?._programme?.resume || null)
         const nonDesservis = sorted.filter((l, i) => infos[i] && !infos[i].desserte_fiable)
@@ -753,7 +790,8 @@ export default function Results() {
             )}
           </div>
           <LevelsReview dwgGeometry={dwgGeometry} setDwgGeometry={setDwgGeometry}
-            supabase={supabase} projectId={projectId} lang={lang} />
+            supabase={supabase} projectId={projectId} lang={lang}
+            geomRef={geomRef} />
           <DwgLevelsManager dwgGeometry={dwgGeometry} setDwgGeometry={setDwgGeometry}
             supabase={supabase} projectId={projectId} lang={lang} />
         </Card>
