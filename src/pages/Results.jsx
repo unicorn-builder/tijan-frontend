@@ -121,12 +121,14 @@ function usePdfDownload(params, lang = 'fr', { projectId = null } = {}) {
     } catch (e) {
       console.warn('PDF generation failed:', e)
       if (e.status === 422 && (endpoint.includes('plans-structure') || endpoint.includes('plans-mep'))) {
-        // 03/08 — un 422 ne signifie plus qu'une chose : AUCUNE géométrie
-        // n'a pu être résolue pour ce projet (les projets PDF génèrent
-        // désormais leurs plans, avec réserve écrite sur les planches).
-        alert(lang === 'en'
-          ? 'Execution plans require geometry extracted from your drawings. No geometry could be found for this project — import your architectural drawings (DWG, DXF or PDF) in the Plans tab to enable them. (All other deliverables remain available.)'
-          : 'Les plans d\'exécution nécessitent une géométrie extraite de vos plans. Aucune géométrie n\'a été trouvée pour ce projet — importez vos plans architecturaux (DWG, DXF ou PDF) dans l\'onglet Plans pour les activer. (Tous les autres livrables restent disponibles.)')
+        // 03/08 — la popup affichait un texte générique pour TOUT 422 :
+        // la vraie raison du serveur (géométrie absente, domaine de
+        // validité, etc.) était avalée — débogage à l'aveugle. On montre
+        // le message RÉEL du serveur ; le texte générique ne sert plus
+        // que de repli si le serveur n'a rien dit.
+        alert(e.message || (lang === 'en'
+          ? 'Execution plans require geometry extracted from your drawings. Import your architectural drawings (DWG, DXF or PDF) in the Plans tab to enable them.'
+          : 'Les plans d\'exécution nécessitent une géométrie extraite de vos plans. Importez vos plans architecturaux (DWG, DXF ou PDF) dans l\'onglet Plans pour les activer.'))
       } else {
         alert((lang === 'en' ? 'Download error: ' : 'Erreur téléchargement: ') + e.message)
       }
