@@ -99,6 +99,26 @@ function usePdfDownload(params, lang = 'fr', { projectId = null } = {}) {
     if (!params || !endpoint) return
     setLoading(endpoint)
     try {
+      // 05/08 — RE-TÉLÉCHARGEMENT INSTANTANÉ : un document déjà généré est
+      // archivé côté serveur. On le sert depuis l'archive (2 s, depuis
+      // n'importe quel appareil) au lieu de régénérer plusieurs minutes —
+      // c'est la régénération qui coupait en « Failed to fetch ».
+      const _docKey = endpoint.includes('plans-structure') ? 'plans_structure'
+        : endpoint.includes('plans-mep') ? 'plans_mep' : null
+      if (_docKey && projectId && !endpoint.includes('format=dwg')) {
+        try {
+          const ra = await fetch(`${BACKEND}/documents/${projectId}/${_docKey}`)
+          if (ra.ok) {
+            const blob = await ra.blob()
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url; a.download = filename; a.click()
+            URL.revokeObjectURL(url)
+            setLoading(null)
+            return
+          }
+        } catch {}
+      }
       // Strip dwg_geometry from params — only pass via extra when needed (plans)
       const { dwg_geometry, dwgGeometry, ...cleanParams } = params
       const res = await fetch(`${BACKEND}${endpoint}`, {
