@@ -749,7 +749,12 @@ export default function Results() {
 
   const renderContent = () => {
     if (activeTab === 'plan-ba' || activeTab === 'plan-mep') {
-      const hasDwg = (dwgGeometry && Object.keys(dwgGeometry).length > 0) || !!geomRef
+      // 06/08 — un projet rouvert (autre machine/téléphone) a perdu son état
+      // React : la géométrie vit CÔTÉ SERVEUR (geom_ref/ligne projet) et le
+      // serveur la résout par project_id. Ne plus déclarer « DWG requis »
+      // sur la seule foi du navigateur — c'est ce qui faisait croire que
+      // les plans avaient disparu.
+      const hasDwg = (dwgGeometry && Object.keys(dwgGeometry).length > 0) || !!geomRef || !!projectId
       const isPlanBA = activeTab === 'plan-ba'
       const title = isPlanBA
         ? (lang === 'en' ? 'Structural Drawings (BA)' : 'Plans Structure (BA)')
@@ -2011,7 +2016,12 @@ export default function Results() {
   // ── Download All Dossier ──
   const downloadAllDossier = async () => {
     if (!params || !params.nom || downloadAllState) return
-    const hasDwg = (dwgGeometry && Object.keys(dwgGeometry).length > 0) || !!geomRef
+    // 06/08 — un projet rouvert (autre machine/téléphone) a perdu son état
+      // React : la géométrie vit CÔTÉ SERVEUR (geom_ref/ligne projet) et le
+      // serveur la résout par project_id. Ne plus déclarer « DWG requis »
+      // sur la seule foi du navigateur — c'est ce qui faisait croire que
+      // les plans avaient disparu.
+      const hasDwg = (dwgGeometry && Object.keys(dwgGeometry).length > 0) || !!geomRef || !!projectId
     const hasMep = mepData?.ok
 
     // Filter items based on available data — track what was skipped
@@ -2284,7 +2294,13 @@ export default function Results() {
           {endpoint && (
             <div style={{ marginTop: 20, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {/* Plans BA/MEP: DWG required — hide download if no geometry */}
-              {(activeTab === 'plan-ba' || activeTab === 'plan-mep') && !(dwgGeometry && Object.keys(dwgGeometry).length > 0) ? null : (
+              {/* 06/08 — le bouton ne dépend PLUS de l'état du navigateur :
+                  sur un projet rouvert (autre machine, téléphone), la
+                  géométrie est résolue CÔTÉ SERVEUR par project_id, et un
+                  document déjà généré est servi depuis l'archive. Masquer
+                  le bouton faisait croire que les plans avaient disparu. */}
+              {(activeTab === 'plan-ba' || activeTab === 'plan-mep') &&
+               !(dwgGeometry && Object.keys(dwgGeometry).length > 0) && !geomRef && !projectId ? null : (
               <button
                 onClick={() => {
                   const nomFichier = `TijanAI_${activeTab.replace(/-/g,'')}_${slug}_${today}.pdf`
